@@ -1,0 +1,12 @@
+lily:
+  commandline:
+    enabled: true
+  irc:
+    enabled: false
+  discord:
+    enabled: false
+
+logging:
+  level:
+    de.scaramanga.lily:
+      irc.connection: INFO
