@@ -23,7 +23,8 @@ repositories {
 }
 
 dependencies {
-  implementation("de.scaramanga:lily:0.1.0")
+  implementation("de.scaramanga:lily:0.1.1")
+
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 }
