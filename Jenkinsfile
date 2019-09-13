@@ -12,7 +12,7 @@ pipeline {
 
         stage("Test") {
             steps {
-                sh "./gradlew test"
+                sh "./gradlew test --reload-dependencies"
             }
         }
 
