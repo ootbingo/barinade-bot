@@ -23,10 +23,27 @@ repositories {
 }
 
 dependencies {
+
   implementation("de.scaramanga:lily:0.1.1")
 
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
+
+  val jUnitVersion = "5.5.2"
+  testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
+  testImplementation("org.junit.jupiter:junit-jupiter-params:$jUnitVersion")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
+
+  testImplementation("org.springframework.boot:spring-boot-starter-test:2.1.8.RELEASE") {
+    exclude(module = "junit")
+    exclude(module = "hamcrest-library")
+    exclude(module = "hamcrest-core")
+    exclude(module = "json-path")
+    exclude(module = "jsonassert")
+    exclude(module = "xmlunit-core")
+  }
+
+  testImplementation("org.assertj:assertj-core:3.13.2")
 }
 
 tasks.withType(Jar::class) {
