@@ -55,6 +55,10 @@ tasks.withType(Jar::class) {
   from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 
+tasks.withType<Test>() {
+  useJUnitPlatform()
+}
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
   jvmTarget = "1.8"
