@@ -1,7 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   java
+  id("org.springframework.boot") version "2.1.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
 }
@@ -48,14 +50,8 @@ dependencies {
 
 tasks.withType(Jar::class) {
 
-  manifest {
-    attributes["Main-Class"] = "ootbingo.barinade.bot.BarinadeBotKt"
-  }
-
   archiveBaseName.set("barinade_bot")
   archiveVersion.set("")
-
-  from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 
 tasks.withType<Test>() {
