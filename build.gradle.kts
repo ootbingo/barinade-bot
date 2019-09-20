@@ -52,6 +52,9 @@ tasks.withType(Jar::class) {
     attributes["Main-Class"] = "ootbingo.barinade.bot.BarinadeBotKt"
   }
 
+  archiveBaseName.set("barinade_bot")
+  archiveVersion.set("")
+
   from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 
