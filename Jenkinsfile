@@ -29,10 +29,10 @@ pipeline {
                     branch "feature/docker"
                 }
             }
-            
+
             steps {
                 script {
-                    docker.withRegistry("http://h2841273.stratoserver.net:10091/repository/docker/", "barinade-registry") {
+                    docker.withRegistry("https://scaramangado.de:10191", "barinade-registry") {
                         def devImage = docker.build("barinade/bot:dev")
                         devImage.push()
                     }
