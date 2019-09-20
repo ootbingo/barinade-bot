@@ -29,15 +29,21 @@ pipeline {
                     branch "feature/docker"
                 }
             }
-
-            docker.withRegistry("http://h2841273.stratoserver.net:10091/repository/docker/", "barinade-registry") {
-                def devImage = docker.build("barinade/bot:dev")
-                devImage.push()
+            
+            steps {
+                script {
+                    docker.withRegistry("http://h2841273.stratoserver.net:10091/repository/docker/", "barinade-registry") {
+                        def devImage = docker.build("barinade/bot:dev")
+                        devImage.push()
+                    }
+                }
             }
         }
 
         stage("Cleanup") {
-            sh "docker image prune -f"
+            steps {
+                sh "docker image prune -f"
+            }
         }
     }
 }
