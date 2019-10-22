@@ -23,6 +23,7 @@ pipeline {
         }
 
         stage("Build And Run Docker Image (Dev)") {
+
             when {
                 anyOf {
                     branch "develop";
@@ -36,6 +37,10 @@ pipeline {
                         def devImage = docker.build("barinade/bot:dev")
                         devImage.push()
                     }
+                }
+
+                withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
+                    sh "ssh barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/dev/docker-compose.yml up -d --force-recreate bot"
                 }
             }
         }
