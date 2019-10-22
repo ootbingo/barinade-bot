@@ -27,7 +27,6 @@ pipeline {
             when {
                 anyOf {
                     branch "develop";
-                    branch "feature/docker"
                 }
             }
 
