@@ -171,3 +171,7 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
+
+### Project specific ###
+
+/devetc/
