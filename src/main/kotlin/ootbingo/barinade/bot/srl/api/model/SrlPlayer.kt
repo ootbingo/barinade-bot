@@ -1,4 +1,4 @@
 package ootbingo.barinade.bot.srl.api.model
 
-data class SrlPlayer(val id: Long, val name: String, val channel: String, val api: String, val twitter: String,
-                     val youtube: String, val country: String)
+data class SrlPlayer(var id: Long = 0, var name: String = "", var channel: String = "", var api: String = "",
+                     var twitter: String = "", var youtube: String = "", var country: String = "")

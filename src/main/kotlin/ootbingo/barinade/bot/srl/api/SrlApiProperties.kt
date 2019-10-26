@@ -6,4 +6,4 @@ import java.net.URI
 
 @ConfigurationProperties("com.speedrunslive.api")
 @Component
-data class SrlApiProperties(var baseUrl: URI = URI.create("http://api.speedrunslive.com/"))
+data class SrlApiProperties(var baseUrl: String = "http://api.speedrunslive.com")
