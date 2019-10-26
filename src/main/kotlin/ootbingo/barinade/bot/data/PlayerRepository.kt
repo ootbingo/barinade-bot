@@ -5,6 +5,7 @@ import ootbingo.barinade.bot.model.Race
 import ootbingo.barinade.bot.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.time.ZonedDateTime
 
 @Component

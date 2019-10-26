@@ -26,7 +26,7 @@ repositories {
 dependencies {
 
   implementation("de.scaramanga:lily:0.1.1")
-  implementation("org.springframework:spring-web:5.1.8.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter-json:2.1.8.RELEASE")
 
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
