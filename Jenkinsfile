@@ -60,7 +60,6 @@ pipeline {
                 anyOf {
                     branch "master"
                     branch "develop"
-                    branch "feature/discord_notification"
                     not { equals expected: "SUCCESS", actual: currentBuild.currentResult }
                 }
             }
