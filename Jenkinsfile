@@ -70,7 +70,7 @@ pipeline {
                 script { buildStatus = currentBuild.currentResult == "SUCCESS" ? "successful" : "failed" }
 
                 discordSend(webhookURL: "https://discordapp.com/api/webhooks/637956171864604683/3fv_nq0NWEyKvw-U8kocLD7WjgChybnp8j7hJtaZw7eo7aBYvtkAYpLVGDUaGvfAEEWd",
-                        title: "Build $buildStatus", result: currentBuild.currentResult)
+                        title: "Build of ${env.BRANCH_NAME} $buildStatus", result: currentBuild.currentResult)
             }
         }
     }
