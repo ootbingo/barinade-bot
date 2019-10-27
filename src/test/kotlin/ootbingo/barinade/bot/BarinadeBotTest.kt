@@ -15,9 +15,4 @@ internal class BarinadeBotTest {
       // Expected due to command line not being able to read in a test scenario.
     }
   }
-
-  @Test
-  internal fun jenkins() {
-    Assertions.fail<Unit>("Test case 'jenkins' not implemented.")
-  }
 }
