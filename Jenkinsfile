@@ -1,5 +1,9 @@
 pipeline {
 
+    environment {
+        buildStatus = ""
+    }
+
     agent any
 
     stages {
@@ -26,7 +30,7 @@ pipeline {
 
             when {
                 anyOf {
-                    branch "develop";
+                    branch "develop"
                 }
             }
 
@@ -47,6 +51,26 @@ pipeline {
         stage("Cleanup") {
             steps {
                 sh "docker image prune -f"
+            }
+        }
+
+        stage("Discord Notification") {
+
+            when {
+                anyOf {
+                    branch "master"
+                    branch "develop"
+                    branch "feature/discord_notification"
+                    not { equals expected: "SUCCESS", actual: currentBuild.currentResult }
+                }
+            }
+
+            steps {
+
+                script { buildStatus = currentBuild.currentResult == "SUCCESS" ? "successful" : "failed" }
+
+                discordSend(webhookURL: "https://discordapp.com/api/webhooks/637956171864604683/3fv_nq0NWEyKvw-U8kocLD7WjgChybnp8j7hJtaZw7eo7aBYvtkAYpLVGDUaGvfAEEWd",
+                        title: "Build $buildStatus", result: currentBuild.currentResult)
             }
         }
     }
