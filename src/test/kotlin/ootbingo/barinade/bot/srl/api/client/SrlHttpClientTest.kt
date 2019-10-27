@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
@@ -115,6 +116,25 @@ internal class SrlHttpClientTest {
     soft.assertThat(game.popularityrank).isEqualTo(popularityRank)
 
     soft.assertAll()
+  }
+
+  @Test
+  internal fun getsNullIfGameUnknown() {
+
+    val abbreviation = UUID.randomUUID().toString()
+
+    val json = """
+      {
+        "errorCode" : 404,
+        "errorText" : "Not Found"
+      }
+    """.trimIndent()
+
+    server
+        ?.expect(requestTo("$baseUrl/games/$abbreviation"))
+        ?.andRespond(withStatus(HttpStatus.NOT_FOUND))
+
+    assertThat(client?.getGameByAbbreviation(abbreviation)).isNull()
   }
 
   @Test

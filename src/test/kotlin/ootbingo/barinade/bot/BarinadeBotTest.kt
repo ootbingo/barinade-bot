@@ -11,9 +11,11 @@ internal class BarinadeBotTest {
 
     try {
       main()
-    } catch (e: NoSuchElementException) {
-      // Expected due to command line not being able to read in a test scenario.
     } catch (t: Throwable) {
+      if (t is NoSuchElementException) {
+        // Expected due to command line not being able to read in a test scenario.
+        return
+      }
       t.printStackTrace()
       fail<BarinadeBotTest>("Exception thrown during context creation.")
     }

@@ -2,7 +2,7 @@ package ootbingo.barinade.bot.srl.api.model
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import ootbingo.barinade.bot.srl.api.client.daserialize.DateTimeDeserializer
+import ootbingo.barinade.bot.srl.api.client.deserialize.DateTimeDeserializer
 import java.time.ZonedDateTime
 
 @JsonAutoDetect

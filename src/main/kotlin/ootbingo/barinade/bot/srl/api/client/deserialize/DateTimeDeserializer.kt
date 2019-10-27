@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.srl.api.client.daserialize
+package ootbingo.barinade.bot.srl.api.client.deserialize
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -10,8 +10,6 @@ import java.time.ZonedDateTime
 class DateTimeDeserializer: JsonDeserializer<ZonedDateTime>() {
 
   override fun deserialize(parser: JsonParser?, ctxt: DeserializationContext?): ZonedDateTime {
-
-    println("DateTime of: ${parser?.text}")
 
     return ZonedDateTime.ofInstant(Instant.ofEpochSecond(requireNotNull(parser?.text?.toLong())), ZoneId.of("UTC"))
   }
