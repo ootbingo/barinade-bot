@@ -222,6 +222,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
     val allBingos = playerRepository.getPlayerByName(username)
         ?.races
+        ?.filter { it.isBingo() }
 
     return allBingos
         ?.map { it.raceResults.last { result -> result.player.name == username } }
