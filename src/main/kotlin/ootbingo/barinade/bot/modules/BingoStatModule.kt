@@ -11,6 +11,7 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.data.PlayerRepository
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.model.Player
+import ootbingo.barinade.bot.model.RaceResult
 import java.time.Duration
 
 @LilyModule
@@ -39,7 +40,8 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     val average = average(queryInfo)
 
     return Answer
-        .ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result}")
+        .ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result} " +
+                    "(Forfeits: ${average.forfeitsSkipped})")
   }
 
   private fun getRequesterQueryInfo(messageInfo: MessageInfo): QueryInfo? {
@@ -87,23 +89,33 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   private fun average(queryInfo: QueryInfo): ResultInfo {
 
-    val bingos = queryInfo.player
+    var forfeitsSkipped = 0
+
+    val allBingos = queryInfo.player
         .races
         .asSequence()
         .filter { it.isBingo() }
-        .map { race -> race.raceResults.last { result -> result.player.name == queryInfo.player.name } }
-        .filter { !it.isForfeit() }
-        .map { it.race }
         .sortedByDescending { it.recordDate }
-        .take(queryInfo.raceCount)
-        .map { race -> race.raceResults.last { result -> result.player.name == queryInfo.player.name } }
-        .map { it.time.seconds }
-        .toList()
+        .toMutableList()
 
-    return bingos
+    val toAverage = mutableListOf<RaceResult>()
+
+    while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
+
+      val result = allBingos.removeAt(0).raceResults.last { it.player.name == queryInfo.player.name }
+
+      if (result.isForfeit()) {
+        forfeitsSkipped++
+      } else {
+        toAverage.add(result)
+      }
+    }
+
+    return toAverage
+        .map { it.time.seconds }
         .average()
         .let { Duration.ofSeconds(it.toLong()).standardFormat() }
-        .let { ResultInfo(it, bingos.size, 0) }
+        .let { ResultInfo(it, toAverage.size, forfeitsSkipped) }
   }
 
   private fun findUsername(messageInfo: MessageInfo): String =

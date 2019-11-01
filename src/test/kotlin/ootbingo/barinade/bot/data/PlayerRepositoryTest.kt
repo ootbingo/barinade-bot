@@ -82,7 +82,7 @@ internal class PlayerRepositoryTest {
     val soft = SoftAssertions()
 
     race.raceResults.forEach {
-      soft.assertThat(it.race).isEqualTo(race)
+      soft.assertThat(it.race.raceResults).contains(it)
     }
 
     soft.assertAll()

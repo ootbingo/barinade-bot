@@ -158,6 +158,20 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun showsNumberOfIgnoredForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    val answer = whenIrcMessageIsSent(username, "!average 3")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+    thenDisplayedNumberOfRacesIs(answer, 3)
+    thenDisplayedNumberOfForfeitsIs(answer, 2)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
@@ -193,6 +207,10 @@ internal class BingoStatModuleTest {
           spy
         }
         .forEach { races.add(it) }
+
+    races.forEach {
+      it.raceResults.forEach { result->result.race = it }
+    }
 
     val oldPlayer = players[username] ?: Player(0, username, emptyList())
     val player = oldPlayer.copy(races = oldPlayer.races + races)
@@ -234,7 +252,7 @@ internal class BingoStatModuleTest {
 
   private fun thenReportedTimeIsEqualTo(answer: Answer<AnswerInfo>?, time: String) {
 
-    val actualTime = answer?.text?.split(": ", limit = 2)?.get(1)
+    val actualTime = answer?.text?.split(": ", limit = 2)?.get(1)?.substringBefore('(')?.trim()
 
     assertThat(actualTime).isEqualTo(time)
   }
@@ -249,6 +267,18 @@ internal class BingoStatModuleTest {
         ?.toInt()
 
     assertThat(actualRaceCount).isEqualTo(raceCount)
+  }
+
+  private fun thenDisplayedNumberOfForfeitsIs(answer: Answer<AnswerInfo>?, forfeitCount: Int) {
+
+    val actualRaceCount = answer
+        ?.text
+        ?.substringAfter("(Forfeits: ")
+        ?.substringBefore(")")
+        ?.trim()
+        ?.toInt()
+
+    assertThat(actualRaceCount).isEqualTo(forfeitCount)
   }
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
