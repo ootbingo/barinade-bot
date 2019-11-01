@@ -440,6 +440,38 @@ internal class BingoStatModuleTest {
     thenErrorIsReported(answer)
   }
 
+  //<editor-fold desc="Public API">
+
+  @Test
+  internal fun calculatesForfeitRatioForUser() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, 5, -7, -9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
+
+    assertThat(module.forfeitRatio(username)).isEqualTo(0.125)
+  }
+
+  @Test
+  internal fun forfeitRatioNullWhenUserNotFound() {
+
+    val username = UUID.randomUUID().toString()
+
+    assertThat(module.forfeitRatio(username)).isNull()
+  }
+
+  @Test
+  internal fun forfeitRatioNullWhenUserHasNoBingos() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 25)
+
+    assertThat(module.forfeitRatio(username)).isNull()
+  }
+
+  //</editor-fold>
+
   //</editor-fold>
 
   //<editor-fold desc="Given">

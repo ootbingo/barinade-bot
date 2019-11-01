@@ -218,6 +218,20 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
         ?.let { Duration.ofSeconds(it) }
   }
 
+  fun forfeitRatio(username: String): Double? {
+
+    val allBingos = playerRepository.getPlayerByName(username)
+        ?.races
+
+    return allBingos
+        ?.map { it.raceResults.last { result -> result.player.name == username } }
+        ?.filter { it.isForfeit() }
+        ?.count()
+        ?.let { if (it == 0) return null else it }
+        ?.toDouble()
+        ?.let { it / allBingos.count() }
+  }
+
   private inner class QueryInfo(val player: Player, val raceCount: Int)
   private inner class ResultInfo(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
   private inner class ComputationRaces(val races: List<Race>, val forfeitsSkipped: Int)
