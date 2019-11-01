@@ -18,6 +18,8 @@ import java.time.Duration
 @LilyModule
 class BingoStatModule(private val playerRepository: PlayerRepository) {
 
+  private val errorMessage = "An error occurred finding the player."
+
   @LilyCommand("average")
   fun average(command: Command): Answer<AnswerInfo>? {
 
@@ -31,12 +33,12 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     } catch (e: PlayerNotFoundException) {
       return Answer.ofText(with(e.username) {
         when {
-          isBlank() -> "An error occurred finding the player."
+          isBlank() -> errorMessage
           else -> "User $this not found"
         }
       })
     }
-        ?: return Answer.ofText("An error occurred finding the player.")
+        ?: return Answer.ofText(errorMessage)
 
     val average = average(queryInfo)
 
@@ -51,19 +53,19 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     val queryInfo = try {
       when (command.argumentCount) {
         0 -> getRequesterQueryInfo(command.messageInfo, 15)
-        1 -> getSingleArgumentQueryInfo(command.messageInfo, command.getArgument(0))
+        1 -> getSingleArgumentQueryInfo(command.messageInfo, command.getArgument(0), 15)
         2 -> getDoubleArgumentQueryInfo(command.getArgument(0), command.getArgument(1))
         else -> return null
       }
     } catch (e: PlayerNotFoundException) {
       return Answer.ofText(with(e.username) {
         when {
-          isBlank() -> "An error occurred finding the player."
+          isBlank() -> errorMessage
           else -> "User $this not found"
         }
       })
     }
-        ?: return Answer.ofText("An error occurred finding the player.")
+        ?: return Answer.ofText(errorMessage)
 
     val median = median(queryInfo)
 
@@ -79,7 +81,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(username)
   }
 
-  private fun getSingleArgumentQueryInfo(messageInfo: MessageInfo, arg0: String): QueryInfo? {
+  private fun getSingleArgumentQueryInfo(messageInfo: MessageInfo, arg0: String, raceCount: Int = 10): QueryInfo? {
 
     val user = with(arg0) {
       when {
@@ -88,15 +90,15 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       }
     }
 
-    val raceCount = with(arg0) {
+    val parsedRaceCount = with(arg0) {
       when {
         matches(Regex("\\d+")) -> this.toInt()
-        else -> 10
+        else -> raceCount
       }
     }
 
     return playerRepository.getPlayerByName(user)
-        ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(user)
+        ?.let { QueryInfo(it, parsedRaceCount) } ?: throw PlayerNotFoundException(user)
   }
 
   private fun getDoubleArgumentQueryInfo(arg0: String, arg1: String): QueryInfo? {

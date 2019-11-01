@@ -233,11 +233,11 @@ internal class BingoStatModuleTest {
     val queryUsername = UUID.randomUUID().toString()
 
     givenBingoTimesForPlayer(requestUsername, 10000)
-    givenBingoTimesForPlayer(queryUsername, 1, 3, 5, 7)
+    givenBingoTimesForPlayer(queryUsername, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
 
     val answer = whenDiscordMessageIsSent(requestUsername, "!median $queryUsername")
 
-    thenReportedTimeIsEqualTo(answer, "0:00:04")
+    thenReportedTimeIsEqualTo(answer, "0:00:08")
   }
 
   @Test
