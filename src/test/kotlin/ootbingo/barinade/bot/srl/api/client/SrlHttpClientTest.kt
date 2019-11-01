@@ -83,6 +83,49 @@ internal class SrlHttpClientTest {
   }
 
   @Test
+  internal fun getsNullIfPlayerIdIsZero() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    val json = """
+      {
+        "id" : 0,
+        "name" : "$playerName",
+        "channel" : "",
+        "api" : "",
+        "twitter" : "",
+        "youtube" : "",
+        "country" : ""
+      }
+    """.trimIndent()
+
+    server
+        ?.expect(requestTo("$baseUrl/players/$playerName"))
+        ?.andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
+
+    assertThat(client?.getPlayerByName(playerName)).isNull()
+  }
+
+  @Test
+  internal fun getsNullIfPlayerUnknown() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    val json = """
+      {
+        "errorCode" : 404,
+        "errorText" : "Not Found"
+      }
+    """.trimIndent()
+
+    server
+        ?.expect(requestTo("$baseUrl/players/$playerName"))
+        ?.andRespond(withStatus(HttpStatus.NOT_FOUND))
+
+    assertThat(client?.getPlayerByName(playerName)).isNull()
+  }
+
+  @Test
   internal fun getsGame() {
 
     val gameId = Random.nextLong()

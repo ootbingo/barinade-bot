@@ -79,6 +79,20 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun computesAverageForDifferentUser() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!average $queryUsername")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:01")
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())

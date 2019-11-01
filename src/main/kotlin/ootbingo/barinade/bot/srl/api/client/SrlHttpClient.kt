@@ -5,7 +5,6 @@ import ootbingo.barinade.bot.srl.api.model.SrlGame
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
 import ootbingo.barinade.bot.srl.api.model.SrlPastRaces
 import ootbingo.barinade.bot.srl.api.model.SrlPlayer
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
@@ -31,6 +30,14 @@ class SrlHttpClient(private val properties: SrlApiProperties, private val restTe
   }
 
   fun getPlayerByName(name: String): SrlPlayer? {
-    return restTemplate.getForObject(URI.create("${properties.baseUrl}/players/$name"), SrlPlayer::class.java)
+
+    val srlPlayer =
+        try {
+          restTemplate.getForObject(URI.create("${properties.baseUrl}/players/$name"), SrlPlayer::class.java)
+        } catch (e: HttpClientErrorException) {
+          return null
+        }
+
+    return if (srlPlayer != null && srlPlayer.id == 0L) null else srlPlayer
   }
 }
