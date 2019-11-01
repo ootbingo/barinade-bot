@@ -14,6 +14,7 @@ import ootbingo.barinade.bot.model.Player
 import ootbingo.barinade.bot.model.Race
 import ootbingo.barinade.bot.model.RaceResult
 import org.assertj.core.api.Assertions.*
+import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -33,7 +34,8 @@ internal class BingoStatModuleTest {
 
   private val commands by lazy {
     mapOf(Pair("average", module::average),
-          Pair("median", module::median))
+          Pair("median", module::median),
+          Pair("forfeits", module::forfeitRatio))
   }
 
   @BeforeEach
@@ -334,7 +336,7 @@ internal class BingoStatModuleTest {
 
     val username = UUID.randomUUID().toString()
 
-    givenBingoTimesForPlayer(username, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31)
+    givenBingoTimesForPlayer(username, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
 
     assertThat(module.median(username)).isEqualTo(Duration.ofSeconds(15))
   }
@@ -358,6 +360,85 @@ internal class BingoStatModuleTest {
   }
 
   //</editor-fold>
+
+  //</editor-fold>
+
+  //<editor-fold desc="Forfeit Ratio">
+
+  @Test
+  internal fun computesCorrectForfeitRatioDiscord() {
+
+    val username = UUID.randomUUID().toString()
+
+    val finishedCount = Random.nextInt(1, 1000)
+    val forfeitCount = Random.nextInt(1, 1000)
+
+    val raceTimes = mutableListOf<Int>()
+
+    generateSequence(1) { it }.take(finishedCount).forEach { _ -> raceTimes.add(1) }
+    generateSequence(1) { it }.take(forfeitCount).forEach { _ -> raceTimes.add(-1) }
+
+    givenBingoTimesForPlayer(username, *raceTimes.toIntArray())
+
+    val answer = whenDiscordMessageIsSent(username, "!forfeits")
+
+    thenReportedForfeitRatioIsEqualTo(answer, forfeitCount.toDouble() / raceTimes.size)
+  }
+
+  @Test
+  internal fun computesCorrectForfeitRatioIrc() {
+
+    val username = UUID.randomUUID().toString()
+
+    val finishedCount = Random.nextInt(1, 1000)
+    val forfeitCount = Random.nextInt(1, 1000)
+
+    val raceTimes = mutableListOf<Int>()
+
+    generateSequence(1) { it }.take(finishedCount).forEach { _ -> raceTimes.add(1) }
+    generateSequence(1) { it }.take(forfeitCount).forEach { _ -> raceTimes.add(-1) }
+
+    givenBingoTimesForPlayer(username, *raceTimes.toIntArray())
+
+    val answer = whenIrcMessageIsSent(username, "!forfeits")
+
+    thenReportedForfeitRatioIsEqualTo(answer, forfeitCount.toDouble() / raceTimes.size)
+  }
+
+  @Test
+  internal fun ignoresNonBingoTimesForForfeitRatio() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, -3, -4)
+    givenNonBingoTimesForPlayer(username, 30000, 2, 36)
+
+    val answer = whenIrcMessageIsSent(username, "!forfeits")
+
+    thenReportedForfeitRatioIsEqualTo(answer, 0.5)
+  }
+
+  @Test
+  internal fun computesForfeitRatioForDifferentUser() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 2, -3, -4, -5)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!forfeits $queryUsername")
+
+    thenReportedForfeitRatioIsEqualTo(answer, 0.6)
+  }
+
+  @Test
+  internal fun errorWhenNoMessageInfoForForfeitRatio() {
+
+    val answer = whenMessageIsSent("!forfeits", MessageInfo.empty())
+
+    thenErrorIsReported(answer)
+  }
 
   //</editor-fold>
 
@@ -471,6 +552,19 @@ internal class BingoStatModuleTest {
         ?.toInt()
 
     assertThat(actualRaceCount).isEqualTo(forfeitCount)
+  }
+
+  private fun thenReportedForfeitRatioIsEqualTo(answer: Answer<AnswerInfo>?, forfeitRatio: Double) {
+
+    val actualForfeitRatio = answer
+        ?.text
+        ?.substringAfterLast(':')
+        ?.substringBefore('%')
+        ?.trim()
+        ?.toDouble()
+        ?.let { it }
+
+    assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.05))
   }
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {

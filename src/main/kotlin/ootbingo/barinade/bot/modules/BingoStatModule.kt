@@ -13,7 +13,10 @@ import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.model.Player
 import ootbingo.barinade.bot.model.Race
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.time.Duration
+import java.util.Locale
 
 @LilyModule
 class BingoStatModule(private val playerRepository: PlayerRepository) {
@@ -72,6 +75,33 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     return Answer
         .ofText("The median of ${queryInfo.player.name}'s last ${median.raceCount} bingos is: ${median.result} " +
                     "(Forfeits: ${median.forfeitsSkipped})")
+  }
+
+  @LilyCommand("forfeits")
+  fun forfeitRatio(command: Command): Answer<AnswerInfo>? {
+
+    val username = when (command.argumentCount) {
+      0 -> findUsername(command.messageInfo)
+      1 -> command.getArgument(0)
+      else -> ""
+    }
+
+    if (username.isBlank()) {
+      return Answer.ofText(errorMessage)
+    }
+
+    val player = playerRepository.getPlayerByName(username)
+    val bingos = player?.races?.filter { it.isBingo() }
+
+    return Answer.ofText(
+        bingos
+            ?.mapNotNull { it.raceResults.lastOrNull { result -> result.player.name == player.name } }
+            ?.filter { it.isForfeit() }
+            ?.count()
+            ?.toDouble()
+            ?.let { 100 * it / bingos.count().toDouble() }
+            ?.let { DecimalFormat("##0.00", DecimalFormatSymbols(Locale.ENGLISH)).format(it) }
+            ?.let { "The forfeit ratio of $username is: $it%" })
   }
 
   private fun getRequesterQueryInfo(messageInfo: MessageInfo, raceCount: Int = 10): QueryInfo? {
