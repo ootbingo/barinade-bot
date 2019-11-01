@@ -32,7 +32,8 @@ internal class BingoStatModuleTest {
   private val players = mutableMapOf<String, Player>()
 
   private val commands by lazy {
-    mapOf(Pair("average", module::average))
+    mapOf(Pair("average", module::average),
+          Pair("median", module::median))
   }
 
   @BeforeEach
@@ -40,6 +41,8 @@ internal class BingoStatModuleTest {
     doAnswer { players[it.getArgument(0)] }
         .`when`(playerRepositoryMock).getPlayerByName(ArgumentMatchers.anyString())
   }
+
+  //<editor-fold desc="Average">
 
   @Test
   internal fun computesCorrectAverageDiscord() {
@@ -133,7 +136,7 @@ internal class BingoStatModuleTest {
   }
 
   @Test
-  internal fun displaysCorrectAmountOfRaces() {
+  internal fun displaysCorrectAmountOfRacesForAverage() {
 
     val username = UUID.randomUUID().toString()
 
@@ -145,7 +148,7 @@ internal class BingoStatModuleTest {
   }
 
   @Test
-  internal fun ignoresForfeits() {
+  internal fun ignoresForfeitsForAverage() {
 
     val username = UUID.randomUUID().toString()
 
@@ -158,7 +161,7 @@ internal class BingoStatModuleTest {
   }
 
   @Test
-  internal fun showsNumberOfIgnoredForfeits() {
+  internal fun showsNumberOfIgnoredForfeitsForAverage() {
 
     val username = UUID.randomUUID().toString()
 
@@ -172,12 +175,161 @@ internal class BingoStatModuleTest {
   }
 
   @Test
-  internal fun errorWhenNoMessageInfo() {
+  internal fun errorWhenNoMessageInfoForAverage() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
 
     thenErrorIsReported(answer)
   }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Median">
+
+  @Test
+  internal fun computesCorrectMedianDiscord() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    val answer = whenDiscordMessageIsSent(username, "!median")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:08")
+    thenDisplayedNumberOfRacesIs(answer, 15)
+  }
+
+  @Test
+  internal fun computesCorrectMedianIrc() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    val answer = whenIrcMessageIsSent(username, "!median")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:08")
+    thenDisplayedNumberOfRacesIs(answer, 15)
+  }
+
+  @Test
+  internal fun ignoresNonBingoTimesForMedian() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3)
+    givenNonBingoTimesForPlayer(username, 4, 5)
+
+    val answer = whenIrcMessageIsSent(username, "!median")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+    thenDisplayedNumberOfRacesIs(answer, 3)
+  }
+
+  @Test
+  internal fun computesMedianForDifferentUser() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!median $queryUsername")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:08")
+  }
+
+  @Test
+  internal fun computesMedianForDifferentAmountOfRaces() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5)
+
+    val answer = whenDiscordMessageIsSent(username, "!median 3")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+  }
+
+  @Test
+  internal fun computesMedianForPlayerAndRaceAmount() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 2, 3, 4, 5)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!median $queryUsername 3")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+  }
+
+  @Test
+  internal fun computesMedianForRaceAmountAndPlayer() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 2, 3, 4, 5)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!median 3 $queryUsername")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+  }
+
+  @Test
+  internal fun displaysCorrectAmountOfRacesForMedian() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 10000, 12000, 8000)
+
+    val answer = whenIrcMessageIsSent(username, "!median 5")
+
+    thenDisplayedNumberOfRacesIs(answer, 3)
+  }
+
+  @Test
+  internal fun ignoresForfeitsForMedian() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, -2, -3)
+
+    val answer = whenIrcMessageIsSent(username, "!median 5")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+    thenDisplayedNumberOfRacesIs(answer, 2)
+  }
+
+  @Test
+  internal fun showsNumberOfIgnoredForfeitsForMedian() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    val answer = whenIrcMessageIsSent(username, "!median 3")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+    thenDisplayedNumberOfRacesIs(answer, 3)
+    thenDisplayedNumberOfForfeitsIs(answer, 2)
+  }
+
+  @Test
+  internal fun errorWhenNoMessageInfoForMedian() {
+
+    val answer = whenMessageIsSent("!median", MessageInfo.empty())
+
+    thenErrorIsReported(answer)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Given">
 
   private fun givenBingoTimesForPlayer(username: String, vararg times: Int) {
     givenTimesForPlayer(username, true, *times)
@@ -209,7 +361,7 @@ internal class BingoStatModuleTest {
         .forEach { races.add(it) }
 
     races.forEach {
-      it.raceResults.forEach { result->result.race = it }
+      it.raceResults.forEach { result -> result.race = it }
     }
 
     val oldPlayer = players[username] ?: Player(0, username, emptyList())
@@ -217,6 +369,10 @@ internal class BingoStatModuleTest {
 
     players[username] = player
   }
+
+  //</editor-fold>
+
+  //<editor-fold desc="When">
 
   private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo>? {
 
@@ -249,6 +405,10 @@ internal class BingoStatModuleTest {
 
     return whenMessageIsSent(message, messageInfoMock)
   }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Then">
 
   private fun thenReportedTimeIsEqualTo(answer: Answer<AnswerInfo>?, time: String) {
 
@@ -285,6 +445,10 @@ internal class BingoStatModuleTest {
     assertThat(answer?.text).contains("error")
   }
 
+  //</editor-fold>
+
+  //<editor-fold desc="Helper">
+
   private fun generateCommand(message: String, messageInfo: MessageInfo): Command {
 
     val parts = message.substring(1).split(" ")
@@ -307,4 +471,6 @@ internal class BingoStatModuleTest {
       }
     }
   }
+
+  //</editor-fold>
 }
