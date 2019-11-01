@@ -299,7 +299,7 @@ internal class BingoStatModuleTest {
 
     givenBingoTimesForPlayer(username, 1, 3, -2, -3)
 
-    val answer = whenIrcMessageIsSent(username, "!average 5")
+    val answer = whenIrcMessageIsSent(username, "!median 5")
 
     thenReportedTimeIsEqualTo(answer, "0:00:02")
     thenDisplayedNumberOfRacesIs(answer, 2)
@@ -312,7 +312,7 @@ internal class BingoStatModuleTest {
 
     givenBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
 
-    val answer = whenIrcMessageIsSent(username, "!average 3")
+    val answer = whenIrcMessageIsSent(username, "!median 3")
 
     thenReportedTimeIsEqualTo(answer, "0:00:02")
     thenDisplayedNumberOfRacesIs(answer, 3)

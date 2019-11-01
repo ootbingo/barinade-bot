@@ -70,7 +70,8 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     val median = median(queryInfo)
 
     return Answer
-        .ofText("The median of ${queryInfo.player.name}'s last ${median.raceCount} bingos is: ${median.result}")
+        .ofText("The median of ${queryInfo.player.name}'s last ${median.raceCount} bingos is: ${median.result} " +
+                    "(Forfeits: ${median.forfeitsSkipped})")
   }
 
   private fun getRequesterQueryInfo(messageInfo: MessageInfo, raceCount: Int = 10): QueryInfo? {
