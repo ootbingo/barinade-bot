@@ -14,7 +14,9 @@ import ootbingo.barinade.bot.model.Player
 import ootbingo.barinade.bot.model.Race
 import ootbingo.barinade.bot.model.RaceResult
 import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 import java.time.Duration
 import java.time.Instant
@@ -27,9 +29,16 @@ internal class BingoStatModuleTest {
 
   private val playerRepositoryMock = mock(PlayerRepository::class.java)
   private val module = BingoStatModule(playerRepositoryMock)
+  private val players = mutableMapOf<String, Player>()
 
   private val commands by lazy {
     mapOf(Pair("average", module::average))
+  }
+
+  @BeforeEach
+  internal fun setup() {
+    doAnswer { players[it.getArgument(0)] }
+        .`when`(playerRepositoryMock).getPlayerByName(ArgumentMatchers.anyString())
   }
 
   @Test
@@ -57,6 +66,19 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun ignoresNonBingoTimesForAverage() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 10000)
+    givenNonBingoTimesForPlayer(username, 30000)
+
+    val answer = whenIrcMessageIsSent(username, "!average")
+
+    thenReportedTimeIsEqualTo(answer, "2:46:40")
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
@@ -65,23 +87,38 @@ internal class BingoStatModuleTest {
   }
 
   private fun givenBingoTimesForPlayer(username: String, vararg times: Int) {
+    givenTimesForPlayer(username, true, *times)
+  }
+
+  private fun givenNonBingoTimesForPlayer(username: String, vararg times: Int) {
+    givenTimesForPlayer(username, false, *times)
+  }
+
+  private fun givenTimesForPlayer(username: String, bingo: Boolean, vararg times: Int) {
 
     val races = ArrayList<Race>()
 
     var timestamp = Random.nextLong(99999, 123456789)
 
-    times.map {
-      RaceResult(Race("", "", ZonedDateTime.now(), 1, emptyList()),
-                 Player(0, username, emptyList()), 1, Duration.ofSeconds(it.toLong()), "")
-    }
+    times
         .map {
-          Race("", "", ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1, listOf(it))
+          RaceResult(Race("", "", ZonedDateTime.now(), 1, emptyList()),
+                     Player(0, username, emptyList()), 1, Duration.ofSeconds(it.toLong()), "")
+        }
+        .map {
+          Race("0", "", ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1, listOf(it))
+        }
+        .map {
+          val spy = spy(it)
+          `when`(spy.isBingo()).thenReturn(bingo)
+          spy
         }
         .forEach { races.add(it) }
 
-    val player = Player(0, username, races)
+    val oldPlayer = players[username] ?: Player(0, username, races)
+    val player = oldPlayer.copy(races = oldPlayer.races + races)
 
-    `when`(playerRepositoryMock.getPlayerByName(username)).thenReturn(player)
+    players[username] = player
   }
 
   private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo> {

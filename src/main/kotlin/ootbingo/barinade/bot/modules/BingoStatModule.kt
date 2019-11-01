@@ -25,10 +25,11 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     }
 
     return Answer.ofText(if (user == "") "An error occurred finding the player."
-                         else "The average of $user's last 10 races is: " +
+                         else "The average of $user's last 10 bingos is: " +
         playerRepository.getPlayerByName(user)
             ?.races
             ?.asSequence()
+            ?.filter { it.isBingo() }
             ?.sortedByDescending { it.recordDate }
             ?.take(10)
             ?.map { race -> race.raceResults.last { result -> result.player.name == user } }
