@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.model
 
+import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -29,8 +30,4 @@ open class Race(val srlId: String, val goal: String, val recordDate: ZonedDateTi
       }
     }
   }
-}
-
-private fun String.containsAny(patterns: Collection<String>): Boolean {
-  return patterns.any { it in this }
 }

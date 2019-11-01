@@ -145,6 +145,19 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun ignoresForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, -2, -3)
+
+    val answer = whenIrcMessageIsSent(username, "!average 5")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:02")
+    thenDisplayedNumberOfRacesIs(answer, 2)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())

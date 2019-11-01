@@ -31,6 +31,10 @@ class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
                })
         }
 
+    races.forEach {
+      it.raceResults.forEach { result -> result.race = it }
+    }
+
     return Player(srlPlayer, races)
   }
 }

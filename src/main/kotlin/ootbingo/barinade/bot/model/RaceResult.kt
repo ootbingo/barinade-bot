@@ -2,4 +2,7 @@ package ootbingo.barinade.bot.model
 
 import java.time.Duration
 
-data class RaceResult(var race: Race, val player: Player, val place: Long, val time: Duration, val message: String)
+open class RaceResult(var race: Race, val player: Player, val place: Long, val time: Duration, val message: String) {
+
+  open fun isForfeit(): Boolean = time.isNegative
+}

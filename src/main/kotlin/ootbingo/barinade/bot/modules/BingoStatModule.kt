@@ -38,7 +38,8 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
     val average = average(queryInfo)
 
-    return Answer.ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result}")
+    return Answer
+        .ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result}")
   }
 
   private fun getRequesterQueryInfo(messageInfo: MessageInfo): QueryInfo? {
@@ -90,6 +91,9 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
         .races
         .asSequence()
         .filter { it.isBingo() }
+        .map { race -> race.raceResults.last { result -> result.player.name == queryInfo.player.name } }
+        .filter { !it.isForfeit() }
+        .map { it.race }
         .sortedByDescending { it.recordDate }
         .take(queryInfo.raceCount)
         .map { race -> race.raceResults.last { result -> result.player.name == queryInfo.player.name } }

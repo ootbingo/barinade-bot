@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.srl.api.model.SrlPastRace
 import ootbingo.barinade.bot.srl.api.model.SrlPlayer
 import ootbingo.barinade.bot.srl.api.model.SrlResult
 import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.time.Duration
@@ -59,6 +60,32 @@ internal class PlayerRepositoryTest {
     givenPlayers()
 
     assertThat(repository.getPlayerByName("some name")).isNull()
+  }
+
+  @Test
+  internal fun mapsRaceToResult() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""),
+                 SrlPlayer(1, "other player", "", "", "", "", ""))
+
+    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0),
+               SrlGame(2, "Bingo", "ootbingo", 0.0, 0),
+               SrlGame(3, "Other", "sm64", 0.0, 0))
+
+    givenRaces(race("oot", time(0), result(1, playerName, 123),
+                    result(2, "other player", 127)))
+
+    val race = repository.getPlayerByName(playerName)!!.races[0]
+
+    val soft = SoftAssertions()
+
+    race.raceResults.forEach {
+      soft.assertThat(it.race).isEqualTo(race)
+    }
+
+    soft.assertAll()
   }
 
   private fun givenPlayers(vararg players: SrlPlayer) {
