@@ -105,6 +105,34 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun computesAverageForPlayerAndRaceAmount() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 1, 1, 5)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!average $queryUsername 3")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:01")
+  }
+
+  @Test
+  internal fun computesAverageForRaceAmountAndPlayer() {
+
+    val requestUsername = UUID.randomUUID().toString()
+    val queryUsername = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(requestUsername, 10000)
+    givenBingoTimesForPlayer(queryUsername, 1, 1, 1, 5)
+
+    val answer = whenDiscordMessageIsSent(requestUsername, "!average 3 $queryUsername")
+
+    thenReportedTimeIsEqualTo(answer, "0:00:01")
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
@@ -147,7 +175,7 @@ internal class BingoStatModuleTest {
     players[username] = player
   }
 
-  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo> {
+  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo>? {
 
     require(message.matches(Regex("!.*"))) { "Not a valid command" }
 
@@ -159,7 +187,7 @@ internal class BingoStatModuleTest {
     return commands.getValue(command).invoke(generateCommand(message, messageInfo))
   }
 
-  private fun whenDiscordMessageIsSent(user: String, message: String): Answer<AnswerInfo> {
+  private fun whenDiscordMessageIsSent(user: String, message: String): Answer<AnswerInfo>? {
 
     val discordUser = UserImpl(0, mock(JDAImpl::class.java))
     discordUser.name = user
@@ -170,7 +198,7 @@ internal class BingoStatModuleTest {
     return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
   }
 
-  private fun whenIrcMessageIsSent(username: String, message: String): Answer<AnswerInfo> {
+  private fun whenIrcMessageIsSent(username: String, message: String): Answer<AnswerInfo>? {
 
     val messageInfoMock = mock(IrcMessageInfo::class.java)
     `when`(messageInfoMock.nick).thenReturn(username)
@@ -179,15 +207,15 @@ internal class BingoStatModuleTest {
     return whenMessageIsSent(message, messageInfoMock)
   }
 
-  private fun thenReportedTimeIsEqualTo(answer: Answer<AnswerInfo>, time: String) {
+  private fun thenReportedTimeIsEqualTo(answer: Answer<AnswerInfo>?, time: String) {
 
-    val actualTime = answer.text.split(": ", limit = 2)[1]
+    val actualTime = answer?.text?.split(": ", limit = 2)?.get(1)
 
     assertThat(actualTime).isEqualTo(time)
   }
 
-  private fun thenErrorIsReported(answer: Answer<AnswerInfo>) {
-    assertThat(answer.text).contains("error")
+  private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
+    assertThat(answer?.text).contains("error")
   }
 
   private fun generateCommand(message: String, messageInfo: MessageInfo): Command {

@@ -17,12 +17,13 @@ import java.time.Duration
 class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   @LilyCommand("average")
-  fun average(command: Command): Answer<AnswerInfo> {
+  fun average(command: Command): Answer<AnswerInfo>? {
 
     return when (command.argumentCount) {
       0 -> printAverage(command.messageInfo)
       1 -> printAverage(command.messageInfo, command.getArgument(0))
-      else -> Answer.ofText("")
+      2 -> printAverage(command.messageInfo, command.getArgument(0), command.getArgument(1))
+      else -> null
     }
   }
 
@@ -57,6 +58,22 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
     if (user == "") {
       return Answer.ofText("An error occurred finding the player.")
+    }
+
+    return Answer.ofText(playerRepository.getPlayerByName(user)
+                             ?.let { "The average of $user's last $raceCount bingos is: ${average(it, raceCount)}" }
+                             ?: "User $user not found")
+  }
+
+  private fun printAverage(messageInfo: MessageInfo, arg0: String, arg1: String): Answer<AnswerInfo>? {
+
+    val args = listOf(arg0, arg1)
+
+    val raceCount = args.firstOrNull { it.matches(Regex("\\d+")) }?.toInt()
+    val user = args.firstOrNull { !it.matches(Regex("\\d+")) }
+
+    if (raceCount == null || user == null) {
+      return null
     }
 
     return Answer.ofText(playerRepository.getPlayerByName(user)
