@@ -1,3 +1,20 @@
 lily:
   commandline:
-    enabled: true
+    enabled: false
+
+ootbingo:
+  races:
+    blacklist:
+      - 219509
+      - 100176
+      - 67638
+      - 91357
+      - 86393
+      - 108069
+      - 90718
+      - 128327
+      - 176483
+      - 18042
+      - 17667
+      - 18680
+      - 15910
