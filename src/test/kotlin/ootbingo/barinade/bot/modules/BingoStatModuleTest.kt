@@ -133,6 +133,18 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun displaysCorrectAmountOfRaces() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 10000, 12000, 8000)
+
+    val answer = whenIrcMessageIsSent(username, "!average 5")
+
+    thenDisplayedNumberOfRacesIs(answer, 3)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfo() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
@@ -169,7 +181,7 @@ internal class BingoStatModuleTest {
         }
         .forEach { races.add(it) }
 
-    val oldPlayer = players[username] ?: Player(0, username, races)
+    val oldPlayer = players[username] ?: Player(0, username, emptyList())
     val player = oldPlayer.copy(races = oldPlayer.races + races)
 
     players[username] = player
@@ -212,6 +224,18 @@ internal class BingoStatModuleTest {
     val actualTime = answer?.text?.split(": ", limit = 2)?.get(1)
 
     assertThat(actualTime).isEqualTo(time)
+  }
+
+  private fun thenDisplayedNumberOfRacesIs(answer: Answer<AnswerInfo>?, raceCount: Int) {
+
+    val actualRaceCount = answer
+        ?.text
+        ?.substringAfter("last")
+        ?.substringBefore("bingos")
+        ?.trim()
+        ?.toInt()
+
+    assertThat(actualRaceCount).isEqualTo(raceCount)
   }
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
