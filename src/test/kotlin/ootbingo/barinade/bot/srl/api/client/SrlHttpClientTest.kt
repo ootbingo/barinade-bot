@@ -111,13 +111,6 @@ internal class SrlHttpClientTest {
 
     val playerName = UUID.randomUUID().toString()
 
-    val json = """
-      {
-        "errorCode" : 404,
-        "errorText" : "Not Found"
-      }
-    """.trimIndent()
-
     server
         ?.expect(requestTo("$baseUrl/players/$playerName"))
         ?.andRespond(withStatus(HttpStatus.NOT_FOUND))
@@ -165,13 +158,6 @@ internal class SrlHttpClientTest {
   internal fun getsNullIfGameUnknown() {
 
     val abbreviation = UUID.randomUUID().toString()
-
-    val json = """
-      {
-        "errorCode" : 404,
-        "errorText" : "Not Found"
-      }
-    """.trimIndent()
 
     server
         ?.expect(requestTo("$baseUrl/games/$abbreviation"))
