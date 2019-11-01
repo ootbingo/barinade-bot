@@ -327,6 +327,38 @@ internal class BingoStatModuleTest {
     thenErrorIsReported(answer)
   }
 
+  //<editor-fold desc="Public API">
+
+  @Test
+  internal fun calculatesMedianForUser() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31)
+
+    assertThat(module.median(username)).isEqualTo(Duration.ofSeconds(15))
+  }
+
+  @Test
+  internal fun medianNullWhenUserNotFound() {
+
+    val username = UUID.randomUUID().toString()
+
+    assertThat(module.median(username)).isNull()
+  }
+
+  @Test
+  internal fun medianNullWhenUserHasNoBingos() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 25)
+
+    assertThat(module.median(username)).isNull()
+  }
+
+  //</editor-fold>
+
   //</editor-fold>
 
   //<editor-fold desc="Given">

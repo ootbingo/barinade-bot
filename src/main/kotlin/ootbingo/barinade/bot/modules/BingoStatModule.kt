@@ -159,14 +159,14 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   private fun median(queryInfo: QueryInfo): ResultInfo {
 
-    val toAverage = allRacesForComputation(queryInfo)
+    val toMedian = allRacesForComputation(queryInfo)
 
-    return toAverage.races
+    return toMedian.races
         .map { it.raceResults.last { result -> result.player.name == queryInfo.player.name } }
         .map { it.time.seconds }
         .median()
         .let { Duration.ofSeconds(it).standardFormat() }
-        .let { ResultInfo(it, toAverage.races.size, toAverage.forfeitsSkipped) }
+        .let { ResultInfo(it, toMedian.races.size, toMedian.forfeitsSkipped) }
   }
 
   private fun findUsername(messageInfo: MessageInfo): String =
@@ -175,6 +175,18 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
         is IrcMessageInfo -> messageInfo.nick
         else -> ""
       }
+
+  fun median(username: String): Duration? {
+
+    return playerRepository.getPlayerByName(username)
+        ?.let { allRacesForComputation(QueryInfo(it, 15)) }
+        ?.races
+        ?.map { it.raceResults.last { result -> result.player.name == username } }
+        ?.map { it.time.seconds }
+        ?.let { if (it.isEmpty()) return null else it }
+        ?.median()
+        ?.let { Duration.ofSeconds(it) }
+  }
 
   private inner class QueryInfo(val player: Player, val raceCount: Int)
   private inner class ResultInfo(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
