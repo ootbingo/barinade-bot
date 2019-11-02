@@ -5,12 +5,16 @@ import ootbingo.barinade.bot.model.Race
 import ootbingo.barinade.bot.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.springframework.stereotype.Component
+import java.time.Clock
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 @Component
-class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
+class PlayerRepository(private val srlHttpClient: SrlHttpClient, private val clock: Clock = Clock.systemUTC()) {
 
   private val playerCache = mutableMapOf<String, Player>()
+  private var lastSaved = clock.instant()
 
   private val whitelistedGames by lazy {
     listOf("oot", "ootbingo")
@@ -19,6 +23,11 @@ class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
   }
 
   fun getPlayerByName(name: String): Player? {
+
+    if (lastSaved.isBefore(clock.instant().truncatedTo(ChronoUnit.DAYS))) {
+      playerCache.clear()
+      lastSaved = clock.instant()
+    }
 
     with(playerCache[name.toLowerCase()]) {
       if (this != null) {
