@@ -208,10 +208,11 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun median(username: String): Duration? {
 
-    return playerRepository.getPlayerByName(username)
+    val player = playerRepository.getPlayerByName(username)
+    return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
-        ?.map { it.raceResults.last { result -> result.player.name == username } }
+        ?.map { it.raceResults.last { result -> result.player.name == player.name } }
         ?.map { it.time.seconds }
         ?.let { if (it.isEmpty()) return null else it }
         ?.median()
@@ -220,12 +221,13 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun forfeitRatio(username: String): Double? {
 
-    val allBingos = playerRepository.getPlayerByName(username)
+    val player = playerRepository.getPlayerByName(username)
+    val allBingos = player
         ?.races
         ?.filter { it.isBingo() }
 
     return allBingos
-        ?.map { it.raceResults.last { result -> result.player.name == username } }
+        ?.map { it.raceResults.last { result -> result.player.name == player.name } }
         ?.filter { it.isForfeit() }
         ?.count()
         ?.let { if (it == 0) return null else it }

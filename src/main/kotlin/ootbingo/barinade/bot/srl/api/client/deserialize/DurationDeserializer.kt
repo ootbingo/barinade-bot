@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import java.time.Duration
 
-class DurationDeserializer: JsonDeserializer<Duration>() {
+class DurationDeserializer : JsonDeserializer<Duration>() {
 
   override fun deserialize(parser: JsonParser?, ctxt: DeserializationContext?): Duration {
 
