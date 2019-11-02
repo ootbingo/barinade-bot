@@ -88,6 +88,26 @@ internal class PlayerRepositoryTest {
     soft.assertAll()
   }
 
+  @Test
+  internal fun cachesPlayerInfo() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""))
+
+    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
+
+    givenRaces(race("oot", time(0), result(1, playerName, 123),
+                    result(2, "other player", 127)))
+
+    repository.getPlayerByName(playerName)
+    repository.getPlayerByName(playerName.toUpperCase())
+
+    verify(srlHttpClientMock, times(1)).getRacesByPlayerName(playerName)
+    verify(srlHttpClientMock, times(1)).getGameByAbbreviation("oot")
+    verify(srlHttpClientMock, times(1)).getPlayerByName(playerName)
+  }
+
   private fun givenPlayers(vararg players: SrlPlayer) {
 
     require(players.map { it.name }.distinct().count() == players.count()) {

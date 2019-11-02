@@ -10,6 +10,8 @@ import java.time.ZonedDateTime
 @Component
 class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
 
+  private val playerCache = mutableMapOf<String, Player>()
+
   private val whitelistedGames by lazy {
     listOf("oot", "ootbingo")
         .mapNotNull { srlHttpClient.getGameByAbbreviation(it) }
@@ -17,6 +19,12 @@ class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
   }
 
   fun getPlayerByName(name: String): Player? {
+
+    with(playerCache[name.toLowerCase()]) {
+      if (this != null) {
+        return this
+      }
+    }
 
     val srlPlayer = srlHttpClient.getPlayerByName(name) ?: return null
     val races = srlHttpClient.getRacesByPlayerName(srlPlayer.name)
@@ -34,6 +42,9 @@ class PlayerRepository(private val srlHttpClient: SrlHttpClient) {
       it.raceResults.forEach { result -> result.race = it }
     }
 
-    return Player(srlPlayer, races)
+    val player =  Player(srlPlayer, races)
+    playerCache[player.name.toLowerCase()] = player
+
+    return player
   }
 }
