@@ -7,7 +7,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class DateTimeDeserializer: JsonDeserializer<ZonedDateTime>() {
+class DateTimeDeserializer : JsonDeserializer<ZonedDateTime>() {
 
   override fun deserialize(parser: JsonParser?, ctxt: DeserializationContext?): ZonedDateTime {
 

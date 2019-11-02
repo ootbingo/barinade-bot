@@ -6,5 +6,6 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties("ootbingo.races")
 object BingoRaceProperties {
+
   var blacklist: List<Int> = emptyList()
 }
