@@ -50,6 +50,39 @@ internal class TeamBingoModuleTest {
   }
 
   @Test
+  internal fun teamTimeForSingleUserWithMediumForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.25)
+
+    val answer = whenMessageIsSent("!teamtime $username")
+    thenCalculatedTeamTimeEquals(answer, "3:53:00")
+  }
+
+  @Test
+  internal fun teamTimeForSingleUserWithMaxForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.5)
+
+    val answer = whenMessageIsSent("!teamtime $username")
+    thenCalculatedTeamTimeEquals(answer, "4:26:00")
+  }
+
+  @Test
+  internal fun teamTimeForSingleUserWithMoreThanMaxForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.51)
+
+    val answer = whenMessageIsSent("!teamtime $username")
+    thenCalculatedTeamTimeEquals(answer, "4:26:00")
+  }
+
+  @Test
   internal fun teamTimeForTwoUsersWithoutForfeits() {
 
     val username1 = UUID.randomUUID().toString()

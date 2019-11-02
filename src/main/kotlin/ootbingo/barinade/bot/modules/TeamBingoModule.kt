@@ -7,6 +7,8 @@ import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.standardFormat
 import java.time.Duration
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToLong
 
 @LilyModule
@@ -15,6 +17,8 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule) {
   private val setupTime = Duration.ofMinutes(30).toSeconds()
   private val blackoutRatio = 3.3
   private val overlap = Duration.ofMinutes(5).toSeconds()
+  private val forfeitThresholdFactor =
+      Duration.ofHours(1).plusMinutes(40).toSeconds().toDouble() / Duration.ofHours(1).plusMinutes(20).toSeconds().toDouble()
 
   @LilyCommand("teamtime")
   fun teamTime(command: Command): Answer<AnswerInfo>? {
@@ -56,13 +60,14 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule) {
 
     return Answer.ofText(
         members
-            .filterNotNull()
+            .filter { it.workRate != null }
             .joinToString(", ") { it.name }
             .let { "$it can finish a blackout in: $blackoutAverage" })
   }
 
   private inner class TeamMember(val name: String, median: Long?, forfeitRatio: Double?) {
     val workRate: Double? = median
-        ?.let { (1 / (it - setupTime).toDouble()) }
+        ?.let { it * (1 + 2 * min(forfeitRatio!!, 0.5) * (forfeitThresholdFactor - 1)) }
+        ?.let { (1 / (it - setupTime)) }
   }
 }
