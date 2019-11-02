@@ -120,7 +120,7 @@ internal class TeamBingoModuleTest {
         .split(",")
         .map { it.trim() }
 
-    assertThat(usernames).containsExactlyInAnyOrder(*usernames)
+    assertThat(usernames).containsExactlyInAnyOrderElementsOf(errorUsers)
   }
 
   //<editor-fold desc="Given">

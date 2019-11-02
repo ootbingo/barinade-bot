@@ -7,21 +7,31 @@ import ootbingo.barinade.bot.srl.api.model.SrlPlayer
 import ootbingo.barinade.bot.srl.api.model.SrlResult
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import kotlin.random.Random
 
 internal class PlayerRepositoryTest {
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
-  private val repository = PlayerRepository(srlHttpClientMock)
+  private val clockMock = mock(Clock::class.java)
+  private lateinit var repository: PlayerRepository
 
   private val allGames = HashMap<String, SrlGame>()
+
+  @BeforeEach
+  internal fun setup() {
+    `when`(clockMock.instant()).thenReturn(Instant.ofEpochSecond(0))
+    repository = PlayerRepository(srlHttpClientMock, clockMock)
+  }
 
   @Test
   internal fun getAllOotRacesForPlayer() {
@@ -88,6 +98,44 @@ internal class PlayerRepositoryTest {
     soft.assertAll()
   }
 
+  @Test
+  internal fun cachesPlayerInfo() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""))
+    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
+    givenRaces(race("oot", time(0), result(1, playerName, 123)))
+
+    repository.getPlayerByName(playerName)
+    repository.getPlayerByName(playerName.toUpperCase())
+
+    verify(srlHttpClientMock, times(1)).getRacesByPlayerName(playerName)
+    verify(srlHttpClientMock, times(1)).getGameByAbbreviation("oot")
+    verify(srlHttpClientMock, times(1)).getPlayerByName(playerName)
+  }
+
+  @Test
+  internal fun clearCacheAtMidnight() {
+
+    val playerName = UUID.randomUUID().toString()
+
+    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""))
+    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
+    givenRaces(race("oot", time(0), result(1, playerName, 123)))
+
+    val firstInstant = Instant.ofEpochSecond(Random.nextLong(86401, 123456789))
+
+    `when`(clockMock.instant()).thenReturn(firstInstant)
+    repository.getPlayerByName(playerName)
+
+    `when`(clockMock.instant()).thenReturn(firstInstant.plus(1, ChronoUnit.DAYS))
+    assertThat(repository.getPlayerByName(playerName.toUpperCase())).isNotNull()
+
+    verify(srlHttpClientMock, times(2)).getRacesByPlayerName(playerName)
+    verify(srlHttpClientMock, times(2)).getPlayerByName(anyString())
+  }
+
   private fun givenPlayers(vararg players: SrlPlayer) {
 
     require(players.map { it.name }.distinct().count() == players.count()) {
@@ -96,7 +144,7 @@ internal class PlayerRepositoryTest {
 
     doAnswer {
       players
-          .filter { player -> player.name == it.getArgument(0) }
+          .filter { player -> player.name == it.getArgument<String>(0).toLowerCase() }
           .getOrNull(0)
     }.`when`(srlHttpClientMock).getPlayerByName(anyString())
   }
