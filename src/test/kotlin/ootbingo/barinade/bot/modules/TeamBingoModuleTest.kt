@@ -95,6 +95,34 @@ internal class TeamBingoModuleTest {
     thenCalculatedTeamTimeEquals(answer, "2:08:47")
   }
 
+  @Test
+  internal fun errorMessageWhenUnknownUsers() {
+
+    val username1 = UUID.randomUUID().toString()
+    val username2 = UUID.randomUUID().toString()
+    val username3 = UUID.randomUUID().toString()
+
+    givenUser(username1, median = Duration.ofHours(1).plusMinutes(30).toSeconds(), forfeitRatio = 0.0)
+
+    val answer = whenMessageIsSent("!teamtime $username1 $username2 $username3 1:20:00")
+
+    thenErrorMessageMentions(answer, username2, username3)
+  }
+
+  private fun thenErrorMessageMentions(answer: Answer<AnswerInfo>?, vararg usernames: String) {
+
+    requireNotNull(answer)
+    require(answer.text.matches(Regex("Error[^:]*:[^:]*")))
+
+    val errorUsers = answer.text
+        .split(":")[1]
+        .trim()
+        .split(",")
+        .map { it.trim() }
+
+    assertThat(usernames).containsExactlyInAnyOrder(*usernames)
+  }
+
   //<editor-fold desc="Given">
 
   private fun givenUser(username: String, median: Long, forfeitRatio: Double) {

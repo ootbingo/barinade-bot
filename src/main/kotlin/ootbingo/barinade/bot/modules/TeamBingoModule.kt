@@ -47,6 +47,12 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule) {
           }
         }
 
+    with(members.filter { it.workRate == null }) {
+      if (this.isNotEmpty()) {
+        return Answer.ofText("Error retrieving data of user(s): " + this.joinToString(", ") { it.name })
+      }
+    }
+
     val combinedWorkRate = members
         .mapNotNull { it.workRate }
         .sum()
