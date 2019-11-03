@@ -43,10 +43,11 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule, private val 
   @LilyCommand("balance")
   fun balance(command: Command): Answer<AnswerInfo>? {
 
-    when(command.argumentCount) {
-      in 0..5 -> Answer.ofText("Please specify at least six players.")
-      in 6..12 -> {}
-      else -> Answer.ofText("Please specify at most twelve players.")
+    val maxTeamSize = when (command.argumentCount) {
+      in 0..3 -> return Answer.ofText("Please specify at least four players.")
+      4 -> 2
+      in 5..12 -> 3
+      else -> return Answer.ofText("Please specify at most twelve players.")
     }
 
     val participants = findMembers((1..command.argumentCount).map { command.getArgument(it - 1) })
@@ -57,7 +58,7 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule, private val 
       }
     }
 
-    val teams = teamBalancer.findBestTeamBalance(partitioner.invoke(participants.members, 3))
+    val teams = teamBalancer.findBestTeamBalance(partitioner.invoke(participants.members, maxTeamSize))
 
     return Answer.ofText(teams.joinToString("\n"))
   }

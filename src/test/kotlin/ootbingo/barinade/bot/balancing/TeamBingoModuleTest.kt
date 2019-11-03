@@ -121,7 +121,7 @@ internal class TeamBingoModuleTest {
   //<editor-fold desc="!balance">
 
   @Test
-  internal fun reportsCorrectBalancing() {
+  internal fun reportsCorrectBalancingForSixPlayers() {
 
     val usernames = (1..6).map { UUID.randomUUID().toString() }
     usernames.forEach { givenUser(it, 0, 0.0) }
@@ -153,6 +153,41 @@ internal class TeamBingoModuleTest {
     thenReportedTeamsAre(answer,
                          Pair(usernames.subList(0, 3).toSet(), teamTimes[0]),
                          Pair(usernames.subList(3, 6).toSet(), teamTimes[1]))
+  }
+
+  @Test
+  internal fun reportsCorrectBalancingForFourPlayers() {
+
+    val usernames = (1..4).map { UUID.randomUUID().toString() }
+    usernames.forEach { givenUser(it, 0, 0.0) }
+
+    val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
+
+    doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
+        .`when`(partitionerMock).invoke(anyList(), eq(2))
+
+    doAnswer {
+      val team1 = mock(Team::class.java)
+      val team2 = mock(Team::class.java)
+
+      `when`(team1.members).thenReturn(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) })
+      `when`(team2.members).thenReturn(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) })
+
+      `when`(team1.predictedTime).thenReturn(teamTimes[0])
+      `when`(team2.predictedTime).thenReturn(teamTimes[1])
+
+      `when`(team1.toString()).thenCallRealMethod()
+      `when`(team2.toString()).thenCallRealMethod()
+
+      listOf(team1, team2)
+    }
+        .`when`(teamBalancerMock).findBestTeamBalance(anyList())
+
+    val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
+
+    thenReportedTeamsAre(answer,
+                         Pair(usernames.subList(0, 2).toSet(), teamTimes[0]),
+                         Pair(usernames.subList(2, 4).toSet(), teamTimes[1]))
   }
 
   @Test
