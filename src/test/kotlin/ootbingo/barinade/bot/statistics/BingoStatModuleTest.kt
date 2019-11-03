@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.modules
+package ootbingo.barinade.bot.statistics
 
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
@@ -461,6 +461,16 @@ internal class BingoStatModuleTest {
     givenBingoTimesForPlayer(username, 1, 3, 5, -7, -9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
 
     assertThat(module.forfeitRatio(username)).isEqualTo(0.125)
+  }
+
+  @Test
+  internal fun calculatesForfeitRatioWithoutForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
+
+    assertThat(module.forfeitRatio(username)).isEqualTo(0.0)
   }
 
   @Test

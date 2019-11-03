@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.modules
+package ootbingo.barinade.bot.statistics
 
 import de.scaramanga.lily.core.annotations.LilyCommand
 import de.scaramanga.lily.core.annotations.LilyModule
@@ -226,13 +226,16 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
         ?.races
         ?.filter { it.isBingo() }
 
+    if (allBingos.isNullOrEmpty()) {
+      return null
+    }
+
     return allBingos
-        ?.map { it.raceResults.last { result -> result.player.name == player.name } }
-        ?.filter { it.isForfeit() }
-        ?.count()
-        ?.let { if (it == 0) return null else it }
-        ?.toDouble()
-        ?.let { it / allBingos.count() }
+        .map { it.raceResults.last { result -> result.player.name == player.name } }
+        .filter { it.isForfeit() }
+        .count()
+        .toDouble()
+        .let { it / allBingos.count() }
   }
 
   private inner class QueryInfo(val player: Player, val raceCount: Int)

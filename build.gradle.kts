@@ -5,6 +5,7 @@ plugins {
   id("org.springframework.boot") version "2.1.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
+  kotlin("plugin.allopen") version "1.3.50"
   jacoco
 }
 
@@ -47,6 +48,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.13.2")
+  testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 }
 
 tasks.withType(Jar::class) {
@@ -63,6 +65,10 @@ tasks.withType<Test>() {
   }
 
   finalizedBy("jacocoTestReport")
+}
+
+allOpen {
+  annotation("ootbingo.barinade.bot.compile.Open")
 }
 
 val compileKotlin: KotlinCompile by tasks
