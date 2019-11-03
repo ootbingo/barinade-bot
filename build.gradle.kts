@@ -46,6 +46,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.13.2")
+  testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 }
 
 tasks.withType(Jar::class) {

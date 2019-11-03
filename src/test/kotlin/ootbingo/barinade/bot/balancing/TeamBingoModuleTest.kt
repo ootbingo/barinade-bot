@@ -1,16 +1,15 @@
 package ootbingo.barinade.bot.balancing
 
+import com.nhaarman.mockitokotlin2.mock
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
-import ootbingo.barinade.bot.extensions.allTeamPartitions
 import ootbingo.barinade.bot.statistics.BingoStatModule
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.time.Duration
 import java.util.UUID
@@ -18,11 +17,14 @@ import java.util.UUID
 internal class TeamBingoModuleTest {
 
   private val bingoStatModuleMock = mock(BingoStatModule::class.java)
-  private val module = TeamBingoModule(bingoStatModuleMock, TeamBalancer(), List<TeamMember>::allTeamPartitions)
+  private val partitionerMock = mock<(List<TeamMember>, Int) -> List<List<Team>>>()
+  private val module = TeamBingoModule(bingoStatModuleMock, TeamBalancer(), partitionerMock)
 
   private val commands by lazy {
     mapOf(Pair("teamtime", module::teamTime))
   }
+
+  //<editor-fold desc="!teamtime">
 
   @Test
   internal fun teamTimeForSingleTimeWithoutForfeits() {
@@ -125,6 +127,8 @@ internal class TeamBingoModuleTest {
     assertThat(usernames).containsExactlyInAnyOrderElementsOf(errorUsers)
   }
 
+  //</editor-fold>
+
   //<editor-fold desc="Given">
 
   private fun givenUser(username: String, median: Long, forfeitRatio: Double) {
@@ -139,9 +143,9 @@ internal class TeamBingoModuleTest {
 
   private fun whenMessageIsSent(message: String): Answer<AnswerInfo>? {
 
-    val messageInfoMock = Mockito.mock(IrcMessageInfo::class.java)
-    Mockito.`when`(messageInfoMock.nick).thenReturn("")
-    Mockito.`when`(messageInfoMock.channel).thenReturn("")
+    val messageInfoMock = mock(IrcMessageInfo::class.java)
+    `when`(messageInfoMock.nick).thenReturn("")
+    `when`(messageInfoMock.channel).thenReturn("")
 
     require(message.matches(Regex("!.*"))) { "Not a valid command" }
 

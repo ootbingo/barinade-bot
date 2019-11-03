@@ -11,7 +11,7 @@ import ootbingo.barinade.bot.statistics.BingoStatModule
 
 @LilyModule
 class TeamBingoModule(private val bingoStatModule: BingoStatModule, private val teamBalancer: TeamBalancer,
-                      private val partitioner: List<TeamMember>.(Int) -> List<List<Team>> = List<TeamMember>::allTeamPartitions) {
+                      private val partitioner: (List<TeamMember>, Int) -> List<List<Team>> = List<TeamMember>::allTeamPartitions) {
 
   @LilyCommand("teamtime")
   fun teamTime(command: Command): Answer<AnswerInfo>? {
