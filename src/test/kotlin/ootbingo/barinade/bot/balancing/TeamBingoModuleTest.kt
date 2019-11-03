@@ -13,15 +13,18 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.time.Duration
 import java.util.UUID
+import kotlin.random.Random
 
 internal class TeamBingoModuleTest {
 
   private val bingoStatModuleMock = mock(BingoStatModule::class.java)
+  private val teamBalancerMock = mock(TeamBalancer::class.java)
   private val partitionerMock = mock<(List<TeamMember>, Int) -> List<List<Team>>>()
-  private val module = TeamBingoModule(bingoStatModuleMock, TeamBalancer(), partitionerMock)
+  private val module = TeamBingoModule(bingoStatModuleMock, teamBalancerMock, partitionerMock)
 
   private val commands by lazy {
-    mapOf(Pair("teamtime", module::teamTime))
+    mapOf(Pair("teamtime", module::teamTime),
+          Pair("balance", module::balance))
   }
 
   //<editor-fold desc="!teamtime">
@@ -35,7 +38,7 @@ internal class TeamBingoModuleTest {
           Pair("1:10:00", "2:47:00"),
           Pair("1:32:48", "4:02:14"))
         .forEach { (normal, blackout) ->
-          val answer = whenMessageIsSent("!teamtime $normal")
+          val answer = whenIrcMessageIsSent("!teamtime $normal")
           thenCalculatedTeamTimeEquals(answer, blackout, soft)
         }
 
@@ -49,7 +52,7 @@ internal class TeamBingoModuleTest {
 
     givenUser(username, median = Duration.ofHours(1).plusMinutes(30).toSeconds(), forfeitRatio = 0.0)
 
-    val answer = whenMessageIsSent("!teamtime $username")
+    val answer = whenIrcMessageIsSent("!teamtime $username")
     thenCalculatedTeamTimeEquals(answer, "3:53:00")
   }
 
@@ -60,7 +63,7 @@ internal class TeamBingoModuleTest {
 
     givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.25)
 
-    val answer = whenMessageIsSent("!teamtime $username")
+    val answer = whenIrcMessageIsSent("!teamtime $username")
     thenCalculatedTeamTimeEquals(answer, "3:53:00")
   }
 
@@ -71,7 +74,7 @@ internal class TeamBingoModuleTest {
 
     givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.5)
 
-    val answer = whenMessageIsSent("!teamtime $username")
+    val answer = whenIrcMessageIsSent("!teamtime $username")
     thenCalculatedTeamTimeEquals(answer, "4:26:00")
   }
 
@@ -82,7 +85,7 @@ internal class TeamBingoModuleTest {
 
     givenUser(username, median = Duration.ofHours(1).plusMinutes(20).toSeconds(), forfeitRatio = 0.51)
 
-    val answer = whenMessageIsSent("!teamtime $username")
+    val answer = whenIrcMessageIsSent("!teamtime $username")
     thenCalculatedTeamTimeEquals(answer, "4:26:00")
   }
 
@@ -95,12 +98,12 @@ internal class TeamBingoModuleTest {
     givenUser(username1, median = Duration.ofHours(1).plusMinutes(30).toSeconds(), forfeitRatio = 0.0)
     givenUser(username2, median = Duration.ofHours(1).plusMinutes(24).toSeconds(), forfeitRatio = 0.0)
 
-    val answer = whenMessageIsSent("!teamtime $username1 $username2")
+    val answer = whenIrcMessageIsSent("!teamtime $username1 $username2")
     thenCalculatedTeamTimeEquals(answer, "2:08:47")
   }
 
   @Test
-  internal fun errorMessageWhenUnknownUsers() {
+  internal fun errorMessageWhenUnknownUsersTeamTime() {
 
     val username1 = UUID.randomUUID().toString()
     val username2 = UUID.randomUUID().toString()
@@ -108,23 +111,62 @@ internal class TeamBingoModuleTest {
 
     givenUser(username1, median = Duration.ofHours(1).plusMinutes(30).toSeconds(), forfeitRatio = 0.0)
 
-    val answer = whenMessageIsSent("!teamtime $username1 $username2 $username3 1:20:00")
+    val answer = whenIrcMessageIsSent("!teamtime $username1 $username2 $username3 1:20:00")
 
     thenErrorMessageMentions(answer, username2, username3)
   }
 
-  private fun thenErrorMessageMentions(answer: Answer<AnswerInfo>?, vararg usernames: String) {
+  //</editor-fold>
 
-    requireNotNull(answer)
-    require(answer.text.matches(Regex("Error[^:]*:[^:]*")))
+  //<editor-fold desc="!balance">
 
-    val errorUsers = answer.text
-        .split(":")[1]
-        .trim()
-        .split(",")
-        .map { it.trim() }
+  @Test
+  internal fun reportsCorrectBalancing() {
 
-    assertThat(usernames).containsExactlyInAnyOrderElementsOf(errorUsers)
+    val usernames = (1..6).map { UUID.randomUUID().toString() }
+    usernames.forEach { givenUser(it, 0, 0.0) }
+
+    val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
+
+    doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
+        .`when`(partitionerMock).invoke(anyList(), eq(3))
+
+    doAnswer {
+      val team1 = mock(Team::class.java)
+      val team2 = mock(Team::class.java)
+
+      `when`(team1.members).thenReturn(usernames.subList(0, 3).map { TeamMember(it, 0, 0.0) })
+      `when`(team2.members).thenReturn(usernames.subList(3, 6).map { TeamMember(it, 0, 0.0) })
+
+      `when`(team1.predictedTime).thenReturn(teamTimes[0])
+      `when`(team2.predictedTime).thenReturn(teamTimes[1])
+
+      `when`(team1.toString()).thenCallRealMethod()
+      `when`(team2.toString()).thenCallRealMethod()
+
+      listOf(team1, team2)
+    }
+        .`when`(teamBalancerMock).findBestTeamBalance(anyList())
+
+    val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
+
+    thenReportedTeamsAre(answer,
+                         Pair(usernames.subList(0, 3).toSet(), teamTimes[0]),
+                         Pair(usernames.subList(3, 6).toSet(), teamTimes[1]))
+  }
+
+  @Test
+  internal fun errorMessageWhenUnknownUsersBalance() {
+
+    val username1 = UUID.randomUUID().toString()
+    val username2 = UUID.randomUUID().toString()
+    val username3 = UUID.randomUUID().toString()
+
+    givenUser(username1, median = Duration.ofHours(1).plusMinutes(30).toSeconds(), forfeitRatio = 0.0)
+
+    val answer = whenIrcMessageIsSent("!balance $username1 $username2 $username3 1:20:00 1:20:00 1:20:00")
+
+    thenErrorMessageMentions(answer, username2, username3)
   }
 
   //</editor-fold>
@@ -141,7 +183,7 @@ internal class TeamBingoModuleTest {
 
   //<editor-fold desc="When">
 
-  private fun whenMessageIsSent(message: String): Answer<AnswerInfo>? {
+  private fun whenIrcMessageIsSent(message: String): Answer<AnswerInfo>? {
 
     val messageInfoMock = mock(IrcMessageInfo::class.java)
     `when`(messageInfoMock.nick).thenReturn("")
@@ -181,6 +223,46 @@ internal class TeamBingoModuleTest {
         ?.trim()
 
     soft.assertThat(actualTeamTime).isEqualTo(expectedTime)
+  }
+
+  private fun thenReportedTeamsAre(answer: Answer<AnswerInfo>?, vararg expectedTeams: Pair<Set<String>, Duration>) {
+
+    require(answer != null)
+
+    val lines = answer.text
+        .split("\n")
+        .filter { it.matches(Regex("[a-z0-9\\-, ]*\\(\\d+:\\d\\d:\\d\\d\\)")) }
+
+    val actualTeamMembers = lines
+        .map { it.split(" (")[0] }
+        .map { it.split(",") }
+
+    val actualTimes = lines
+        .map { it.split(" (")[1] }
+        .map { it.split(")")[0] }
+        .map {
+          val parts = it.split(":").map { p -> p.toLong() }
+          Duration.ofHours(parts[0]).plusMinutes(parts[1]).plusSeconds(parts[2])
+        }
+
+    val actualTeams = actualTeamMembers.indices
+        .map { Pair(actualTeamMembers[it].map { name -> name.trim() }.toSet(), actualTimes[it]) }
+
+    assertThat(actualTeams).containsExactlyInAnyOrder(*expectedTeams)
+  }
+
+  private fun thenErrorMessageMentions(answer: Answer<AnswerInfo>?, vararg usernames: String) {
+
+    requireNotNull(answer)
+    require(answer.text.matches(Regex("Error[^:]*:[^:]*")))
+
+    val errorUsers = answer.text
+        .split(":")[1]
+        .trim()
+        .split(",")
+        .map { it.trim() }
+
+    assertThat(usernames).containsExactlyInAnyOrderElementsOf(errorUsers)
   }
 
   //</editor-fold>

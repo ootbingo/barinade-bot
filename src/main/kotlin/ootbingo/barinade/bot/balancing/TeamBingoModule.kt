@@ -40,6 +40,28 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule, private val 
             .let { "$it can finish a blackout in: $blackoutAverage" })
   }
 
+  @LilyCommand("balance")
+  fun balance(command: Command): Answer<AnswerInfo>? {
+
+    when(command.argumentCount) {
+      in 0..5 -> Answer.ofText("Please specify at least six players.")
+      in 6..12 -> {}
+      else -> Answer.ofText("Please specify at most twelve players.")
+    }
+
+    val participants = findMembers((1..command.argumentCount).map { command.getArgument(it - 1) })
+
+    with(participants.members.filter { it.workRate == null }) {
+      if (this.isNotEmpty()) {
+        return Answer.ofText("Error retrieving data of user(s): " + this.joinToString(", ") { it.name })
+      }
+    }
+
+    val teams = teamBalancer.findBestTeamBalance(partitioner.invoke(participants.members, 3))
+
+    return Answer.ofText(teams.joinToString("\n"))
+  }
+
   private fun findMembers(commandArguments: List<String>): Team {
 
     return Team(
