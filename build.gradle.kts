@@ -5,6 +5,7 @@ plugins {
   id("org.springframework.boot") version "2.1.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
+  jacoco
 }
 
 group = "ootbingo.barinade"
@@ -56,6 +57,12 @@ tasks.withType(Jar::class) {
 
 tasks.withType<Test>() {
   useJUnitPlatform()
+
+  testLogging {
+    events("passed", "skipped", "failed")
+  }
+
+  finalizedBy("jacocoTestReport")
 }
 
 val compileKotlin: KotlinCompile by tasks
