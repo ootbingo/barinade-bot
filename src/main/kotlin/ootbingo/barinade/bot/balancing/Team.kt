@@ -1,6 +1,6 @@
 package ootbingo.barinade.bot.balancing
 
-import ootbingo.barinade.bot.build.Open
+import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.standardFormat
 import java.time.Duration
 import kotlin.math.roundToLong

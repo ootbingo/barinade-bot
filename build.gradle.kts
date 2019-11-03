@@ -68,7 +68,7 @@ tasks.withType<Test>() {
 }
 
 allOpen {
-  annotation("ootbingo.barinade.bot.build.Open")
+  annotation("ootbingo.barinade.bot.compile.Open")
 }
 
 val compileKotlin: KotlinCompile by tasks
