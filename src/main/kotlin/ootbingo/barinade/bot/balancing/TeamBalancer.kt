@@ -1,12 +1,23 @@
 package ootbingo.barinade.bot.balancing
 
-import ootbingo.barinade.bot.balancing.TeamBingoModule.*
 import org.springframework.stereotype.Component
 
 @Component
 class TeamBalancer {
 
   fun findBestTeamBalance(teamPartitions: List<List<Team>>): List<Team> {
-    TODO()
+
+    lateinit var result: List<Team>
+    var smallestDifference = Long.MAX_VALUE
+
+    for (partition in teamPartitions) {
+      val difference = partition.map { it.predictedTime.toSeconds() }.let { it.max()!! - it.min()!! }
+      if (difference < smallestDifference) {
+        smallestDifference = difference
+        result = partition
+      }
+    }
+
+    return result
   }
 }
