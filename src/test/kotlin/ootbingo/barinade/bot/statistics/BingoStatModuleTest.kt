@@ -464,6 +464,16 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun calculatesForfeitRatioWithoutForfeits() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
+
+    assertThat(module.forfeitRatio(username)).isEqualTo(0.0)
+  }
+
+  @Test
   internal fun forfeitRatioNullWhenUserNotFound() {
 
     val username = UUID.randomUUID().toString()
