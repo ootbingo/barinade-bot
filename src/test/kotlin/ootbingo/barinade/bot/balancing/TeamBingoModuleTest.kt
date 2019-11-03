@@ -1,10 +1,12 @@
-package ootbingo.barinade.bot.modules
+package ootbingo.barinade.bot.balancing
 
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
+import ootbingo.barinade.bot.extensions.allTeamPartitions
+import ootbingo.barinade.bot.statistics.BingoStatModule
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
@@ -16,7 +18,7 @@ import java.util.UUID
 internal class TeamBingoModuleTest {
 
   private val bingoStatModuleMock = mock(BingoStatModule::class.java)
-  private val module = TeamBingoModule(bingoStatModuleMock)
+  private val module = TeamBingoModule(bingoStatModuleMock, TeamBalancer(), List<TeamMember>::allTeamPartitions)
 
   private val commands by lazy {
     mapOf(Pair("teamtime", module::teamTime))

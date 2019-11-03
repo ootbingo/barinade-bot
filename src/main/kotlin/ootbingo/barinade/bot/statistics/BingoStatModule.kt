@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.modules
+package ootbingo.barinade.bot.statistics
 
 import de.scaramanga.lily.core.annotations.LilyCommand
 import de.scaramanga.lily.core.annotations.LilyModule

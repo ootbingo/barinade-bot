@@ -1,5 +1,8 @@
 package ootbingo.barinade.bot.extensions
 
+import ootbingo.barinade.bot.balancing.Team
+import ootbingo.barinade.bot.balancing.TeamMember
+
 fun <T> Collection<T>.allPartitions(maxSize: Int = 4): List<List<List<T>>> {
 
   require(maxSize <= 4) { "Only partitions with a size up to four can be computed." }
@@ -32,4 +35,10 @@ fun <T> Collection<T>.allPartitions(maxSize: Int = 4): List<List<List<T>>> {
   }
 
   return result
+}
+
+fun List<TeamMember>.allTeamPartitions(maxSize: Int): List<List<Team>> {
+
+  return this.allPartitions(maxSize)
+      .map { it.map { members -> Team(members) } }
 }
