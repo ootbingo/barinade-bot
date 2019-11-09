@@ -38,10 +38,9 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  val jUnitVersion = "5.5.2"
-  testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
-  testImplementation("org.junit.jupiter:junit-jupiter-params:$jUnitVersion")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("org.junit.jupiter:junit-jupiter-params")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(module = "junit")
@@ -50,6 +49,7 @@ dependencies {
     exclude(module = "json-path")
     exclude(module = "jsonassert")
     exclude(module = "xmlunit-core")
+    exclude(group = "org.junit.jupiter")
   }
 
   testImplementation("org.assertj:assertj-core:3.13.2")
@@ -87,5 +87,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "5.6.2"
+  gradleVersion = "6.0"
 }

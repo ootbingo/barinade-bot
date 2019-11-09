@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.balancing
 
 import com.nhaarman.mockitokotlin2.mock
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.time.Duration
@@ -30,6 +31,9 @@ internal class TeamBalancerTest {
     return teams.asList()
   }
 
-  private fun thenBalancedTeamsHaveExpectedTimes(actualTeams: List<Team>, vararg expectedTimes: Int) {
+  private fun thenBalancedTeamsHaveExpectedTimes(actualTeams: List<Team>, vararg expectedTimes: Long) {
+
+    assertThat(actualTeams.map { it.predictedTime.toSeconds() })
+        .containsExactlyInAnyOrder(*expectedTimes.toTypedArray())
   }
 }
