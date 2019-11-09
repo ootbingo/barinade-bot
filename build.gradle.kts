@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   java
   id("org.springframework.boot") version "2.1.8.RELEASE"
+  id("io.spring.dependency-management") version "1.0.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
   kotlin("plugin.allopen") version "1.3.50"
@@ -28,7 +29,11 @@ repositories {
 dependencies {
 
   implementation("de.scaramanga:lily:0.1.1")
-  implementation("org.springframework.boot:spring-boot-starter-json:2.1.8.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter-json")
+
+  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+  runtimeOnly("com.h2database:h2")
+  runtimeOnly("org.postgresql:postgresql")
 
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
@@ -38,7 +43,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-params:$jUnitVersion")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test:2.1.8.RELEASE") {
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(module = "junit")
     exclude(module = "hamcrest-library")
     exclude(module = "hamcrest-core")
@@ -51,13 +56,13 @@ dependencies {
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 }
 
-tasks.withType(Jar::class) {
+tasks.withType<Jar> {
 
   archiveBaseName.set("barinade_bot")
   archiveVersion.set("")
 }
 
-tasks.withType<Test>() {
+tasks.withType<Test> {
   useJUnitPlatform()
 
   testLogging {
@@ -81,6 +86,6 @@ compileTestKotlin.kotlinOptions {
   jvmTarget = "1.8"
 }
 
-tasks.withType(Wrapper::class) {
+tasks.withType<Wrapper> {
   gradleVersion = "5.6.2"
 }
