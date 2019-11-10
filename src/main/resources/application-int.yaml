@@ -6,7 +6,7 @@ lily:
 
 spring:
   datasource:
-    url: jdbc:postgresql://scaramangado.com:10010/BARINADE
+    url: jdbc:postgresql://scaramangado.de:10010/BARINADE
     username: scaramanga
   jpa:
     properties:
