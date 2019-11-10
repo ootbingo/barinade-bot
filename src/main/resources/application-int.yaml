@@ -1,0 +1,15 @@
+lily:
+  commandline:
+    enabled: false
+  discord:
+    enabled: true
+
+spring:
+  datasource:
+    url: jdbc:postgresql://scaramangado.com:10010/BARINADE
+    username: scaramanga
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        ddl-auto: update
