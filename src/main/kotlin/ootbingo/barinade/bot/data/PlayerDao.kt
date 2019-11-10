@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 @Component
-class PlayerRepository(private val srlHttpClient: SrlHttpClient, private val clock: Clock = Clock.systemUTC()) {
+class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clock = Clock.systemUTC()) {
 
   private val playerCache = mutableMapOf<String, Player>()
   private var lastSaved = clock.instant()

@@ -8,7 +8,7 @@ import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
-import ootbingo.barinade.bot.data.PlayerRepository
+import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.model.Player
@@ -19,7 +19,7 @@ import java.time.Duration
 import java.util.Locale
 
 @LilyModule
-class BingoStatModule(private val playerRepository: PlayerRepository) {
+class BingoStatModule(private val playerDao: PlayerDao) {
 
   private val errorMessage = "An error occurred finding the player."
 
@@ -90,7 +90,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       return Answer.ofText(errorMessage)
     }
 
-    val player = playerRepository.getPlayerByName(username)
+    val player = playerDao.getPlayerByName(username)
     val bingos = player?.races?.filter { it.isBingo() }
 
     return Answer.ofText(
@@ -108,7 +108,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
     val username = findUsername(messageInfo)
 
-    return playerRepository.getPlayerByName(username)
+    return playerDao.getPlayerByName(username)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(username)
   }
 
@@ -128,7 +128,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       }
     }
 
-    return playerRepository.getPlayerByName(user)
+    return playerDao.getPlayerByName(user)
         ?.let { QueryInfo(it, parsedRaceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -143,7 +143,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       return null
     }
 
-    return playerRepository.getPlayerByName(user)
+    return playerDao.getPlayerByName(user)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -208,7 +208,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun median(username: String): Duration? {
 
-    val player = playerRepository.getPlayerByName(username)
+    val player = playerDao.getPlayerByName(username)
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
@@ -221,7 +221,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun forfeitRatio(username: String): Double? {
 
-    val player = playerRepository.getPlayerByName(username)
+    val player = playerDao.getPlayerByName(username)
     val allBingos = player
         ?.races
         ?.filter { it.isBingo() }

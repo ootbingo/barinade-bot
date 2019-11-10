@@ -9,7 +9,7 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
-import ootbingo.barinade.bot.data.PlayerRepository
+import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.model.Player
 import ootbingo.barinade.bot.model.Race
 import ootbingo.barinade.bot.model.RaceResult
@@ -28,7 +28,7 @@ import kotlin.random.Random
 
 internal class BingoStatModuleTest {
 
-  private val playerRepositoryMock = mock(PlayerRepository::class.java)
+  private val playerRepositoryMock = mock(PlayerDao::class.java)
   private val module = BingoStatModule(playerRepositoryMock)
   private val players = mutableMapOf<String, Player>()
 

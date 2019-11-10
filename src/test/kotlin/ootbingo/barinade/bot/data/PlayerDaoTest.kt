@@ -19,18 +19,18 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.random.Random
 
-internal class PlayerRepositoryTest {
+internal class PlayerDaoTest {
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
   private val clockMock = mock(Clock::class.java)
-  private lateinit var repository: PlayerRepository
+  private lateinit var dao: PlayerDao
 
   private val allGames = HashMap<String, SrlGame>()
 
   @BeforeEach
   internal fun setup() {
     `when`(clockMock.instant()).thenReturn(Instant.ofEpochSecond(0))
-    repository = PlayerRepository(srlHttpClientMock, clockMock)
+    dao = PlayerDao(srlHttpClientMock, clockMock)
   }
 
   @Test
@@ -55,7 +55,7 @@ internal class PlayerRepositoryTest {
                race("sm64", time(1909), result(1, playerName, 666),
                     result(2, "other player", 1000)))
 
-    val player = repository.getPlayerByName(playerName)
+    val player = dao.getPlayerByName(playerName)
 
     assertThat(player?.races
                    ?.map { requireNotNull(it.raceResults.findLast { result -> result.player.name == playerName }) }
@@ -69,7 +69,7 @@ internal class PlayerRepositoryTest {
 
     givenPlayers()
 
-    assertThat(repository.getPlayerByName("some name")).isNull()
+    assertThat(dao.getPlayerByName("some name")).isNull()
   }
 
   @Test
@@ -87,7 +87,7 @@ internal class PlayerRepositoryTest {
     givenRaces(race("oot", time(0), result(1, playerName, 123),
                     result(2, "other player", 127)))
 
-    val race = repository.getPlayerByName(playerName)!!.races[0]
+    val race = dao.getPlayerByName(playerName)!!.races[0]
 
     val soft = SoftAssertions()
 
@@ -107,8 +107,8 @@ internal class PlayerRepositoryTest {
     givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
     givenRaces(race("oot", time(0), result(1, playerName, 123)))
 
-    repository.getPlayerByName(playerName)
-    repository.getPlayerByName(playerName.toUpperCase())
+    dao.getPlayerByName(playerName)
+    dao.getPlayerByName(playerName.toUpperCase())
 
     verify(srlHttpClientMock, times(1)).getRacesByPlayerName(playerName)
     verify(srlHttpClientMock, times(1)).getGameByAbbreviation("oot")
@@ -127,10 +127,10 @@ internal class PlayerRepositoryTest {
     val firstInstant = Instant.ofEpochSecond(Random.nextLong(86401, 123456789))
 
     `when`(clockMock.instant()).thenReturn(firstInstant)
-    repository.getPlayerByName(playerName)
+    dao.getPlayerByName(playerName)
 
     `when`(clockMock.instant()).thenReturn(firstInstant.plus(1, ChronoUnit.DAYS))
-    assertThat(repository.getPlayerByName(playerName.toUpperCase())).isNotNull()
+    assertThat(dao.getPlayerByName(playerName.toUpperCase())).isNotNull()
 
     verify(srlHttpClientMock, times(2)).getRacesByPlayerName(playerName)
     verify(srlHttpClientMock, times(2)).getPlayerByName(anyString())
