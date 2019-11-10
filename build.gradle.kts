@@ -65,6 +65,8 @@ tasks.withType<Jar> {
 tasks.withType<Test> {
   useJUnitPlatform()
 
+  systemProperties(Pair("spring.profiles.active", "test"))
+
   testLogging {
     events("passed", "skipped", "failed")
   }
