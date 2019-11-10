@@ -1,12 +1,20 @@
-package ootbingo.barinade.bot.model
+package ootbingo.barinade.bot.data.model
 
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import javax.persistence.CascadeType
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.OneToMany
 
-open class Race(val srlId: String, val goal: String, val recordDate: ZonedDateTime, val numberOfEntrants: Long,
-                val raceResults: List<RaceResult>) {
+@Entity
+open class Race(@Id val srlId: String,
+                val goal: String,
+                val recordDate: ZonedDateTime,
+                val numberOfEntrants: Long,
+                @OneToMany(cascade = [CascadeType.ALL]) val raceResults: MutableList<RaceResult>) {
 
   open fun isBingo(): Boolean {
 

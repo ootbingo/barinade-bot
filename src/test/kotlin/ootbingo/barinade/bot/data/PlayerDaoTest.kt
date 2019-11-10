@@ -58,7 +58,7 @@ internal class PlayerDaoTest {
     val player = dao.getPlayerByName(playerName)
 
     assertThat(player?.races
-                   ?.map { requireNotNull(it.raceResults.findLast { result -> result.player.name == playerName }) }
+                   ?.map { requireNotNull(it.raceResults.findLast { result -> result.player.srlName == playerName }) }
                    ?.map { it.time }
                    ?.map { it.seconds })
         .containsExactly(123, 124, 345)

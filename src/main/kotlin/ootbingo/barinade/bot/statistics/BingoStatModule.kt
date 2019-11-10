@@ -11,8 +11,8 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
-import ootbingo.barinade.bot.model.Player
-import ootbingo.barinade.bot.model.Race
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
@@ -46,7 +46,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val average = average(queryInfo)
 
     return Answer
-        .ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result} " +
+        .ofText("The average of ${queryInfo.player.srlName}'s last ${average.raceCount} bingos is: ${average.result} " +
                     "(Forfeits: ${average.forfeitsSkipped})")
   }
 
@@ -73,7 +73,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val median = median(queryInfo)
 
     return Answer
-        .ofText("The median of ${queryInfo.player.name}'s last ${median.raceCount} bingos is: ${median.result} " +
+        .ofText("The median of ${queryInfo.player.srlName}'s last ${median.raceCount} bingos is: ${median.result} " +
                     "(Forfeits: ${median.forfeitsSkipped})")
   }
 
@@ -95,7 +95,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     return Answer.ofText(
         bingos
-            ?.mapNotNull { it.raceResults.lastOrNull { result -> result.player.name == player.name } }
+            ?.mapNotNull { it.raceResults.lastOrNull { result -> result.player.srlName == player.srlName } }
             ?.filter { it.isForfeit() }
             ?.count()
             ?.toDouble()
@@ -163,7 +163,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
 
       val bingo = allBingos.removeAt(0)
-      val result = bingo.raceResults.last { it.player.name == queryInfo.player.name }
+      val result = bingo.raceResults.last { it.player.srlName == queryInfo.player.srlName }
 
       if (result.isForfeit()) {
         forfeitsSkipped++
@@ -180,7 +180,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val toAverage = allRacesForComputation(queryInfo)
 
     return toAverage.races
-        .map { it.raceResults.last { result -> result.player.name == queryInfo.player.name } }
+        .map { it.raceResults.last { result -> result.player.srlName == queryInfo.player.srlName } }
         .map { it.time.seconds }
         .average()
         .let { Duration.ofSeconds(it.toLong()).standardFormat() }
@@ -192,7 +192,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val toMedian = allRacesForComputation(queryInfo)
 
     return toMedian.races
-        .map { it.raceResults.last { result -> result.player.name == queryInfo.player.name } }
+        .map { it.raceResults.last { result -> result.player.srlName == queryInfo.player.srlName } }
         .map { it.time.seconds }
         .median()
         .let { Duration.ofSeconds(it).standardFormat() }
@@ -212,7 +212,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
-        ?.map { it.raceResults.last { result -> result.player.name == player.name } }
+        ?.map { it.raceResults.last { result -> result.player.srlName == player.srlName } }
         ?.map { it.time.seconds }
         ?.let { if (it.isEmpty()) return null else it }
         ?.median()
@@ -231,7 +231,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     }
 
     return allBingos
-        .map { it.raceResults.last { result -> result.player.name == player.name } }
+        .map { it.raceResults.last { result -> result.player.srlName == player.srlName } }
         .filter { it.isForfeit() }
         .count()
         .toDouble()

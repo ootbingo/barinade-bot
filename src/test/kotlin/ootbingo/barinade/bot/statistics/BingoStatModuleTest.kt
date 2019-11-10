@@ -10,9 +10,9 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.data.PlayerDao
-import ootbingo.barinade.bot.model.Player
-import ootbingo.barinade.bot.model.Race
-import ootbingo.barinade.bot.model.RaceResult
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
@@ -524,11 +524,11 @@ internal class BingoStatModuleTest {
 
     times
         .map {
-          RaceResult(Race("", "", ZonedDateTime.now(), 1, emptyList()),
-                     Player(0, username, emptyList()), 1, Duration.ofSeconds(it.toLong()), "")
+          RaceResult(0L, Race("", "", ZonedDateTime.now(), 1, mutableListOf()),
+                     Player(0, username, mutableListOf()), 1, Duration.ofSeconds(it.toLong()), "")
         }
         .map {
-          Race("0", "", ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1, listOf(it))
+          Race("0", "", ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1, mutableListOf(it))
         }
         .map {
           val spy = spy(it)
@@ -541,8 +541,10 @@ internal class BingoStatModuleTest {
       it.raceResults.forEach { result -> result.race = it }
     }
 
-    val oldPlayer = players[username] ?: Player(0, username, emptyList())
-    val player = oldPlayer.copy(races = oldPlayer.races + races)
+    val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
+    val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
+      it.raceResults.findLast { result->result.player.srlName == oldPlayer.srlName }
+    }).toMutableList())
 
     players[username] = player
   }

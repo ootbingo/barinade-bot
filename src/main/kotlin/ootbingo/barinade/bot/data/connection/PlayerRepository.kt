@@ -1,0 +1,12 @@
+package ootbingo.barinade.bot.data.connection
+
+import ootbingo.barinade.bot.data.model.Player
+import org.springframework.data.repository.Repository
+import org.springframework.stereotype.Component
+
+@Component
+interface PlayerRepository : Repository<Player, Long> {
+
+  fun save(player: Player)
+  fun findBySrlName(srlName: String): Player
+}

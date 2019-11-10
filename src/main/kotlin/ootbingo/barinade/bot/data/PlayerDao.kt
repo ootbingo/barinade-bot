@@ -1,12 +1,11 @@
 package ootbingo.barinade.bot.data
 
-import ootbingo.barinade.bot.model.Player
-import ootbingo.barinade.bot.model.Race
-import ootbingo.barinade.bot.model.RaceResult
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.springframework.stereotype.Component
 import java.time.Clock
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
@@ -41,10 +40,10 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clo
         .map {
           Race(it.id, it.goal, it.date, it.numentrants,
                it.results.map { result ->
-                 RaceResult(Race("", "", ZonedDateTime.now(), 0, emptyList()),
-                            Player(0, result.player, emptyList()),
+                 RaceResult(0L, Race("", "", ZonedDateTime.now(), 0, mutableListOf()),
+                            Player(0, result.player, mutableListOf()),
                             result.place, result.time, result.message)
-               })
+               }.toMutableList())
         }
 
     races.forEach {
@@ -52,7 +51,7 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clo
     }
 
     val player =  Player(srlPlayer, races)
-    playerCache[player.name.toLowerCase()] = player
+    playerCache[player.srlName.toLowerCase()] = player
 
     return player
   }
