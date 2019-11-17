@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.data
 
+import ootbingo.barinade.bot.data.connection.PlayerRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
@@ -10,10 +11,8 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 @Component
-class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clock = Clock.systemUTC()) {
-
-  private val playerCache = mutableMapOf<String, Player>()
-  private var lastSaved = clock.instant()
+class PlayerDao(private val srlHttpClient: SrlHttpClient,
+                private val playerRepository: PlayerRepository) {
 
   private val whitelistedGames by lazy {
     listOf("oot", "ootbingo")
@@ -23,12 +22,7 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clo
 
   fun getPlayerByName(name: String): Player? {
 
-    if (lastSaved.isBefore(clock.instant().truncatedTo(ChronoUnit.DAYS))) {
-      playerCache.clear()
-      lastSaved = clock.instant()
-    }
-
-    with(playerCache[name.toLowerCase()]) {
+    with(playerRepository.findBySrlNameIgnoreCase(name)) {
       if (this != null) {
         return this
       }
@@ -51,7 +45,7 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient, private val clock: Clo
     }
 
     val player =  Player(srlPlayer, races)
-    playerCache[player.srlName.toLowerCase()] = player
+    playerRepository.save(player)
 
     return player
   }

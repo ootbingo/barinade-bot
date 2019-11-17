@@ -1,5 +1,7 @@
 package ootbingo.barinade.bot.data
 
+import ootbingo.barinade.bot.data.connection.PlayerRepository
+import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlGame
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
@@ -7,10 +9,8 @@ import ootbingo.barinade.bot.srl.api.model.SrlPlayer
 import ootbingo.barinade.bot.srl.api.model.SrlResult
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -22,16 +22,20 @@ import kotlin.random.Random
 internal class PlayerDaoTest {
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
-  private val clockMock = mock(Clock::class.java)
-  private lateinit var dao: PlayerDao
+
+  private val savedPlayers = HashMap<String, Player>()
+  private val playerRepositoryMock = object : PlayerRepository {
+    override fun save(player: Player) {
+      savedPlayers[player.srlName.toLowerCase()] = player
+    }
+
+    override fun findBySrlNameIgnoreCase(srlName: String): Player? =
+        savedPlayers[srlName.toLowerCase()]
+  }
 
   private val allGames = HashMap<String, SrlGame>()
 
-  @BeforeEach
-  internal fun setup() {
-    `when`(clockMock.instant()).thenReturn(Instant.ofEpochSecond(0))
-    dao = PlayerDao(srlHttpClientMock, clockMock)
-  }
+  private val dao = PlayerDao(srlHttpClientMock, playerRepositoryMock)
 
   @Test
   internal fun getAllOotRacesForPlayer() {
@@ -116,24 +120,18 @@ internal class PlayerDaoTest {
   }
 
   @Test
-  internal fun clearCacheAtMidnight() {
+  internal fun readsPlayerFromDb() {
 
     val playerName = UUID.randomUUID().toString()
+    val playerId = Random.nextLong(0, 10000)
 
-    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""))
-    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
-    givenRaces(race("oot", time(0), result(1, playerName, 123)))
+    givenPlayers()
+    playerRepositoryMock.save(Player(playerId, playerName, mutableListOf()))
 
-    val firstInstant = Instant.ofEpochSecond(Random.nextLong(86401, 123456789))
+    val actualPlayer = dao.getPlayerByName(playerName)
 
-    `when`(clockMock.instant()).thenReturn(firstInstant)
-    dao.getPlayerByName(playerName)
-
-    `when`(clockMock.instant()).thenReturn(firstInstant.plus(1, ChronoUnit.DAYS))
-    assertThat(dao.getPlayerByName(playerName.toUpperCase())).isNotNull()
-
-    verify(srlHttpClientMock, times(2)).getRacesByPlayerName(playerName)
-    verify(srlHttpClientMock, times(2)).getPlayerByName(anyString())
+    assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
+    assertThat(actualPlayer.srlId).isEqualTo(playerId)
   }
 
   private fun givenPlayers(vararg players: SrlPlayer) {
