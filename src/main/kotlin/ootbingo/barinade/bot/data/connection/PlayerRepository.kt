@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 @Component
 interface PlayerRepository : Repository<Player, Long> {
 
-  fun save(player: Player)
+  fun save(player: Player): Player
   fun findBySrlNameIgnoreCase(srlName: String): Player?
 }

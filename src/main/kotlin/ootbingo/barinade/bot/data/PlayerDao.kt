@@ -1,18 +1,17 @@
 package ootbingo.barinade.bot.data
 
 import ootbingo.barinade.bot.data.connection.PlayerRepository
+import ootbingo.barinade.bot.data.connection.RaceRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.springframework.stereotype.Component
-import java.time.Clock
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 @Component
 class PlayerDao(private val srlHttpClient: SrlHttpClient,
-                private val playerRepository: PlayerRepository) {
+                private val playerRepository: PlayerRepository,
+                private val raceRepository: RaceRepository) {
 
   private val whitelistedGames by lazy {
     listOf("oot", "ootbingo")
@@ -29,24 +28,37 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient,
     }
 
     val srlPlayer = srlHttpClient.getPlayerByName(name) ?: return null
-    val races = srlHttpClient.getRacesByPlayerName(srlPlayer.name)
-        .filter { it.game in whitelistedGames }
-        .map {
-          Race(it.id, it.goal, it.date, it.numentrants,
-               it.results.map { result ->
-                 RaceResult(0L, Race("", "", ZonedDateTime.now(), 0, mutableListOf()),
-                            Player(0, result.player, mutableListOf()),
-                            result.place, result.time, result.message)
-               }.toMutableList())
-        }
 
-    races.forEach {
-      it.raceResults.forEach { result -> result.race = it }
+    val emptyPlayer = Player(srlPlayer, mutableListOf())
+    val player = playerRepository.save(emptyPlayer)
+
+    val srlRaces = srlHttpClient.getRacesByPlayerName(srlPlayer.name)
+        .filter { it.game in whitelistedGames }
+
+    val emptyRaces = srlRaces
+        .map { Race(it.id, it.goal, it.date, it.numentrants, mutableListOf()) }
+        .toMutableList()
+
+    emptyRaces.forEach {
+
+      val maybeStoredRace = raceRepository.findBySrlId(it.srlId)
+          ?: Race(srlId = it.srlId, recordDate = it.recordDate, goal = it.goal)
+      val storedRace = raceRepository.save(maybeStoredRace)
+
+      if (storedRace.raceResults.none { result -> result.player == player }) {
+
+        val srlResult = srlRaces
+            .findLast { srlRace -> srlRace.id == it.srlId }
+            ?.results
+            ?.findLast { srlResult -> srlResult.player.toLowerCase() == player.srlName.toLowerCase() }
+            ?: return player
+
+        storedRace.raceResults
+            .add(RaceResult(null, storedRace, player, srlResult.place, srlResult.time, srlResult.message))
+        raceRepository.save(storedRace)
+      }
     }
 
-    val player =  Player(srlPlayer, races)
-    playerRepository.save(player)
-
-    return player
+    return playerRepository.findBySrlNameIgnoreCase(player.srlName)
   }
 }

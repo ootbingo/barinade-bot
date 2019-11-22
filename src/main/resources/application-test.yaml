@@ -9,3 +9,7 @@ spring:
     username: sa
     password: password
     database-platform: org.hibernate.dialect.H2Dialect
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create

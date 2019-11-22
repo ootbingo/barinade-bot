@@ -7,5 +7,6 @@ import org.springframework.stereotype.Component
 @Component
 interface RaceRepository : Repository<Race, String> {
 
-  fun save(race: Race)
+  fun save(race: Race): Race
+  fun findBySrlId(srlId: String): Race?
 }

@@ -7,5 +7,6 @@ import org.springframework.stereotype.Component
 @Component
 interface RaceResultRepository : Repository<RaceResult, Long> {
 
-  fun save(raceResult: RaceResult)
+  fun save(raceResult: RaceResult): RaceResult
+  fun findAll(): List<RaceResult>
 }

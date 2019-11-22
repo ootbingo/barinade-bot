@@ -1,7 +1,9 @@
 package ootbingo.barinade.bot.data
 
 import ootbingo.barinade.bot.data.connection.PlayerRepository
+import ootbingo.barinade.bot.data.connection.RaceRepository
 import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlGame
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
@@ -24,18 +26,43 @@ internal class PlayerDaoTest {
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
 
   private val savedPlayers = HashMap<String, Player>()
+  private val savedGoals = mutableListOf<String>()
+
   private val playerRepositoryMock = object : PlayerRepository {
-    override fun save(player: Player) {
+    override fun save(player: Player): Player {
       savedPlayers[player.srlName.toLowerCase()] = player
+      return player
     }
 
     override fun findBySrlNameIgnoreCase(srlName: String): Player? =
         savedPlayers[srlName.toLowerCase()]
   }
 
+  private val raceRepository = object : RaceRepository {
+    override fun save(race: Race): Race {
+
+      if (!savedGoals.contains(race.goal)) {
+        savedGoals.add(race.goal)
+      }
+
+      race.raceResults.forEach {
+        val player = it.player
+        if (player.raceResults.none { result -> result.id == race.srlId.toLong() }) {
+          player.raceResults.add(it.copy(id = race.srlId.toLong()))
+        }
+      }
+
+      return race
+    }
+
+    override fun findBySrlId(srlId: String): Race? {
+      return null
+    }
+  }
+
   private val allGames = HashMap<String, SrlGame>()
 
-  private val dao = PlayerDao(srlHttpClientMock, playerRepositoryMock)
+  private val dao = PlayerDao(srlHttpClientMock, playerRepositoryMock, raceRepository)
 
   @Test
   internal fun getAllOotRacesForPlayer() {
@@ -100,6 +127,21 @@ internal class PlayerDaoTest {
     }
 
     soft.assertAll()
+  }
+
+  @Test
+  internal fun savesGoalsOfRaces() {
+
+    val playerName = UUID.randomUUID().toString()
+    val goal = UUID.randomUUID().toString()
+
+    givenPlayers(SrlPlayer(0, playerName, "", "", "", "", ""))
+    givenGames(SrlGame(1, "OoT", "oot", 0.0, 0))
+    givenRaces(race("oot", time(0), goal, result(1, playerName, 123)))
+
+    dao.getPlayerByName(playerName)!!.races[0]
+
+    assertThat(savedGoals).containsExactly(goal)
   }
 
   @Test
@@ -176,15 +218,18 @@ internal class PlayerDaoTest {
     }.`when`(srlHttpClientMock).getGameByAbbreviation(anyString())
   }
 
-  private fun race(game: String, time: ZonedDateTime, vararg results: SrlResult): SrlPastRace {
+  private fun race(game: String, time: ZonedDateTime, goal: String, vararg results: SrlResult): SrlPastRace {
 
     require(allGames.containsKey(game)) { "Game not known" }
 
-    return SrlPastRace("0", allGames[game]!!, "", time, results.count().toLong(), results.toList())
+    return SrlPastRace("${Random.nextLong()}", allGames[game]!!, goal, time, results.count().toLong(), results.toList())
   }
 
+  private fun race(game: String, time: ZonedDateTime, vararg results: SrlResult): SrlPastRace =
+      race(game, time, "", *results)
+
   private fun result(place: Long, player: String, time: Long): SrlResult {
-    return SrlResult(0, place, player, Duration.of(time, ChronoUnit.SECONDS), "", 0, 0, 0, 0, 0, 0)
+    return SrlResult(Random.nextLong(), place, player, Duration.of(time, ChronoUnit.SECONDS), "", 0, 0, 0, 0, 0, 0)
   }
 
   private fun time(timestamp: Long): ZonedDateTime {

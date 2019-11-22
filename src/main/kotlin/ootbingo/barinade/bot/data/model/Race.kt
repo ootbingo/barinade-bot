@@ -1,22 +1,26 @@
 package ootbingo.barinade.bot.data.model
 
+import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
+import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.persistence.CascadeType
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.Id
 import javax.persistence.OneToMany
 
 @Entity
-open class Race(@Id val srlId: String,
-                val goal: String,
-                val recordDate: ZonedDateTime,
-                val numberOfEntrants: Long,
-                @OneToMany(cascade = [CascadeType.ALL]) val raceResults: MutableList<RaceResult>) {
+@Open
+data class Race(@Id var srlId: String = "",
+                var goal: String = "",
+                var recordDate: ZonedDateTime = ZonedDateTime.now(),
+                var numberOfEntrants: Long = 0,
+                @OneToMany(cascade = [CascadeType.ALL], mappedBy = "race", fetch = FetchType.EAGER) var raceResults: MutableList<RaceResult> = mutableListOf()) {
 
-  open fun isBingo(): Boolean {
+  fun isBingo(): Boolean {
 
     val blacklistedWords = listOf("short", "long", "blackout", "black out", "3x3", "anti", "double", "bufferless",
                                   "child", "jp", "japanese", "bingo-j")
