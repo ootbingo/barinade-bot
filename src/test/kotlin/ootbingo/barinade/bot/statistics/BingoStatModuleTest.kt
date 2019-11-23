@@ -645,7 +645,7 @@ internal class BingoStatModuleTest {
         ?.toDouble()
         ?.let { it }
 
-    assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.15))
+    assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.25))
   }
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
