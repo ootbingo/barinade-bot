@@ -13,6 +13,8 @@ import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
@@ -91,12 +93,12 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     }
 
     val player = playerDao.getPlayerByName(username)
-    val bingos = player?.races?.filter { it.isBingo() }
+    val bingos = playerDao.findResultsForPlayer(username)
+        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     return Answer.ofText(
         bingos
-            ?.mapNotNull { it.raceResults.lastOrNull { result -> result.player.srlName == player.srlName } }
-            ?.filter { it.isForfeit() }
+            ?.filter { RaceResult(time = it.time).isForfeit() }
             ?.count()
             ?.toDouble()
             ?.let { 100 * it / bingos.count().toDouble() }
@@ -152,18 +154,17 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     var forfeitsSkipped = 0
 
     val allBingos = queryInfo.player
-        .races
+        .let { playerDao.findResultsForPlayer(it.srlName) }!!
         .asSequence()
-        .filter { it.isBingo() }
-        .sortedByDescending { it.recordDate }
+        .filter { Race(it.raceId, it.goal, it.recordDate, 0, mutableListOf()).isBingo() }
         .toMutableList()
 
-    val toAverage = mutableListOf<Race>()
+    val toAverage = mutableListOf<ResultInfo>()
 
     while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
 
       val bingo = allBingos.removeAt(0)
-      val result = bingo.raceResults.last { it.player.srlName == queryInfo.player.srlName }
+      val result = RaceResult(time = bingo.time)
 
       if (result.isForfeit()) {
         forfeitsSkipped++
@@ -175,28 +176,26 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     return ComputationRaces(toAverage, forfeitsSkipped)
   }
 
-  private fun average(queryInfo: QueryInfo): ResultInfo {
+  private fun average(queryInfo: QueryInfo): ComputationResult {
 
     val toAverage = allRacesForComputation(queryInfo)
 
     return toAverage.races
-        .map { it.raceResults.last { result -> result.player.srlName == queryInfo.player.srlName } }
         .map { it.time.seconds }
         .average()
         .let { Duration.ofSeconds(it.toLong()).standardFormat() }
-        .let { ResultInfo(it, toAverage.races.size, toAverage.forfeitsSkipped) }
+        .let { ComputationResult(it, toAverage.races.size, toAverage.forfeitsSkipped) }
   }
 
-  private fun median(queryInfo: QueryInfo): ResultInfo {
+  private fun median(queryInfo: QueryInfo): ComputationResult {
 
     val toMedian = allRacesForComputation(queryInfo)
 
     return toMedian.races
-        .map { it.raceResults.last { result -> result.player.srlName == queryInfo.player.srlName } }
         .map { it.time.seconds }
         .median()
         .let { Duration.ofSeconds(it).standardFormat() }
-        .let { ResultInfo(it, toMedian.races.size, toMedian.forfeitsSkipped) }
+        .let { ComputationResult(it, toMedian.races.size, toMedian.forfeitsSkipped) }
   }
 
   private fun findUsername(messageInfo: MessageInfo): String =
@@ -212,7 +211,6 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
-        ?.map { it.raceResults.last { result -> result.player.srlName == player.srlName } }
         ?.map { it.time.seconds }
         ?.let { if (it.isEmpty()) return null else it }
         ?.median()
@@ -239,8 +237,8 @@ class BingoStatModule(private val playerDao: PlayerDao) {
   }
 
   private inner class QueryInfo(val player: Player, val raceCount: Int)
-  private inner class ResultInfo(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
-  private inner class ComputationRaces(val races: List<Race>, val forfeitsSkipped: Int)
+  private inner class ComputationResult(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
+  private inner class ComputationRaces(val races: List<ResultInfo>, val forfeitsSkipped: Int)
 
   private inner class PlayerNotFoundException(val username: String) : Exception()
 }

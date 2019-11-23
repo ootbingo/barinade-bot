@@ -13,7 +13,7 @@ import javax.persistence.OneToMany
 @Open
 data class Player(@Id var srlId: Long = 0,
                   var srlName: String = "",
-                  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "player", fetch = FetchType.EAGER) var raceResults: MutableList<RaceResult> = mutableListOf()) {
+                  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "player") var raceResults: MutableList<RaceResult> = mutableListOf()) {
 
   val races: List<Race>
     get() = raceResults.map { it.race }

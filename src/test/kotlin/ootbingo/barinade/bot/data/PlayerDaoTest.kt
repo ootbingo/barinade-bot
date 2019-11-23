@@ -181,6 +181,20 @@ internal class PlayerDaoTest {
     assertThat(actualPlayer.srlId).isEqualTo(playerId)
   }
 
+  @Test
+  internal fun redirectsResultQuery() {
+
+    val playerName = UUID.randomUUID().toString()
+    val playerRepositoryMock = mock(PlayerRepository::class.java)
+    val expectedResult = listOf<ResultInfo>()
+
+    `when`(playerRepositoryMock.findResultsForPlayer(playerName)).thenReturn(expectedResult)
+
+    val dao = PlayerDao(mock(SrlHttpClient::class.java), playerRepositoryMock, mock(RaceRepository::class.java))
+
+    assertThat(dao.findResultsForPlayer(playerName)).isEqualTo(expectedResult)
+  }
+
   private fun givenPlayers(vararg players: SrlPlayer) {
 
     require(players.map { it.name }.distinct().count() == players.count()) {
