@@ -22,12 +22,14 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient,
   fun getPlayerByName(name: String): Player? {
 
     with(playerRepository.findBySrlNameIgnoreCase(name)) {
+      println(this)
       if (this != null) {
         return this
       }
     }
 
     val srlPlayer = srlHttpClient.getPlayerByName(name) ?: return null
+    println(srlPlayer)
 
     val emptyPlayer = Player(srlPlayer, mutableListOf())
     val player = playerRepository.save(emptyPlayer)
@@ -39,7 +41,12 @@ class PlayerDao(private val srlHttpClient: SrlHttpClient,
         .map { Race(it.id, it.goal, it.date, it.numentrants, mutableListOf()) }
         .toMutableList()
 
+    var i = 0
+    val emptyRacesSize = emptyRaces.size
+
     emptyRaces.forEach {
+
+      println("${i++}/$emptyRacesSize")
 
       val maybeStoredRace = raceRepository.findBySrlId(it.srlId)
           ?: Race(srlId = it.srlId, recordDate = it.recordDate, goal = it.goal)

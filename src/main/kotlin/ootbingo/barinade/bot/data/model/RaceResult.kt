@@ -1,7 +1,6 @@
 package ootbingo.barinade.bot.data.model
 
 import ootbingo.barinade.bot.compile.Open
-import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import javax.persistence.Entity
 import javax.persistence.FetchType

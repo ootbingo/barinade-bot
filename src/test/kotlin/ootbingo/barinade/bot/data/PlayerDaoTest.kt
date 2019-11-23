@@ -2,6 +2,7 @@ package ootbingo.barinade.bot.data
 
 import ootbingo.barinade.bot.data.connection.PlayerRepository
 import ootbingo.barinade.bot.data.connection.RaceRepository
+import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
@@ -36,6 +37,10 @@ internal class PlayerDaoTest {
 
     override fun findBySrlNameIgnoreCase(srlName: String): Player? =
         savedPlayers[srlName.toLowerCase()]
+
+    override fun findResultsForPlayer(username: String): List<ResultInfo> {
+      throw NotImplementedError("Not implemented")
+    }
   }
 
   private val raceRepository = object : RaceRepository {
