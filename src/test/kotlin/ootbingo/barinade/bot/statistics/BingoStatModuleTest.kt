@@ -24,6 +24,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.math.roundToLong
 import kotlin.random.Random
 
 internal class BingoStatModuleTest {
@@ -643,7 +644,10 @@ internal class BingoStatModuleTest {
         ?.substringBefore('%')
         ?.trim()
         ?.toDouble()
-        ?.let { it }
+        ?.let { it * 100 }
+        ?.roundToLong()
+        ?.toDouble()
+        ?.let { it / 100 }
 
     assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.25))
   }

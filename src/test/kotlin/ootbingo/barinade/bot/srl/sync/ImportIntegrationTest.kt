@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.data
+package ootbingo.barinade.bot.srl.sync
 
 import com.nhaarman.mockitokotlin2.doAnswer
 import ootbingo.barinade.bot.data.connection.PlayerRepository
@@ -19,11 +19,12 @@ import java.time.Duration
 import java.util.UUID
 
 @DataJpaTest
-internal class PlayerDaoIntegrationTest(@Autowired private val playerRepository: PlayerRepository,
-                                        @Autowired private val raceRepository: RaceRepository) {
+internal class ImportIntegrationTest(@Autowired private val playerRepository: PlayerRepository,
+                                     @Autowired private val raceRepository: RaceRepository) {
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
-  private val playerDao by lazy { PlayerDao(srlHttpClientMock, playerRepository, raceRepository) }
+  private val raceImporter = SrlRaceImporter(srlHttpClientMock, raceRepository)
+  private val srlPlayerImporter = SrlPlayerImporter(srlHttpClientMock, raceImporter, playerRepository, raceRepository)
 
   private val oot = SrlGame(1998, "Ocarina of Time", "oot", 1.0, 1)
 
@@ -45,16 +46,18 @@ internal class PlayerDaoIntegrationTest(@Autowired private val playerRepository:
                     srlBingoRace("5", srlResult(1, username2, 123), srlResult(2, "other", 124)),
                     srlBingoRace("9", srlResult(1, username1, 100), srlResult(2, username2, 101)))
 
-    playerDao.getPlayerByName(username1)
+    srlPlayerImporter.importPlayer(username1)
     assertThat(raceRepository.findBySrlId("9")?.raceResults).hasSize(1)
 
-    playerDao.getPlayerByName(username2)
+    srlPlayerImporter.importPlayer(username2)
 
     assertThat(raceRepository.findBySrlId("1")?.raceResults).hasSize(1)
     assertThat(raceRepository.findBySrlId("5")?.raceResults).hasSize(1)
     assertThat(raceRepository.findBySrlId("9")?.raceResults?.map { it.player.srlName })
         .containsExactlyInAnyOrder(username1, username2)
   }
+
+  //<editor-fold desc="Given">
 
   private fun givenRacesOnSrl(vararg srlRaces: SrlPastRace) {
 
@@ -82,6 +85,10 @@ internal class PlayerDaoIntegrationTest(@Autowired private val playerRepository:
     }.`when`(srlHttpClientMock).getPlayerByName(anyString())
   }
 
+  //</editor-fold>
+
+  //<editor-fold desc="Data Factories">
+
   private fun srlPlayer(id: Long, username: String) = SrlPlayer(id, username)
 
   private fun srlBingoRace(id: String, vararg srlResults: SrlResult) =
@@ -89,4 +96,6 @@ internal class PlayerDaoIntegrationTest(@Autowired private val playerRepository:
 
   private fun srlResult(place: Long, player: String, time: Long) =
       SrlResult(0, place, player, Duration.ofSeconds(time))
+
+  //</editor-fold>
 }
