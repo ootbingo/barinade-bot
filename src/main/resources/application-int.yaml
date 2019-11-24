@@ -4,6 +4,12 @@ lily:
   discord:
     enabled: true
 
+ootbingo:
+  jobs:
+    srl-sync:
+      enabled: true
+      cron: 0 0 3 * * ?
+
 spring:
   datasource:
     url: jdbc:postgresql://scaramangado.de:10010/BARINADE
