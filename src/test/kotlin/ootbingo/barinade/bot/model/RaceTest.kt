@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.model
 
 import ootbingo.barinade.bot.properties.BingoRaceProperties
+import ootbingo.barinade.bot.properties.model.WhitelistBingo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -131,6 +132,48 @@ internal class RaceTest {
 
     val raceId = Random.nextInt(0, 999999)
     BingoRaceProperties.blacklist = listOf(raceId)
+
+    val race = race(raceId,
+                    "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
+  @Test
+  internal fun isBingoWhenRaceIdWhitelisted() {
+
+    val raceId = Random.nextInt(0, 999999)
+    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
+
+    val race = race(raceId,
+                    "Definitely and totally not a bigno!!!",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isTrue()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
+    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
+  internal fun isBingoWhenRaceIdWhitelistedAndGoalContainsBlacklistedWords(word: String) {
+
+    val raceId = Random.nextInt(0, 999999)
+    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
+
+    val race = race(raceId,
+                    "goal $word",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isTrue()
+  }
+
+  @Test
+  internal fun noBingoWhenRaceIdBlacklistedAndWhitelisted() {
+
+    val raceId = Random.nextInt(0, 999999)
+    BingoRaceProperties.blacklist = listOf(raceId)
+    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
                     "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
