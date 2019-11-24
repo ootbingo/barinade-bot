@@ -92,7 +92,6 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return Answer.ofText(errorMessage)
     }
 
-    val player = playerDao.getPlayerByName(username)
     val bingos = playerDao.findResultsForPlayer(username)
         ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
@@ -220,17 +219,16 @@ class BingoStatModule(private val playerDao: PlayerDao) {
   fun forfeitRatio(username: String): Double? {
 
     val player = playerDao.getPlayerByName(username)
-    val allBingos = player
-        ?.races
-        ?.filter { it.isBingo() }
+
+    val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName) }
+        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {
       return null
     }
 
     return allBingos
-        .map { it.raceResults.last { result -> result.player.srlName == player.srlName } }
-        .filter { it.isForfeit() }
+        .filter { RaceResult(time = it.time).isForfeit() }
         .count()
         .toDouble()
         .let { it / allBingos.count() }

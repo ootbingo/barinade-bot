@@ -13,6 +13,6 @@ class SrlSyncJob {
 
   @Scheduled(cron = "\${ootbingo.jobs.srl-sync.cron}")
   fun execute() {
-    logger.info("test")
+    run { }
   }
 }

@@ -34,4 +34,3 @@ class SrlPlayerImporter(private val srlHttpClient: SrlHttpClient,
     return playerRepository.findBySrlNameIgnoreCase(player.srlName)
   }
 }
-
