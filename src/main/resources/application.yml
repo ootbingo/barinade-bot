@@ -18,3 +18,6 @@ ootbingo:
       - 17667
       - 18680
       - 15910
+    whitelist:
+      - raceId: 264444
+        goal: https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=848930&mode=normal

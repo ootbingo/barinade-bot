@@ -17,6 +17,10 @@ open class Race(val srlId: String, val goal: String, val recordDate: ZonedDateTi
       return false
     }
 
+    if (this.srlId.toInt() in BingoRaceProperties.whitelist.map { it.raceId }) {
+      return true
+    }
+
     with(this.goal.toLowerCase()) {
       return when {
 
