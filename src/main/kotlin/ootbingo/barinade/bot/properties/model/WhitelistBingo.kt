@@ -1,3 +1,3 @@
 package ootbingo.barinade.bot.properties.model
 
-data class WhitelistBingo(val raceId: Int, val goal: String?)
+data class WhitelistBingo(var raceId: Int = -1, var goal: String? = null)
