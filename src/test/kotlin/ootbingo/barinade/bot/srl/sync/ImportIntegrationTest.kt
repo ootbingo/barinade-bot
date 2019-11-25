@@ -24,7 +24,7 @@ internal class ImportIntegrationTest(@Autowired private val playerRepository: Pl
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
   private val raceImporter = SrlRaceImporter(srlHttpClientMock, raceRepository)
-  private val srlPlayerImporter = SrlPlayerImporter(srlHttpClientMock, raceImporter, playerRepository, raceRepository)
+  private val srlPlayerImporter = SrlPlayerImporter(srlHttpClientMock, raceImporter, playerRepository)
 
   private val oot = SrlGame(1998, "Ocarina of Time", "oot", 1.0, 1)
 

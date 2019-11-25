@@ -1,10 +1,7 @@
 package ootbingo.barinade.bot.srl.sync
 
 import ootbingo.barinade.bot.data.connection.PlayerRepository
-import ootbingo.barinade.bot.data.connection.RaceRepository
 import ootbingo.barinade.bot.data.model.Player
-import ootbingo.barinade.bot.data.model.Race
-import ootbingo.barinade.bot.data.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -12,8 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class SrlPlayerImporter(private val srlHttpClient: SrlHttpClient,
                         private val raceImporter: SrlRaceImporter,
-                        private val playerRepository: PlayerRepository,
-                        private val raceRepository: RaceRepository) {
+                        private val playerRepository: PlayerRepository) {
 
   private val logger = LoggerFactory.getLogger(SrlPlayerImporter::class.java)
 
