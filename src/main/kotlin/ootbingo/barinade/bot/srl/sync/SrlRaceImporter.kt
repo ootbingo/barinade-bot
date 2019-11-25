@@ -33,9 +33,7 @@ class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
 
     emptyRaces.forEach {
 
-      val maybeStoredRace = raceRepository.findBySrlId(it.srlId)
-          ?: Race(srlId = it.srlId, recordDate = it.recordDate, goal = it.goal)
-      val storedRace = raceRepository.save(maybeStoredRace)
+      val storedRace = getRaceWithId(it)
 
       if (storedRace.raceResults.none { result -> result.player == player }) {
 
@@ -53,5 +51,10 @@ class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
         raceRepository.save(storedRace)
       }
     }
+  }
+
+  private fun getRaceWithId(it: Race): Race {
+    return raceRepository.findBySrlId(it.srlId)
+        ?: Race(srlId = it.srlId, recordDate = it.recordDate, goal = it.goal).let { raceRepository.save(it) }
   }
 }
