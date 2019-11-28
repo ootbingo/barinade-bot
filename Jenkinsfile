@@ -15,9 +15,15 @@ pipeline {
         }
 
         stage("Test") {
+            
             steps {
                 sh "./gradlew test"
-                step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml' ])
+            }
+
+            post {
+                always {
+                    step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml' ])
+                }
             }
         }
 
