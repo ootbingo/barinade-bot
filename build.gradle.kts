@@ -75,16 +75,23 @@ tasks.withType<Test> {
   finalizedBy("jacocoTestReport")
 }
 
+tasks.withType<JacocoReport> {
+  reports {
+    xml.isEnabled = true
+  }
+}
+
 sonarqube {
 
   val sonarUsername: String by project
   val sonarPassword: String by project
 
   properties {
-    property("sonar.projectKey", "barinade_bot")
+    property("sonar.projectKey", "ootbingo_barinade-bot")
     property("sonar.organization", sonarUsername)
     property("sonar.host.url", "https://sonarcloud.io")
     property("sonar.login", sonarPassword)
+    property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
 
