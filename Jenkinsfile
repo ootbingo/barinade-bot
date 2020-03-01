@@ -15,7 +15,7 @@ pipeline {
         }
 
         stage("Test") {
-            
+
             steps {
                 sh "./gradlew test"
             }
@@ -23,6 +23,16 @@ pipeline {
             post {
                 always {
                     step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml' ])
+                }
+            }
+        }
+
+        stage("SonarQube") {
+
+            steps {
+                withCredentials([usernamePassword(credentialsId: "sonarcloud", usernameVariable: 'sonarUsername',
+                        passwordVariable: 'sonarPassword')]) {
+                    sh "./gradlew sonarqube -PsonarUsername=$sonarUsername -PsonarPassword=$sonarPassword"
                 }
             }
         }
