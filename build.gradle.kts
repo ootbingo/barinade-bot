@@ -77,13 +77,14 @@ tasks.withType<Test> {
 
 sonarqube {
 
-  val sonarLogin: String by project
+  val sonarUsername: String by project
+  val sonarPassword: String by project
 
   properties {
     property("sonar.projectKey", "barinade_bot")
-    property("sonar.organization", "scaramangado")
+    property("sonar.organization", sonarUsername)
     property("sonar.host.url", "https://sonarcloud.io")
-    property("sonar.login", sonarLogin)
+    property("sonar.login", sonarPassword)
   }
 }
 

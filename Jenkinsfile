@@ -30,7 +30,10 @@ pipeline {
         stage("SonarQube") {
 
             steps {
-                sh "./gradlew sonarqube"
+                withCredentials([usernamePassword(credentialsId: "sonarcloud", usernameVariable: 'sonarUsername',
+                        passwordVariable: 'sonarPassword')]) {
+                    sh "./gradlew sonarqube -PsonarUsername=$sonarUsername -PsonarPassword=$sonarPassword"
+                }
             }
         }
 
