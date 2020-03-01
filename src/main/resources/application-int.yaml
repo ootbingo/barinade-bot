@@ -25,3 +25,6 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+
+logging:
+  file: bot.log
