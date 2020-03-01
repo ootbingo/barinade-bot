@@ -24,5 +24,15 @@ data class Player(@Id var srlId: Long = 0,
             .findLast { result -> result.player.srlName == srlPlayer.name }
       }.toMutableList())
 
+  override fun equals(other: Any?): Boolean {
+    return when {
+      this === other -> true
+      other is Player -> srlId == other.srlId
+      else -> false
+    }
+  }
+
+  override fun hashCode() = srlId.hashCode()
+
   override fun toString(): String = "Player(srlName=$srlName)"
 }
