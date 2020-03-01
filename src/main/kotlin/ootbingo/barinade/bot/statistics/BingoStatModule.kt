@@ -8,18 +8,20 @@ import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
-import ootbingo.barinade.bot.data.PlayerRepository
+import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
-import ootbingo.barinade.bot.model.Player
-import ootbingo.barinade.bot.model.Race
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
 import java.util.Locale
 
 @LilyModule
-class BingoStatModule(private val playerRepository: PlayerRepository) {
+class BingoStatModule(private val playerDao: PlayerDao) {
 
   private val errorMessage = "An error occurred finding the player."
 
@@ -46,7 +48,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     val average = average(queryInfo)
 
     return Answer
-        .ofText("The average of ${queryInfo.player.name}'s last ${average.raceCount} bingos is: ${average.result} " +
+        .ofText("The average of ${queryInfo.player.srlName}'s last ${average.raceCount} bingos is: ${average.result} " +
                     "(Forfeits: ${average.forfeitsSkipped})")
   }
 
@@ -73,7 +75,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     val median = median(queryInfo)
 
     return Answer
-        .ofText("The median of ${queryInfo.player.name}'s last ${median.raceCount} bingos is: ${median.result} " +
+        .ofText("The median of ${queryInfo.player.srlName}'s last ${median.raceCount} bingos is: ${median.result} " +
                     "(Forfeits: ${median.forfeitsSkipped})")
   }
 
@@ -90,13 +92,12 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       return Answer.ofText(errorMessage)
     }
 
-    val player = playerRepository.getPlayerByName(username)
-    val bingos = player?.races?.filter { it.isBingo() }
+    val bingos = playerDao.findResultsForPlayer(username)
+        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     return Answer.ofText(
         bingos
-            ?.mapNotNull { it.raceResults.lastOrNull { result -> result.player.name == player.name } }
-            ?.filter { it.isForfeit() }
+            ?.filter { RaceResult(time = it.time).isForfeit() }
             ?.count()
             ?.toDouble()
             ?.let { 100 * it / bingos.count().toDouble() }
@@ -108,7 +109,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
     val username = findUsername(messageInfo)
 
-    return playerRepository.getPlayerByName(username)
+    return playerDao.getPlayerByName(username)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(username)
   }
 
@@ -128,7 +129,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       }
     }
 
-    return playerRepository.getPlayerByName(user)
+    return playerDao.getPlayerByName(user)
         ?.let { QueryInfo(it, parsedRaceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -143,7 +144,7 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
       return null
     }
 
-    return playerRepository.getPlayerByName(user)
+    return playerDao.getPlayerByName(user)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -152,18 +153,17 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     var forfeitsSkipped = 0
 
     val allBingos = queryInfo.player
-        .races
+        .let { playerDao.findResultsForPlayer(it.srlName) }!!
         .asSequence()
-        .filter { it.isBingo() }
-        .sortedByDescending { it.recordDate }
+        .filter { Race(it.raceId, it.goal, it.recordDate, 0, mutableListOf()).isBingo() }
         .toMutableList()
 
-    val toAverage = mutableListOf<Race>()
+    val toAverage = mutableListOf<ResultInfo>()
 
     while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
 
       val bingo = allBingos.removeAt(0)
-      val result = bingo.raceResults.last { it.player.name == queryInfo.player.name }
+      val result = RaceResult(time = bingo.time)
 
       if (result.isForfeit()) {
         forfeitsSkipped++
@@ -175,28 +175,26 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
     return ComputationRaces(toAverage, forfeitsSkipped)
   }
 
-  private fun average(queryInfo: QueryInfo): ResultInfo {
+  private fun average(queryInfo: QueryInfo): ComputationResult {
 
     val toAverage = allRacesForComputation(queryInfo)
 
     return toAverage.races
-        .map { it.raceResults.last { result -> result.player.name == queryInfo.player.name } }
         .map { it.time.seconds }
         .average()
         .let { Duration.ofSeconds(it.toLong()).standardFormat() }
-        .let { ResultInfo(it, toAverage.races.size, toAverage.forfeitsSkipped) }
+        .let { ComputationResult(it, toAverage.races.size, toAverage.forfeitsSkipped) }
   }
 
-  private fun median(queryInfo: QueryInfo): ResultInfo {
+  private fun median(queryInfo: QueryInfo): ComputationResult {
 
     val toMedian = allRacesForComputation(queryInfo)
 
     return toMedian.races
-        .map { it.raceResults.last { result -> result.player.name == queryInfo.player.name } }
         .map { it.time.seconds }
         .median()
         .let { Duration.ofSeconds(it).standardFormat() }
-        .let { ResultInfo(it, toMedian.races.size, toMedian.forfeitsSkipped) }
+        .let { ComputationResult(it, toMedian.races.size, toMedian.forfeitsSkipped) }
   }
 
   private fun findUsername(messageInfo: MessageInfo): String =
@@ -208,11 +206,10 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun median(username: String): Duration? {
 
-    val player = playerRepository.getPlayerByName(username)
+    val player = playerDao.getPlayerByName(username)
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
-        ?.map { it.raceResults.last { result -> result.player.name == player.name } }
         ?.map { it.time.seconds }
         ?.let { if (it.isEmpty()) return null else it }
         ?.median()
@@ -221,26 +218,25 @@ class BingoStatModule(private val playerRepository: PlayerRepository) {
 
   fun forfeitRatio(username: String): Double? {
 
-    val player = playerRepository.getPlayerByName(username)
-    val allBingos = player
-        ?.races
-        ?.filter { it.isBingo() }
+    val player = playerDao.getPlayerByName(username)
+
+    val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName) }
+        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {
       return null
     }
 
     return allBingos
-        .map { it.raceResults.last { result -> result.player.name == player.name } }
-        .filter { it.isForfeit() }
+        .filter { RaceResult(time = it.time).isForfeit() }
         .count()
         .toDouble()
         .let { it / allBingos.count() }
   }
 
   private inner class QueryInfo(val player: Player, val raceCount: Int)
-  private inner class ResultInfo(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
-  private inner class ComputationRaces(val races: List<Race>, val forfeitsSkipped: Int)
+  private inner class ComputationResult(val result: String, val raceCount: Int, val forfeitsSkipped: Int)
+  private inner class ComputationRaces(val races: List<ResultInfo>, val forfeitsSkipped: Int)
 
   private inner class PlayerNotFoundException(val username: String) : Exception()
 }

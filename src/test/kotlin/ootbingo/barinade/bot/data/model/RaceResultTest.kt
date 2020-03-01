@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.model
+package ootbingo.barinade.bot.data.model
 
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -12,7 +12,7 @@ internal class RaceResultTest {
   @ValueSource(longs = [-1, -2, -5, -99, -1000])
   internal fun isForfeitWhenTimeIsNegative(time: Long) {
 
-    val result = RaceResult(mock(Race::class.java), Player(0, "", emptyList()), 999, Duration.ofSeconds(time), "")
+    val result = RaceResult(0L, mock(Race::class.java), Player(0, "", mutableListOf()), 999, Duration.ofSeconds(time), "")
 
     assertThat(result.isForfeit()).isTrue()
   }

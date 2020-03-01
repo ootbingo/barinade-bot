@@ -9,27 +9,28 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
-import ootbingo.barinade.bot.data.PlayerRepository
-import ootbingo.barinade.bot.model.Player
-import ootbingo.barinade.bot.model.Race
-import ootbingo.barinade.bot.model.RaceResult
+import ootbingo.barinade.bot.data.PlayerDao
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.math.roundToLong
 import kotlin.random.Random
 
 internal class BingoStatModuleTest {
 
-  private val playerRepositoryMock = mock(PlayerRepository::class.java)
-  private val module = BingoStatModule(playerRepositoryMock)
+  private val playerDaoMock = mock(PlayerDao::class.java)
+  private val module = BingoStatModule(playerDaoMock)
   private val players = mutableMapOf<String, Player>()
 
   private val commands by lazy {
@@ -41,7 +42,17 @@ internal class BingoStatModuleTest {
   @BeforeEach
   internal fun setup() {
     doAnswer { players[it.getArgument(0)] }
-        .`when`(playerRepositoryMock).getPlayerByName(ArgumentMatchers.anyString())
+        .`when`(playerDaoMock).getPlayerByName(anyString())
+
+    doAnswer {
+      val test = players[it.getArgument(0)]
+          ?.races
+          ?.map { r ->
+            val result = r.raceResults.findLast { res -> res.player.srlName == it.getArgument(0) }
+            ResultInfo(result!!.time, r.goal, r.srlId, r.recordDate)
+          }
+      test
+    }.`when`(playerDaoMock).findResultsForPlayer(anyString())
   }
 
   //<editor-fold desc="Average">
@@ -312,13 +323,13 @@ internal class BingoStatModuleTest {
 
     val username = UUID.randomUUID().toString()
 
-    givenBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+    givenBingoTimesForPlayer(username, 1, 3, -1, -2, -3, 2, -1)
 
     val answer = whenIrcMessageIsSent(username, "!median 3")
 
     thenReportedTimeIsEqualTo(answer, "0:00:02")
     thenDisplayedNumberOfRacesIs(answer, 3)
-    thenDisplayedNumberOfForfeitsIs(answer, 2)
+    thenDisplayedNumberOfForfeitsIs(answer, 3)
   }
 
   @Test
@@ -364,7 +375,7 @@ internal class BingoStatModuleTest {
 
     val username = UUID.randomUUID().toString()
 
-    givenBingoTimesForPlayer(username, 1,2,3)
+    givenBingoTimesForPlayer(username, 1, 2, 3)
     givenNonBingoTimesForPlayer(username, 25)
 
     assertThat(module.median(username)).isEqualTo(Duration.ofSeconds(2))
@@ -520,15 +531,20 @@ internal class BingoStatModuleTest {
 
     val races = ArrayList<Race>()
 
-    var timestamp = Random.nextLong(99999, 123456789)
+    var timestamp = Random.nextLong(99999, 1568937600)
 
     times
         .map {
-          RaceResult(Race("", "", ZonedDateTime.now(), 1, emptyList()),
-                     Player(0, username, emptyList()), 1, Duration.ofSeconds(it.toLong()), "")
+          RaceResult(0L, Race("", "", ZonedDateTime.now(), 1, mutableListOf()),
+                     Player(0, username, mutableListOf()), 1, Duration.ofSeconds(it.toLong()), "")
         }
         .map {
-          Race("0", "", ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1, listOf(it))
+
+          val goal = if (bingo) "speedrunslive.com/tools/oot-bingo"
+          else ""
+
+          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1,
+               mutableListOf(it))
         }
         .map {
           val spy = spy(it)
@@ -541,8 +557,10 @@ internal class BingoStatModuleTest {
       it.raceResults.forEach { result -> result.race = it }
     }
 
-    val oldPlayer = players[username] ?: Player(0, username, emptyList())
-    val player = oldPlayer.copy(races = oldPlayer.races + races)
+    val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
+    val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
+      it.raceResults.findLast { result -> result.player.srlName == oldPlayer.srlName }
+    }).toMutableList())
 
     players[username] = player
   }
@@ -626,9 +644,12 @@ internal class BingoStatModuleTest {
         ?.substringBefore('%')
         ?.trim()
         ?.toDouble()
-        ?.let { it }
+        ?.let { it * 100 }
+        ?.roundToLong()
+        ?.toDouble()
+        ?.let { it / 100 }
 
-    assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.05))
+    assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.25))
   }
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {

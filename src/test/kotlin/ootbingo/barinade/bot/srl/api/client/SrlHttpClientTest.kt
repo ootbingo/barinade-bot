@@ -232,4 +232,63 @@ internal class SrlHttpClientTest {
 
     soft.assertAll()
   }
+
+  @Test
+  internal fun findsPlayersOfGame() {
+
+    fun jsonWithPlayers(player1: String, player2: String)=
+    """
+      {
+        "count" : 5326,
+        "pastraces" :
+          [
+            { "id" : "${Random.nextInt(0, 5000)}",
+              "game":{ "id":1, "name":"Ocarina of Time","abbrev":"oot","popularity":1,"popularityrank":1},
+              "goal":"goal","date":"${Random.nextLong(0, 1572119797)}","numentrants":1,
+              "results" :
+                [
+                  {
+                    "race":45,"place":1,"player":"$player1","time":45,"message":"hi",
+                    "oldtrueskill" : 0,"newtrueskill" : 0,"trueskillchange" : 0,
+                    "oldseasontrueskill" : 0,"newseasontrueskill" : 0,"seasontrueskillchange" : 0
+                  },
+                  {
+                    "race":45,"place":2,"player":"$player2","time":46,"message":"hi",
+                    "oldtrueskill" : 0,"newtrueskill" : 0,"trueskillchange" : 0,
+                    "oldseasontrueskill" : 0,"newseasontrueskill" : 0,"seasontrueskillchange" : 0
+                  }
+                ]
+            }
+          ]
+      }
+    """.trimIndent()
+
+    val emptyJson = """
+      {
+      "count" : 5326,
+      "pastraces" :
+      [
+      ]
+      }
+    """.trimIndent()
+
+    server
+        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=1"))
+        ?.andRespond(withSuccess(jsonWithPlayers("Konrad", "Ludwig"), MediaType.APPLICATION_JSON))
+
+    server
+        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=2"))
+        ?.andRespond(withSuccess(jsonWithPlayers("Ludwig", "Gerhard"), MediaType.APPLICATION_JSON))
+
+    server
+        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=3"))
+        ?.andRespond(withSuccess(jsonWithPlayers("Willy", "Helmut"), MediaType.APPLICATION_JSON))
+
+    server
+        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=4"))
+        ?.andRespond(withSuccess(emptyJson, MediaType.APPLICATION_JSON))
+
+    assertThat(client?.getPlayerNamesOfGame("oot"))
+        .containsExactlyInAnyOrder("Konrad", "Ludwig", "Gerhard", "Willy", "Helmut")
+  }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import java.net.URI
+import java.util.stream.IntStream
 
 @Component
 class SrlHttpClient(private val properties: SrlApiProperties, private val restTemplate: RestTemplate) {
@@ -39,5 +40,27 @@ class SrlHttpClient(private val properties: SrlApiProperties, private val restTe
         }
 
     return if (srlPlayer != null && srlPlayer.id == 0L) null else srlPlayer
+  }
+
+  fun getPlayerNamesOfGame(gameAbbreviation: String): Set<String> {
+
+    val players = mutableSetOf<String>()
+
+    fun getPage(page: Int) =
+        restTemplate
+            .getForObject(URI.create("${properties.baseUrl}/pastraces?game=$gameAbbreviation&pageSize=2000&page=$page"),
+                          SrlPastRaces::class.java)
+
+    IntStream.iterate(1) { it + 1 }
+        .mapToObj { getPage(it) }
+        .takeWhile { it != null && it.pastraces.isNotEmpty() }
+        .map { it!!.pastraces }
+        .flatMap { it.stream() }
+        .flatMap { it.results.stream() }
+        .forEach {
+          players.add(it.player)
+        }
+
+    return players.toSet()
   }
 }
