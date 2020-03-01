@@ -15,7 +15,7 @@ pipeline {
         }
 
         stage("Test") {
-            
+
             steps {
                 sh "./gradlew test"
             }
@@ -24,6 +24,13 @@ pipeline {
                 always {
                     step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml' ])
                 }
+            }
+        }
+
+        stage("SonarQube") {
+
+            steps {
+                sh "./gradlew sonarqube"
             }
         }
 

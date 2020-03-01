@@ -7,6 +7,7 @@ plugins {
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
   kotlin("plugin.allopen") version "1.3.50"
+  id("org.sonarqube") version "2.7.1"
   jacoco
 }
 
@@ -72,6 +73,18 @@ tasks.withType<Test> {
   }
 
   finalizedBy("jacocoTestReport")
+}
+
+sonarqube {
+
+  val sonarLogin: String by project
+
+  properties {
+    property("sonar.projectKey", "barinade_bot")
+    property("sonar.organization", "scaramangado")
+    property("sonar.host.url", "https://sonarcloud.io")
+    property("sonar.login", sonarLogin)
+  }
 }
 
 allOpen {
