@@ -1,14 +1,14 @@
 package ootbingo.barinade.bot.data.connection
 
 import ootbingo.barinade.bot.data.model.Race
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Component
 
 @Component
 interface RaceRepository : CrudRepository<Race, String> {
 
-//  fun save(race: Race): Race
-//  fun save(races: Collection<Race>)
+  @Fetch(FetchMode.JOIN)
   fun findBySrlId(srlId: String): Race?
-//  fun findAll(): Set<Race>
 }
