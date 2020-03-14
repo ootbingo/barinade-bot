@@ -21,3 +21,4 @@ logging:
     root: OFF
     org:
       springframework: OFF
+    ootbingo: DEBUG

@@ -110,7 +110,7 @@ internal class SrlRaceImporterTest {
     importer.importRacesForUser(Player(0, playerName))
 
     verify(raceRepositoryMock, times(0)).save(any<Race>())
-    verify(raceRepositoryMock, times(0)).save(any<Collection<Race>>())
+    verify(raceRepositoryMock, times(0)).saveAll(any<Iterable<Race>>())
   }
 
   private fun givenRacesInDb(vararg races: Race) {

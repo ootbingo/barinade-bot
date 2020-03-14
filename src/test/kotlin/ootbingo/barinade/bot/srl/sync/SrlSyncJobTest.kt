@@ -17,6 +17,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -31,18 +32,19 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   private val job = SrlSyncJob(srlHttpClientMock, playerRepository, raceRepository, raceResultRepository)
 
   @Test
+  @DirtiesContext
   internal fun importsAllOotPlayers() {
 
     givenPlayersInDb("Alpha" withId 1, "Beta" withId 2)
     givenRacesInDb(Race("991"))
-    givenResultsInDb(result("Alpha", "991"))
+    givenResultsInDb(result("Alpha", "991", 551))
 
     givenPlayersOnSrl("Alpha" withId 1, "Beta" withId 2, "Gamma" withId 3)
     givenRacesOnSrl(
         pastRace {
           id = 991
           goal = "race1"
-          date = ZonedDateTime.from(Instant.ofEpochSecond(991))
+          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
           results {
             result {
               player = "Alpha"
@@ -57,7 +59,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         pastRace {
           id = 992
           goal = "race2"
-          date = ZonedDateTime.from(Instant.ofEpochSecond(992))
+          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
           results {
             result {
               player = "Beta"
@@ -83,12 +85,12 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     thenDbPlayerWithName("Gamma") hasRaceTimes setOf(552, 662)
 
     thenRaceWithId(991) hasGoal "race1"
-    thenRaceWithId(991) hasDate ZonedDateTime.from(Instant.ofEpochSecond(992))
-    thenRaceWithId(991) hasResults setOf("Alpha" to 663, "Beta" to 661, "Gamma" to 662)
+    thenRaceWithId(991) hasDate ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
+    thenRaceWithId(991) hasResults setOf("Alpha" to 551, "Gamma" to 552)
 
     thenRaceWithId(992) hasGoal "race2"
-    thenRaceWithId(992) hasDate ZonedDateTime.from(Instant.ofEpochSecond(991))
-    thenRaceWithId(992) hasResults setOf("Alpha" to 551, "Beta" to 552)
+    thenRaceWithId(992) hasDate ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
+    thenRaceWithId(992) hasResults setOf("Alpha" to 663, "Beta" to 661, "Gamma" to 662)
 
     thenPlayerCount isEqualTo 3
     thenRaceCount isEqualTo 2
@@ -98,15 +100,15 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   //<editor-fold desc="Given">
 
   private fun givenPlayersInDb(vararg players: Player) {
-    playerRepository.save(players.asList())
+    playerRepository.saveAll(players.toList())
   }
 
   private fun givenRacesInDb(vararg races: Race) {
-    raceRepository.save(races.asList())
+    raceRepository.saveAll(races.asList())
   }
 
   private fun givenResultsInDb(vararg results: RaceResult) {
-    raceResultRepository.save(results.asList())
+    raceResultRepository.saveAll(results.asList())
   }
 
   private fun givenPlayersOnSrl(vararg players: Player) {
@@ -149,26 +151,31 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   private infix fun Race.hasResults(results: Collection<Pair<String, Int>>) {
     results.forEach {
-      assertThat(raceResults.lastOrNull { res -> res.player.srlName == it.first }?.time?.seconds)
-          .isEqualTo(it.second)
+      assertThat(
+          raceResultRepository.findAll()
+              .filter { res -> res.race == this }
+              .last { res -> res.player.srlName == it.first }.time.seconds
+      ).isEqualTo(it.second.toLong())
     }
 
-    assertThat(raceResults.size).isEqualTo(results.size)
+    assertThat(raceResultRepository.findAll().filter { res -> res.race == this }.count())
+        .isEqualTo(results.size)
   }
 
   private infix fun Player.hasRaceTimes(times: Collection<Long>) {
-    assertThat(this.raceResults.map { it.time.seconds })
+
+    assertThat(raceResultRepository.findAll().filter { it.player == this }.map { it.time.seconds })
         .containsExactlyInAnyOrder(*times.toTypedArray())
   }
 
   private val thenPlayerCount: Int
-    get() = playerRepository.findAll().size
+    get() = playerRepository.findAll().count()
 
   private val thenRaceCount: Int
-    get() = raceRepository.findAll().size
+    get() = raceRepository.findAll().count()
 
   private val thenResultCount: Int
-    get() = raceResultRepository.findAll().size
+    get() = raceResultRepository.findAll().count()
 
   private infix fun Int.isEqualTo(other: Int) {
     assertThat(this).isEqualTo(other)
@@ -179,8 +186,9 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   //<editor-fold desc="Helper">
 
   private infix fun String.withId(id: Long): Player = Player(id, this)
-  private fun result(playerName: String, raceId: String) =
-      RaceResult(null, raceRepository.findBySrlId(raceId)!!, playerRepository.findBySrlNameIgnoreCase(playerName)!!)
+  private fun result(playerName: String, raceId: String, time: Int) =
+      RaceResult(null, raceRepository.findBySrlId(raceId)!!, playerRepository.findBySrlNameIgnoreCase(playerName)!!,
+                 time = Duration.ofSeconds(time.toLong()))
 
   //<editor-fold desc="SRL Race Builder">
 
@@ -200,7 +208,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
     fun build(): SrlPastRace =
         SrlPastRace(id = id.toString(), goal = goal, date = date, numentrants = results.size.toLong(),
-                    results = results)
+                    results = results).also { println(it) }
   }
 
   class ResultsBuilder {

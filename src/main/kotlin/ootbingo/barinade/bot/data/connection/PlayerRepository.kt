@@ -3,17 +3,18 @@ package ootbingo.barinade.bot.data.connection
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.Repository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Component
 
 @Component
-interface PlayerRepository : Repository<Player, Long> {
+interface PlayerRepository : CrudRepository<Player, Long> {
 
-  fun save(player: Player): Player
-  fun save(players: Collection<Player>)
+//  fun save(player: Player): Player
+//  fun save(players: Iterable<Player>): Set<Player>
   fun findBySrlNameIgnoreCase(srlName: String): Player?
-  fun findAll(): Set<Player>
+//  fun findAll(): Set<Player>
 
   @Query("""
     select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.srlId, r.recordDate)
