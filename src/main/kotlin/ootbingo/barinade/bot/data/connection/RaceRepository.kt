@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 interface RaceRepository : Repository<Race, String> {
 
   fun save(race: Race): Race
+  fun save(races: Collection<Race>)
   fun findBySrlId(srlId: String): Race?
   fun findAll(): Set<Race>
 }

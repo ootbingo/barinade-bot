@@ -30,7 +30,7 @@ internal class SrlRaceImporterTest {
   @BeforeEach
   internal fun setup() {
     givenGamesOnSrl(oot, ootbingo, otherGame)
-    doAnswer { it.getArgument(0) }.`when`(raceRepositoryMock).save(any())
+    doAnswer { it.getArgument(0) }.`when`(raceRepositoryMock).save(any<Race>())
   }
 
   @Test
@@ -109,7 +109,8 @@ internal class SrlRaceImporterTest {
 
     importer.importRacesForUser(Player(0, playerName))
 
-    verify(raceRepositoryMock, times(0)).save(any())
+    verify(raceRepositoryMock, times(0)).save(any<Race>())
+    verify(raceRepositoryMock, times(0)).save(any<Collection<Race>>())
   }
 
   private fun givenRacesInDb(vararg races: Race) {

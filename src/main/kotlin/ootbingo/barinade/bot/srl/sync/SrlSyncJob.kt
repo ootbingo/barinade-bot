@@ -1,8 +1,12 @@
 package ootbingo.barinade.bot.srl.sync
 
+import ootbingo.barinade.bot.data.connection.PlayerRepository
+import ootbingo.barinade.bot.data.connection.RaceRepository
+import ootbingo.barinade.bot.data.connection.RaceResultRepository
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -11,7 +15,10 @@ import java.time.Instant
 
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.srl-sync.enabled"], havingValue = "true")
-class SrlSyncJob(private val srlHttpClient: SrlHttpClient) {
+class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
+                 private val playerRepository: PlayerRepository,
+                 private val raceRepository: RaceRepository,
+                 private val raceResultRepository: RaceResultRepository) {
 
   private val logger = LoggerFactory.getLogger(SrlSyncJob::class.java)
 

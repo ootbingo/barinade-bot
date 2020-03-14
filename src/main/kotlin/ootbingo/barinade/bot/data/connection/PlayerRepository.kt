@@ -13,6 +13,7 @@ interface PlayerRepository : Repository<Player, Long> {
   fun save(player: Player): Player
   fun save(players: Collection<Player>)
   fun findBySrlNameIgnoreCase(srlName: String): Player?
+  fun findAll(): Set<Player>
 
   @Query("""
     select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.srlId, r.recordDate)
