@@ -5,9 +5,4 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Component
 
 @Component
-interface RaceResultRepository : CrudRepository<RaceResult, Long> {
-
-//  fun save(raceResult: RaceResult): RaceResult
-//  fun save(raceResults: Collection<RaceResult>)
-//  fun findAll(): List<RaceResult>
-}
+interface RaceResultRepository : CrudRepository<RaceResult, Long>

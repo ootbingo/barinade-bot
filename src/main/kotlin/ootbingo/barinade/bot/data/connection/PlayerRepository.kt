@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 interface PlayerRepository : CrudRepository<Player, Long> {
 
-//  fun save(player: Player): Player
-//  fun save(players: Iterable<Player>): Set<Player>
   fun findBySrlNameIgnoreCase(srlName: String): Player?
-//  fun findAll(): Set<Player>
 
   @Query("""
     select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.srlId, r.recordDate)
@@ -30,13 +27,4 @@ interface PlayerRepository : CrudRepository<Player, Long> {
    order by r.recordDate desc
   """)
   fun findResultsForPlayer(@Param("username") username: String): List<ResultInfo>
-
-  @Query("""
-    select distinct p from Player p
-    inner join fetch p.raceResults res
-    inner join fetch res.race r
-    
-    where p.srlName in :usernames
-  """)
-  fun findPlayersEagerly(@Param("usernames") usernames: Collection<String>): Set<Player>
 }
