@@ -3,7 +3,6 @@ package ootbingo.barinade.bot.srl.sync
 import com.nhaarman.mockitokotlin2.anyOrNull
 import ootbingo.barinade.bot.data.connection.PlayerRepository
 import ootbingo.barinade.bot.data.model.Player
-import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlPlayer
@@ -27,7 +26,7 @@ internal class SrlPlayerImporterTest {
   internal fun setup() {
     doAnswer {
       it.getArgument(0)
-    }.`when`(playerRepositoryMock).save(anyOrNull())
+    }.`when`(playerRepositoryMock).save(anyOrNull<Player>())
   }
 
   @Test
@@ -44,7 +43,7 @@ internal class SrlPlayerImporterTest {
   @Test
   internal fun returnsPlayerQueriedAfterRaceImport() {
 
-    val playerId = Random.nextLong(0,999999)
+    val playerId = Random.nextLong(0, 999999)
     val playerName = UUID.randomUUID().toString()
 
     val raceImported = AtomicBoolean(false)
@@ -79,7 +78,7 @@ internal class SrlPlayerImporterTest {
   @Test
   internal fun savesPlayerWhenFound() {
 
-    val playerId = Random.nextLong(0,999999)
+    val playerId = Random.nextLong(0, 999999)
     val playerName = UUID.randomUUID().toString()
 
     givenPlayersOnSrl(SrlPlayer(playerId, playerName))
@@ -92,7 +91,7 @@ internal class SrlPlayerImporterTest {
   @Test
   internal fun triggersRaceImportForUser() {
 
-    val playerId = Random.nextLong(0,999999)
+    val playerId = Random.nextLong(0, 999999)
     val playerName = UUID.randomUUID().toString()
 
     givenPlayersOnSrl(SrlPlayer(playerId, playerName))

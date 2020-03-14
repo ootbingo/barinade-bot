@@ -3,7 +3,6 @@ package ootbingo.barinade.bot.data.model
 import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
-import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.persistence.CascadeType
@@ -18,7 +17,8 @@ data class Race(@Id var srlId: String = "",
                 var goal: String = "",
                 var recordDate: ZonedDateTime = ZonedDateTime.now(),
                 var numberOfEntrants: Long = 0,
-                @OneToMany(cascade = [CascadeType.ALL], mappedBy = "race", fetch = FetchType.EAGER) var raceResults: MutableList<RaceResult> = mutableListOf()) {
+                @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE], mappedBy = "race", fetch = FetchType.EAGER)
+                var raceResults: MutableList<RaceResult> = mutableListOf()) {
 
   fun isBingo(): Boolean {
 
