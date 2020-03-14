@@ -9,4 +9,5 @@ interface RaceRepository : Repository<Race, String> {
 
   fun save(race: Race): Race
   fun findBySrlId(srlId: String): Race?
+  fun findAll(): Set<Race>
 }

@@ -13,22 +13,10 @@ import java.util.stream.IntStream
 internal class SrlSyncJobTest {
 
   private val srlHttpClientMock = mock<SrlHttpClient>()
-  private val srlPlayerImporterMock = mock<SrlPlayerImporter>()
-  private val job = SrlSyncJob(srlHttpClientMock, srlPlayerImporterMock)
+  private val job = SrlSyncJob(srlHttpClientMock)
 
   @Test
   internal fun importsAllOotPlayers() {
-
-    val players = IntStream
-        .range(1, 25)
-        .mapToObj { UUID.randomUUID().toString() }
-        .collect(Collectors.toSet())
-
-    whenever(srlHttpClientMock.getPlayerNamesOfGame("oot")).thenReturn(players)
-
-    job.execute()
-
-    players.forEach { verify(srlPlayerImporterMock).importPlayer(it) }
-    verifyNoMoreInteractions(srlPlayerImporterMock)
+    TODO()
   }
 }

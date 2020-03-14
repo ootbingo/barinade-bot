@@ -234,10 +234,10 @@ internal class SrlHttpClientTest {
   }
 
   @Test
-  internal fun findsPlayersOfGame() {
+  internal fun findsAllRacesOfGame() {
 
-    fun jsonWithPlayers(player1: String, player2: String)=
-    """
+    fun jsonWithPlayers(player1: String, player2: String) =
+        """
       {
         "count" : 5326,
         "pastraces" :
@@ -288,7 +288,14 @@ internal class SrlHttpClientTest {
         ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=4"))
         ?.andRespond(withSuccess(emptyJson, MediaType.APPLICATION_JSON))
 
-    assertThat(client?.getPlayerNamesOfGame("oot"))
-        .containsExactlyInAnyOrder("Konrad", "Ludwig", "Gerhard", "Willy", "Helmut")
+    val allRaces = client?.getAllRacesOfGame("oot") ?: emptySet()
+    val abstractRaces =
+        allRaces.map { it.results }
+            .map { it.map { r -> r.player to r.place } }
+            .map { it[0] to it[1] }
+
+    assertThat(abstractRaces).containsExactlyInAnyOrder((("Konrad" to 1L) to ("Ludwig" to 2L)),
+                                                        (("Ludwig" to 1L) to ("Gerhard" to 2L)),
+                                                        (("Willy" to 1L) to ("Helmut" to 2L)))
   }
 }

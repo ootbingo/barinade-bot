@@ -11,26 +11,18 @@ import java.time.Instant
 
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.srl-sync.enabled"], havingValue = "true")
-class SrlSyncJob(private val srlHttpClient: SrlHttpClient, private val srlPlayerImporter: SrlPlayerImporter) {
+class SrlSyncJob(private val srlHttpClient: SrlHttpClient) {
 
   private val logger = LoggerFactory.getLogger(SrlSyncJob::class.java)
 
   @Scheduled(cron = "\${ootbingo.jobs.srl-sync.cron}")
   fun execute() {
-    run {
       val start = Instant.now()
       logger.info("Syncing SRL data with DB...")
 
-      logger.info("Find all players")
-      val players = srlHttpClient.getPlayerNamesOfGame("oot")
-      logger.info("Found ${players.size} players")
-
-      players.forEach {
-        srlPlayerImporter.importPlayer(it)
-      }
+      logger.info("Find all OoT races")
 
       val end = Instant.now()
       logger.info("SRL Sync finished. Time: ${Duration.between(start, end).standardFormat()}")
     }
-  }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 interface PlayerRepository : Repository<Player, Long> {
 
   fun save(player: Player): Player
+  fun save(players: Collection<Player>)
   fun findBySrlNameIgnoreCase(srlName: String): Player?
 
   @Query("""
@@ -27,4 +28,13 @@ interface PlayerRepository : Repository<Player, Long> {
    order by r.recordDate desc
   """)
   fun findResultsForPlayer(@Param("username") username: String): List<ResultInfo>
+
+  @Query("""
+    select distinct p from Player p
+    inner join fetch p.raceResults res
+    inner join fetch res.race r
+    
+    where p.srlName in :usernames
+  """)
+  fun findPlayersEagerly(@Param("usernames") usernames: Collection<String>): Set<Player>
 }
