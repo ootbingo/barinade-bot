@@ -14,8 +14,8 @@ import javax.persistence.ManyToOne
 @Entity
 @Open
 data class RaceResult(@Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id: Long? = null,
-                      @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.EAGER) @JoinColumn(name = "race_id") var race: Race = Race(),
-                      @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.EAGER) @JoinColumn(name = "player_id") var player: Player = Player(),
+                      @ManyToOne(cascade = [], fetch = FetchType.EAGER) @JoinColumn(name = "race_id") var race: Race = Race(),
+                      @ManyToOne(cascade = [], fetch = FetchType.EAGER) @JoinColumn(name = "player_id") var player: Player = Player(),
                       var place: Long = 0,
                       var time: Duration = Duration.ofSeconds(0),
                       var message: String = "") {
