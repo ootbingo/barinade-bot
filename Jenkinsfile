@@ -22,7 +22,7 @@ pipeline {
 
             post {
                 always {
-                    step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml' ])
+                    step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/*.xml'])
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
 
             steps {
                 script {
-                    docker.withRegistry("https://scaramangado.de:10191", "barinade-registry") {
+                    docker.withRegistry("https://barinade.scaramangado.de:10193", "barinade-registry") {
                         def devImage = docker.build("barinade/bot:dev")
                         devImage.push()
                     }
