@@ -30,7 +30,7 @@ pipeline {
         stage("SonarQube") {
 
             steps {
-                withCredentials([usernamePassword(credentialsId: "sonarcloud", usernameVariable: 'sonarUsername',
+                withCredentials([usernamePassword(credentialsId: "sonarcloud_ootbingo", usernameVariable: 'sonarUsername',
                         passwordVariable: 'sonarPassword')]) {
                     sh "./gradlew sonarqube -PsonarUsername=$sonarUsername -PsonarPassword=$sonarPassword"
                 }
@@ -53,14 +53,14 @@ pipeline {
 
             steps {
                 script {
-                    docker.withRegistry("https://barinade.scaramangado.de:10193", "barinade-registry") {
+                    docker.withRegistry("https://barinade.scaramangado.de:10193", "scaramangado-registry") {
                         def devImage = docker.build("barinade/bot:dev")
                         devImage.push()
                     }
                 }
 
                 withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
-                    sh "ssh barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/dev/docker-compose.yml up -d --force-recreate bot"
+                    sh "ssh -oStrictHostKeyChecking=no barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/dev/docker-compose.yml up -d --force-recreate bot"
                 }
             }
         }
