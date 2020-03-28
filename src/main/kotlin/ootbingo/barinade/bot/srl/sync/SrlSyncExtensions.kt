@@ -6,6 +6,3 @@ fun Set<SrlPastRace>.allPlayerNames() =
     this.map { race -> race.results.map { result -> result.player } }
         .flatten()
         .toSet()
-
-fun Set<SrlPastRace>.allRaceIds() =
-    this.map { race -> race.id }.toSet()

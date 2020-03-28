@@ -1,4 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileWriter
+import java.nio.charset.StandardCharsets.*
+import java.util.Properties
 
 plugins {
   java
@@ -59,8 +62,21 @@ dependencies {
 
 tasks.withType<Jar> {
 
+  dependsOn("versionProperties")
+
   archiveBaseName.set("barinade_bot")
   archiveVersion.set("")
+}
+
+val versionProperties by tasks.register("versionProperties") {
+
+  group = "build"
+  description = "Saves version and build number in the resources folder."
+
+  val properties = Properties()
+  properties["barinade.version"] = version
+  properties["barinade.build"] = executeCommand("git log -1 --format=%h")
+  properties.store(FileWriter("src/main/resources/version.properties", UTF_8, false), null)
 }
 
 tasks.withType<Test> {
@@ -98,6 +114,13 @@ sonarqube {
 allOpen {
   annotation("ootbingo.barinade.bot.compile.Open")
 }
+
+fun executeCommand(command: String) =
+    try {
+      Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
+    } catch (e: Exception) {
+      ""
+    }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
