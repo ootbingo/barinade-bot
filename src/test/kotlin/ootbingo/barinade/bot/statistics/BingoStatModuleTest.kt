@@ -366,7 +366,7 @@ internal class BingoStatModuleTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Public API">
+  //<editor-fold desc="Public Median API">
 
   @Test
   internal fun calculatesMedianForUser() {
@@ -510,7 +510,7 @@ internal class BingoStatModuleTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Public API">
+  //<editor-fold desc="Public Forfeit API">
 
   @Test
   internal fun calculatesForfeitRatioForUser() {

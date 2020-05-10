@@ -1,0 +1,259 @@
+package ootbingo.barinade.bot.statistics
+
+import de.scaramanga.lily.core.communication.Answer
+import de.scaramanga.lily.core.communication.AnswerInfo
+import de.scaramanga.lily.core.communication.Command
+import de.scaramanga.lily.core.communication.MessageInfo
+import de.scaramanga.lily.discord.connection.DiscordMessageInfo
+import de.scaramanga.lily.irc.connection.IrcMessageInfo
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.internal.JDAImpl
+import net.dv8tion.jda.internal.entities.UserImpl
+import ootbingo.barinade.bot.data.PlayerDao
+import ootbingo.barinade.bot.data.model.Player
+import ootbingo.barinade.bot.data.model.Race
+import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.helper.ResultInfo
+import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.UUID
+import kotlin.random.Random
+
+internal class BingoHistoryModuleTest {
+
+  //<editor-fold desc="Setup">
+
+  private val playerDaoMock = Mockito.mock(PlayerDao::class.java)
+  private val module = BingoHistoryModule(playerDaoMock)
+  private val players = mutableMapOf<String, Player>()
+
+  private val commands by lazy {
+    mapOf(Pair("results", module::results))
+  }
+
+  private lateinit var thenAnswer: Answer<AnswerInfo>
+
+  @BeforeEach
+  internal fun setup() {
+    Mockito.doAnswer { players[it.getArgument(0)] }
+        .`when`(playerDaoMock).getPlayerByName(Mockito.anyString())
+
+    Mockito.doAnswer {
+      val test = players[it.getArgument(0)]
+          ?.races
+          ?.map { r ->
+            val result = r.raceResults.findLast { res -> res.player.srlName == it.getArgument(0) }
+            ResultInfo(result!!.time, r.goal, r.srlId, r.recordDate)
+          }
+      test
+    }.`when`(playerDaoMock).findResultsForPlayer(Mockito.anyString())
+  }
+
+  //</editor-fold>
+
+  @Test
+  internal fun returnsCorrectResultsToDiscord() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5)
+
+    whenUser(username) sendsDiscordMessage "!results"
+
+    thenAnswer mentionsPlayer username andListsResults listOf("0:00:01", "0:00:02", "0:00:03", "0:00:04", "0:00:05")
+  }
+
+  @Test
+  internal fun returnsCorrectResultsToIrc() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5)
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenAnswer mentionsPlayer username andListsResults listOf("0:00:01", "0:00:02", "0:00:03", "0:00:04", "0:00:05")
+  }
+
+  @Test
+  internal fun onlyListsBingoRacesWhenQueryingResults() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3)
+    givenNonBingoTimesForPlayer(username, 11)
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  @Test
+  internal fun returnsTenResultsByDefault() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenAnswer listsResults (1..10).map { "0:00:01" }
+  }
+
+  @Test
+  internal fun doesNotListForfeitsAsResults() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, -5, 1, 2, -3, 3, -99)
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  //<editor-fold desc="Given">
+
+  private fun givenBingoTimesForPlayer(username: String, vararg times: Int) {
+    givenTimesForPlayer(username, true, *times)
+  }
+
+  private fun givenNonBingoTimesForPlayer(username: String, vararg times: Int) {
+    givenTimesForPlayer(username, false, *times)
+  }
+
+  private fun givenTimesForPlayer(username: String, bingo: Boolean, vararg times: Int) {
+
+    val races = ArrayList<Race>()
+
+    var timestamp = Random.nextLong(99999, 1568937600)
+
+    times
+        .map {
+          RaceResult(0L, Race("", "", ZonedDateTime.now(), 1, mutableListOf()),
+                     Player(0, username, mutableListOf()), 1, Duration.ofSeconds(it.toLong()), "")
+        }
+        .map {
+
+          val goal = if (bingo) "speedrunslive.com/tools/oot-bingo"
+          else ""
+
+          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1,
+               mutableListOf(it))
+        }
+        .map {
+          val spy = Mockito.spy(it)
+          Mockito.`when`(spy.isBingo()).thenReturn(bingo)
+          spy
+        }
+        .forEach { races.add(it) }
+
+    races.forEach {
+      it.raceResults.forEach { result -> result.race = it }
+    }
+
+    val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
+    val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
+      it.raceResults.findLast { result -> result.player.srlName == oldPlayer.srlName }
+    }).toMutableList())
+
+    players[username] = player
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="When">
+
+  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo) {
+
+    require(message.matches(Regex("!.*"))) { "Not a valid command" }
+
+    val parts = message.split(" ")
+    val command = parts[0].replace("!", "")
+
+    require(commands.containsKey(command)) { "Command not known" }
+
+    thenAnswer = commands.getValue(command).invoke(generateCommand(message, messageInfo))!!
+  }
+
+  private fun whenUser(username: String) = username
+
+  private infix fun String.sendsDiscordMessage(message: String) {
+
+    val discordUser = UserImpl(0, Mockito.mock(JDAImpl::class.java))
+    discordUser.name = this
+
+    val discordMessageMock = Mockito.mock(Message::class.java)
+    Mockito.`when`(discordMessageMock.author).thenReturn(discordUser)
+
+    whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
+  }
+
+  private infix fun String.sendsIrcMessage(message: String) {
+
+    val messageInfoMock = Mockito.mock(IrcMessageInfo::class.java)
+    Mockito.`when`(messageInfoMock.nick).thenReturn(this)
+    Mockito.`when`(messageInfoMock.channel).thenReturn("")
+
+    whenMessageIsSent(message, messageInfoMock)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Then">
+
+  private infix fun Answer<AnswerInfo>.mentionsPlayer(username: String): Answer<AnswerInfo> {
+
+    assertThat(this.text).contains(username)
+    return this
+  }
+
+  private infix fun Answer<AnswerInfo>.andListsResults(results: List<String>) = listsResults(results)
+
+  private infix fun Answer<AnswerInfo>.listsResults(expectedResults: List<String>) {
+
+    val actualResults = Regex("""^.*:(( ?\d{1,2}:\d{1,2}:\d{1,2},?)+).*$""")
+        .find(this.text)!!
+        .groupValues[1]
+        .split(",")
+        .map { it.trim() }
+        .toList()
+
+    assertThat(actualResults).containsExactlyElementsOf(expectedResults)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Helper">
+
+  private fun generateCommand(message: String, messageInfo: MessageInfo): Command {
+
+    val parts = message.substring(1).split(" ")
+
+    return object : Command {
+      override fun getMessageInfo(): MessageInfo {
+        return messageInfo
+      }
+
+      override fun getArgument(n: Int): String {
+        return parts[n + 1]
+      }
+
+      override fun getName(): String {
+        return parts[0]
+      }
+
+      override fun getArgumentCount(): Int {
+        return parts.size - 1
+      }
+    }
+  }
+
+  //</editor-fold>
+}
