@@ -9,12 +9,12 @@ import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.data.PlayerDao
-import ootbingo.barinade.bot.extensions.median
-import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.extensions.median
+import ootbingo.barinade.bot.extensions.standardFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
@@ -47,6 +47,10 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     val average = average(queryInfo)
 
+    if (average.raceCount == 0) {
+      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
+    }
+
     return Answer
         .ofText("The average of ${queryInfo.player.srlName}'s last ${average.raceCount} bingos is: ${average.result} " +
                     "(Forfeits: ${average.forfeitsSkipped})")
@@ -73,6 +77,10 @@ class BingoStatModule(private val playerDao: PlayerDao) {
         ?: return Answer.ofText(errorMessage)
 
     val median = median(queryInfo)
+
+    if (median.raceCount == 0) {
+      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
+    }
 
     return Answer
         .ofText("The median of ${queryInfo.player.srlName}'s last ${median.raceCount} bingos is: ${median.result} " +
@@ -189,6 +197,10 @@ class BingoStatModule(private val playerDao: PlayerDao) {
   private fun median(queryInfo: QueryInfo): ComputationResult {
 
     val toMedian = allRacesForComputation(queryInfo)
+
+    if (toMedian.races.isEmpty()) {
+      return ComputationResult("", 0, 0)
+    }
 
     return toMedian.races
         .map { it.time.seconds }

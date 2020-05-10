@@ -188,6 +188,18 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun displaysMessageWhenAverageForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    val answer = whenIrcMessageIsSent(username, "!average")
+
+    thenNoBingosFinishedIsReported(username, answer)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfoForAverage() {
 
     val answer = whenMessageIsSent("!average", MessageInfo.empty())
@@ -333,12 +345,26 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun displaysMessageWhenMedianForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    val answer = whenIrcMessageIsSent(username, "!median")
+
+    thenNoBingosFinishedIsReported(username, answer)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfoForMedian() {
 
     val answer = whenMessageIsSent("!median", MessageInfo.empty())
 
     thenErrorIsReported(answer)
   }
+
+  //</editor-fold>
 
   //<editor-fold desc="Public API">
 
@@ -380,8 +406,6 @@ internal class BingoStatModuleTest {
 
     assertThat(module.median(username)).isEqualTo(Duration.ofSeconds(2))
   }
-
-  //</editor-fold>
 
   //</editor-fold>
 
@@ -651,6 +675,9 @@ internal class BingoStatModuleTest {
 
     assertThat(actualForfeitRatio).isCloseTo(forfeitRatio * 100, Percentage.withPercentage(0.25))
   }
+
+  private fun thenNoBingosFinishedIsReported(username: String, answer: Answer<AnswerInfo>?) =
+    assertThat(answer?.text).matches("""^.*$username .*not finish.*any bingo.*$""")
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
     assertThat(answer?.text).contains("error")
