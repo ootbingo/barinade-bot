@@ -13,6 +13,6 @@ class PlayerDao(private val playerRepository: PlayerRepository,
   fun getPlayerByName(name: String): Player? =
       playerRepository.findBySrlNameIgnoreCase(name) ?: playerImporter.importPlayer(name)
 
-  fun findResultsForPlayer(username: String): List<ResultInfo>? =
+  fun findResultsForPlayer(username: String): List<ResultInfo> =
       playerRepository.findResultsForPlayer(username)
 }
