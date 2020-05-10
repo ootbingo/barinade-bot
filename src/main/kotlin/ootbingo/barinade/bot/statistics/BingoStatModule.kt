@@ -100,17 +100,24 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return Answer.ofText(errorMessage)
     }
 
+    playerDao.getPlayerByName(username) ?:
+        return Answer.ofText("User $username not found")
+
     val bingos = playerDao.findResultsForPlayer(username)
-        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
+        .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
+
+    if (bingos.isEmpty()) {
+      return Answer.ofText("$username has not finished any bingos")
+    }
 
     return Answer.ofText(
         bingos
-            ?.filter { RaceResult(time = it.time).isForfeit() }
-            ?.count()
-            ?.toDouble()
-            ?.let { 100 * it / bingos.count().toDouble() }
-            ?.let { DecimalFormat("##0.00", DecimalFormatSymbols(Locale.ENGLISH)).format(it) }
-            ?.let { "The forfeit ratio of $username is: $it%" })
+            .filter { RaceResult(time = it.time).isForfeit() }
+            .count()
+            .toDouble()
+            .let { 100 * it / bingos.count().toDouble() }
+            .let { DecimalFormat("##0.00", DecimalFormatSymbols(Locale.ENGLISH)).format(it) }
+            .let { "The forfeit ratio of $username is: $it%" })
   }
 
   private fun getRequesterQueryInfo(messageInfo: MessageInfo, raceCount: Int = 10): QueryInfo? {
@@ -161,7 +168,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     var forfeitsSkipped = 0
 
     val allBingos = queryInfo.player
-        .let { playerDao.findResultsForPlayer(it.srlName) }!!
+        .let { playerDao.findResultsForPlayer(it.srlName) }
         .asSequence()
         .filter { Race(it.raceId, it.goal, it.recordDate, 0, mutableListOf()).isBingo() }
         .toMutableList()

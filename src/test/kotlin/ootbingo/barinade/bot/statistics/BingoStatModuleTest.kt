@@ -479,12 +479,36 @@ internal class BingoStatModuleTest {
   }
 
   @Test
+  internal fun displaysMessageWhenForfeitRatioForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    val answer = whenIrcMessageIsSent(username, "!forfeits")
+
+    thenNoBingosFinishedIsReported(username, answer)
+  }
+
+  @Test
+  internal fun displaysMessageWhenForfeitRatioForUnknownPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    val answer = whenIrcMessageIsSent(username, "!forfeits")
+
+    thenUserNotFoundIsReported(username, answer)
+  }
+
+  @Test
   internal fun errorWhenNoMessageInfoForForfeitRatio() {
 
     val answer = whenMessageIsSent("!forfeits", MessageInfo.empty())
 
     thenErrorIsReported(answer)
   }
+
+  //</editor-fold>
 
   //<editor-fold desc="Public API">
 
@@ -536,8 +560,6 @@ internal class BingoStatModuleTest {
 
     assertThat(module.forfeitRatio(username)).isEqualTo(1.0)
   }
-
-  //</editor-fold>
 
   //</editor-fold>
 
@@ -677,7 +699,10 @@ internal class BingoStatModuleTest {
   }
 
   private fun thenNoBingosFinishedIsReported(username: String, answer: Answer<AnswerInfo>?) =
-    assertThat(answer?.text).matches("""^.*$username .*not finish.*any bingo.*$""")
+      assertThat(answer?.text).matches("""^.*$username .*not finish.*any bingo.*$""")
+
+  private fun thenUserNotFoundIsReported(username: String, answer: Answer<AnswerInfo>?) =
+      assertThat(answer?.text).matches("""^.*$username .*not found.*$""")
 
   private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
     assertThat(answer?.text).contains("error")
