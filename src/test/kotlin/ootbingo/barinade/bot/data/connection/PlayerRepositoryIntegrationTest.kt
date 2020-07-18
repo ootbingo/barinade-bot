@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.data.connection
 
+import ootbingo.barinade.bot.data.model.Platform
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
@@ -34,20 +35,20 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
       Race("${Random.nextLong()}",
            it,
            ZonedDateTime.now().plusSeconds(Random.nextLong(0, 10000)),
-           1,
+           Platform.SRL,
            mutableListOf())
     }.map {
       val race = raceRepository.save(it)
-      race.raceResults.add(RaceResult(race = race, player = player, place = 1,
+      race.raceResults.add(RaceResult(RaceResult.ResultId(race, player), place = 1,
                                       time = Duration.ofSeconds(Random.nextLong(0, 7000))))
       raceRepository.save(race)
     }
 
     val expectedRaces = savedRaces
         .asSequence()
-        .sortedByDescending { it.recordDate }
+        .sortedByDescending { it.datetime }
         .map {
-          ResultInfo(it.raceResults[0].time, it.goal, it.srlId, it.recordDate)
+          ResultInfo(it.raceResults[0].time, it.goal, it.raceId, it.datetime)
         }
         .toList()
 

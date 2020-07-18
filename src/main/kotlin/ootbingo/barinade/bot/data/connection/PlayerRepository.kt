@@ -11,20 +11,20 @@ import org.springframework.stereotype.Component
 @Component
 interface PlayerRepository : CrudRepository<Player, Long> {
 
-  fun findBySrlNameIgnoreCase(srlName: String): Player?
+  fun findByNameSrlIgnoreCase(srlName: String): Player?
 
   @Query("""
-    select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.srlId, r.recordDate)
+    select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.id, r.datetime)
     from RaceResult res
     inner join fetch Race r
-    on r = res.race
+    on r = res.resultId.race
   
-    where res.player in (
+    where res.resultId.player in (
 	    from Player p
-	    where upper(p.srlName) = upper(:username)
+	    where upper(p.nameSrl) = upper(:username)
     )
   
-   order by r.recordDate desc
+   order by r.datetime desc
   """)
   fun findResultsForPlayer(@Param("username") username: String): List<ResultInfo>
 }

@@ -183,10 +183,10 @@ internal class RaceTest {
   }
 
   private fun race(goal: String, recordDate: ZonedDateTime): Race =
-      Race("0", goal, recordDate, 0, mutableListOf())
+      Race("0", goal, recordDate, Platform.SRL, mutableListOf())
 
   private fun race(id: Int, goal: String, recordDate: ZonedDateTime): Race =
-      Race("$id", goal, recordDate, 0, mutableListOf())
+      Race("$id", goal, recordDate, Platform.SRL, mutableListOf())
 
   private fun date(year: Int, month: Int, day: Int) = ZonedDateTime.of(year, month, day, 1, 1, 1, 0, ZoneId.of("UTC"))
 }

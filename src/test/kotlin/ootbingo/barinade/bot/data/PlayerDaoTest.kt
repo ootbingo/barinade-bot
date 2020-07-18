@@ -25,7 +25,7 @@ internal class PlayerDaoTest {
   internal fun setup() {
     doAnswer {
       knownPlayers[it.getArgument(0)]
-    }.`when`(playerRepositoryMock).findBySrlNameIgnoreCase(anyString())
+    }.`when`(playerRepositoryMock).findByNameSrlIgnoreCase(anyString())
   }
 
   @Test
@@ -48,13 +48,13 @@ internal class PlayerDaoTest {
 
     val actualPlayer = dao.getPlayerByName(playerName)
 
-    assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
-    assertThat(actualPlayer.srlId).isEqualTo(playerId)
+    assertThat(actualPlayer!!.nameSrl).isEqualTo(playerName)
+    assertThat(actualPlayer.idSrl).isEqualTo(playerId)
     verifyZeroInteractions(srlPlayerImporterMock)
   }
 
   private fun givenPlayersInDb(vararg players: Player) {
-    players.forEach { knownPlayers[it.srlName] = it }
+    players.forEach { knownPlayers[it.nameSrl] = it }
   }
 
   private fun givenPlayersOnSrl(vararg srlPlayers: SrlPlayer) {

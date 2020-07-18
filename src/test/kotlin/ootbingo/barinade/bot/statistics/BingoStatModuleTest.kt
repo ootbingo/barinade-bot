@@ -10,9 +10,11 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.data.PlayerDao
+import ootbingo.barinade.bot.data.model.Platform
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
@@ -48,8 +50,8 @@ internal class BingoStatModuleTest {
       val test = players[it.getArgument(0)]
           ?.races
           ?.map { r ->
-            val result = r.raceResults.findLast { res -> res.player.srlName == it.getArgument(0) }
-            ResultInfo(result!!.time, r.goal, r.srlId, r.recordDate)
+            val result = r.raceResults.findLast { res -> res.resultId.player.nameSrl == it.getArgument(0) }
+            ResultInfo(result!!.time, r.goal, r.raceId, r.datetime)
           }
       test
     }.`when`(playerDaoMock).findResultsForPlayer(anyString())
@@ -581,15 +583,15 @@ internal class BingoStatModuleTest {
 
     times
         .map {
-          RaceResult(0L, Race("", "", ZonedDateTime.now(), 1, mutableListOf()),
-                     Player(0, username, mutableListOf()), 1, Duration.ofSeconds(it.toLong()), "")
+          RaceResult(RaceResult.ResultId(Race("", "", ZonedDateTime.now(), Platform.SRL, mutableListOf()),
+                                         Player(0, username, mutableListOf())), 1, Duration.ofSeconds(it.toLong()), ResultType.FINISH)
         }
         .map {
 
           val goal = if (bingo) "speedrunslive.com/tools/oot-bingo"
           else ""
 
-          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1,
+          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), Platform.SRL,
                mutableListOf(it))
         }
         .map {
@@ -600,12 +602,12 @@ internal class BingoStatModuleTest {
         .forEach { races.add(it) }
 
     races.forEach {
-      it.raceResults.forEach { result -> result.race = it }
+      it.raceResults.forEach { result -> result.resultId.race = it }
     }
 
     val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
     val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
-      it.raceResults.findLast { result -> result.player.srlName == oldPlayer.srlName }
+      it.raceResults.findLast { result -> result.resultId.player.nameSrl == oldPlayer.nameSrl }
     }).toMutableList())
 
     players[username] = player

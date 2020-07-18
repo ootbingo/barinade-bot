@@ -8,11 +8,9 @@ import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -32,10 +30,10 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
 
     playerRepository.save(Player(srlId, playerName, mutableListOf()))
 
-    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(playerName.toUpperCase())
+    val actualPlayer = playerRepository.findByNameSrlIgnoreCase(playerName.toUpperCase())
 
-    assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
-    assertThat(actualPlayer.srlId).isEqualTo(srlId)
+    assertThat(actualPlayer!!.nameSrl).isEqualTo(playerName)
+    assertThat(actualPlayer.idSrl).isEqualTo(srlId)
   }
 
   @Test
@@ -47,10 +45,10 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
     val player = Player(0, srlName)
     val savedPlayer = playerRepository.save(player)
 
-    val race = Race("123", "", ZonedDateTime.now(), 1, mutableListOf())
+    val race = Race("123", "", ZonedDateTime.now())
     val savedRace = raceRepository.save(race)
 
-    val result = RaceResult(123, savedRace, savedPlayer, 1, Duration.ofSeconds(12), "test")
+    val result = RaceResult(RaceResult.ResultId(savedRace, savedPlayer), 1, Duration.ofSeconds(12))
     val savedRaceResult = raceResultRepository.save(result)
 
     savedPlayer.raceResults.add(savedRaceResult)
@@ -58,15 +56,15 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
     playerRepository.save(savedPlayer)
     raceRepository.save(savedRace)
 
-    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(srlName)!!
+    val actualPlayer = playerRepository.findByNameSrlIgnoreCase(srlName)!!
     val actualResults = actualPlayer.raceResults
     val actualRaces = actualPlayer.races
 
     assertThat(actualResults.size).isEqualTo(1)
     assertThat(actualRaces.size).isEqualTo(1)
 
-    assertThat(actualResults[0].race).isEqualTo(actualRaces[0])
+    assertThat(actualResults[0].resultId.race).isEqualTo(actualRaces[0])
     assertThat(actualRaces[0]).isEqualTo(actualPlayer.races[0])
-    assertThat(actualRaces[0].raceResults[0].player).isEqualTo(actualPlayer)
+    assertThat(actualRaces[0].raceResults[0].resultId.player).isEqualTo(actualPlayer)
   }
 }

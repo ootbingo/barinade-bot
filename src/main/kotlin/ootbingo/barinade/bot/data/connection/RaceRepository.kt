@@ -5,10 +5,11 @@ import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Component
+import java.util.Optional
 
 @Component
 interface RaceRepository : CrudRepository<Race, String> {
 
   @Fetch(FetchMode.JOIN)
-  fun findBySrlId(srlId: String): Race?
+  fun findByRaceId(id: String): Race?
 }

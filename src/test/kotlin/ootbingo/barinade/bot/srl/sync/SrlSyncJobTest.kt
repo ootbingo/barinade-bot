@@ -113,7 +113,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   private fun givenPlayersOnSrl(vararg players: Player) {
     players.forEach {
-      whenever(srlHttpClientMock.getPlayerByName(it.srlName)).thenReturn(SrlPlayer(it.srlId, it.srlName))
+      whenever(srlHttpClientMock.getPlayerByName(it.nameSrl)).thenReturn(SrlPlayer(it.idSrl, it.nameSrl))
     }
   }
 
@@ -132,39 +132,39 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   //<editor-fold desc="Then">
 
   private fun thenDbPlayerWithName(username: String) =
-      playerRepository.findBySrlNameIgnoreCase(username) ?: throw NullPointerException()
+      playerRepository.findByNameSrlIgnoreCase(username) ?: throw NullPointerException()
 
   private infix fun Player.hasId(id: Long) {
-    assertThat(this.srlId).isEqualTo(id)
+    assertThat(this.idSrl).isEqualTo(id)
   }
 
   private fun thenRaceWithId(id: Int) =
-      raceRepository.findBySrlId(id.toString()) ?: throw NullPointerException()
+      raceRepository.findByRaceId(id.toString()) ?: throw NullPointerException()
 
   private infix fun Race.hasGoal(goal: String) {
     assertThat(this.goal).isEqualTo(goal)
   }
 
   private infix fun Race.hasDate(date: ZonedDateTime) {
-    assertThat(this.recordDate).isEqualTo(date)
+    assertThat(this.datetime).isEqualTo(date)
   }
 
   private infix fun Race.hasResults(results: Collection<Pair<String, Int>>) {
     results.forEach {
       assertThat(
           raceResultRepository.findAll()
-              .filter { res -> res.race == this }
-              .last { res -> res.player.srlName == it.first }.time.seconds
+              .filter { res -> res.resultId.race == this }
+              .last { res -> res.resultId.player.nameSrl == it.first }.time.seconds
       ).isEqualTo(it.second.toLong())
     }
 
-    assertThat(raceResultRepository.findAll().filter { res -> res.race == this }.count())
+    assertThat(raceResultRepository.findAll().filter { res -> res.resultId.race == this }.count())
         .isEqualTo(results.size)
   }
 
   private infix fun Player.hasRaceTimes(times: Collection<Long>) {
 
-    assertThat(raceResultRepository.findAll().filter { it.player == this }.map { it.time.seconds })
+    assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.time.seconds })
         .containsExactlyInAnyOrder(*times.toTypedArray())
   }
 
@@ -187,7 +187,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   private infix fun String.withId(id: Long): Player = Player(id, this)
   private fun result(playerName: String, raceId: String, time: Int) =
-      RaceResult(null, raceRepository.findBySrlId(raceId)!!, playerRepository.findBySrlNameIgnoreCase(playerName)!!,
+      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!, playerRepository.findByNameSrlIgnoreCase(playerName)!!),
                  time = Duration.ofSeconds(time.toLong()))
 
   //<editor-fold desc="SRL Race Builder">

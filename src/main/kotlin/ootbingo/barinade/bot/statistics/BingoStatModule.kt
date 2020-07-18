@@ -48,11 +48,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val average = average(queryInfo)
 
     if (average.raceCount == 0) {
-      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
+      return Answer.ofText("${queryInfo.player.nameSrl} has not finished any bingos")
     }
 
     return Answer
-        .ofText("The average of ${queryInfo.player.srlName}'s last ${average.raceCount} bingos is: ${average.result} " +
+        .ofText("The average of ${queryInfo.player.nameSrl}'s last ${average.raceCount} bingos is: ${average.result} " +
                     "(Forfeits: ${average.forfeitsSkipped})")
   }
 
@@ -79,11 +79,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val median = median(queryInfo)
 
     if (median.raceCount == 0) {
-      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
+      return Answer.ofText("${queryInfo.player.nameSrl} has not finished any bingos")
     }
 
     return Answer
-        .ofText("The median of ${queryInfo.player.srlName}'s last ${median.raceCount} bingos is: ${median.result} " +
+        .ofText("The median of ${queryInfo.player.nameSrl}'s last ${median.raceCount} bingos is: ${median.result} " +
                     "(Forfeits: ${median.forfeitsSkipped})")
   }
 
@@ -100,8 +100,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return Answer.ofText(errorMessage)
     }
 
-    playerDao.getPlayerByName(username) ?:
-        return Answer.ofText("User $username not found")
+    playerDao.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
 
     val bingos = playerDao.findResultsForPlayer(username)
         .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
@@ -168,9 +167,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     var forfeitsSkipped = 0
 
     val allBingos = queryInfo.player
-        .let { playerDao.findResultsForPlayer(it.srlName) }
+        .let { playerDao.findResultsForPlayer(it.nameSrl) }
         .asSequence()
-        .filter { Race(it.raceId, it.goal, it.recordDate, 0, mutableListOf()).isBingo() }
+        .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
         .toMutableList()
 
     val toAverage = mutableListOf<ResultInfo>()
@@ -239,7 +238,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     val player = playerDao.getPlayerByName(username)
 
-    val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName) }
+    val allBingos = player?.let { playerDao.findResultsForPlayer(it.nameSrl) }
         ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {

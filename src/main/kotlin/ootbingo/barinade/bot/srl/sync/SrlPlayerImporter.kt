@@ -27,6 +27,6 @@ class SrlPlayerImporter(private val srlHttpClient: SrlHttpClient,
 
     raceImporter.importRacesForUser(player)
 
-    return playerRepository.findBySrlNameIgnoreCase(player.srlName)
+    return playerRepository.findByNameSrlIgnoreCase(player.nameSrl)
   }
 }

@@ -105,7 +105,7 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
     givenRacesInDb(
-        Race("1", raceResults = mutableListOf(RaceResult(player = Player(srlName = playerName), place = 42))))
+        Race("1", raceResults = mutableListOf(RaceResult(RaceResult.ResultId(player = Player(nameSrl = playerName)), place = 42))))
 
     importer.importRacesForUser(Player(0, playerName))
 
@@ -116,8 +116,8 @@ internal class SrlRaceImporterTest {
   private fun givenRacesInDb(vararg races: Race) {
 
     doAnswer {
-      races.lastOrNull { r -> r.srlId == it.getArgument(0) }
-    }.`when`(raceRepositoryMock).findBySrlId(anyString())
+      races.lastOrNull { r -> r.raceId == it.getArgument(0) }
+    }.`when`(raceRepositoryMock).findByRaceId(anyString())
   }
 
   private fun thenResultIsSaved(player: String, race: SrlPastRace, place: Long) {
@@ -127,8 +127,8 @@ internal class SrlRaceImporterTest {
 
     val lastSavedResult = raceCaptor
         .allValues
-        .findLast { it.srlId == race.id }
-        ?.let { it.raceResults.findLast { r -> r.player.srlName == player } }
+        .findLast { it.raceId == race.id }
+        ?.let { it.raceResults.findLast { r -> r.resultId.player.nameSrl == player } }
 
     assertThat(lastSavedResult?.place).isEqualTo(place)
   }
@@ -140,7 +140,7 @@ internal class SrlRaceImporterTest {
 
     val capturedIds = raceCaptor
         .allValues
-        .map { it.srlId.toLong() }
+        .map { it.raceId.toLong() }
         .distinct()
 
     assertThat(capturedIds).containsExactlyInAnyOrder(*ids.toTypedArray())

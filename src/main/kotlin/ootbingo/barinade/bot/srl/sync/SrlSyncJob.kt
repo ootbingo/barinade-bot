@@ -46,7 +46,7 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading players from the database...")
     val dbPlayers = playerRepository.findAll()
-    val dbUsernames = dbPlayers.map { it.srlName }
+    val dbUsernames = dbPlayers.map { it.nameSrl }
     logger.info("Players loaded.")
     logger.info("Found {} players on SRL and {} players in the database.", srlPlayers.size, dbUsernames.size)
 
@@ -57,10 +57,10 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
           srlHttpClient.getPlayerByName(it)
         }
         .map {
-          val player = dbPlayers.lastOrNull { p -> p.srlId == it.id }
+          val player = dbPlayers.lastOrNull { p -> p.idSrl == it.id }
           if (player != null) {
-            logger.info("Player {} changed name to {}.", player.srlName, it.name)
-            player.srlName = it.name
+            logger.info("Player {} changed name to {}.", player.nameSrl, it.name)
+            player.nameSrl = it.name
             player
           } else {
             Player(it, emptyList())
@@ -76,26 +76,25 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading races from the database...")
     val dbRaces = raceRepository.findAll()
-    val dbRaceIds = dbRaces.map { it.srlId }
+    val dbRaceIds = dbRaces.map { it.raceId }
     logger.info("Races loaded.")
     logger.info("Found {} races on SRL and {} races in the database.", srlRaces.size, dbRaceIds.size)
 
     val newSrlRaces = srlRaces
         .filter { !dbRaceIds.contains(it.id) }
-        .map { Race(it.id, it.goal, it.date, it.numentrants) }
+        .map { Race(it.id, it.goal, it.date) }
 
     val changedRaces = srlRaces
         .asSequence()
-        .map { it to dbRaces.lastOrNull { r -> r.srlId == it.id } }
+        .map { it to dbRaces.lastOrNull { r -> r.raceId == it.id } }
         .filter { it.second != null }
         .map { it.first to it.second!! }
         .filter {
-          it.first.date.toInstant() != it.second.recordDate.toInstant() || it.first.goal != it.second.goal || it.first.numentrants != it.second.numberOfEntrants
+          it.first.date.toInstant() != it.second.datetime.toInstant() || it.first.goal != it.second.goal
         }
         .map {
-          it.second.recordDate = it.first.date
+          it.second.datetime = it.first.date
           it.second.goal = it.first.goal
-          it.second.numberOfEntrants = it.first.numentrants
           it.second
         }
         .toList()
@@ -117,27 +116,24 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading incomplete races from the database...")
     val incompleteDbRaces = raceRepository.findAll()
-        .filter { it.numberOfEntrants != it.raceResults.size.toLong() }
+        .filter { it.raceResults.size.toLong() != allRaces.last { r -> r.id == it.raceId }.numentrants }
     logger.info("{} races loaded.", incompleteDbRaces.size)
     logger.info("Loading all players from the database...")
     val dbPlayers = playerRepository.findAll()
     logger.info("Players loaded.")
 
     fun getPlayerWithUsername(username: String) =
-        dbPlayers.last { it.srlName == username }
+        dbPlayers.last { it.nameSrl == username }
 
     val allResultsOfIncompleteRaces = incompleteDbRaces
-        .map { race -> race to allRaces.lastOrNull { it.id == race.srlId } }
+        .map { race -> race to allRaces.lastOrNull { it.id == race.raceId } }
         .filter { it.second != null }
         .map { it.first to it.second!! }
         .flatMap {
           it.second.results.map { result ->
-            RaceResult(null,
-                       it.first,
-                       getPlayerWithUsername(result.player),
+            RaceResult(RaceResult.ResultId(it.first, getPlayerWithUsername(result.player)),
                        result.place,
-                       result.time,
-                       result.message)
+                       result.time)
           }
         }
 
@@ -149,8 +145,8 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
     val newSrlResults = allResultsOfIncompleteRaces
         .filter {
           dbResults
-              .filter { dbResult -> dbResult.race == it.race }
-              .none { dbResult -> dbResult.player == it.player }
+              .filter { dbResult -> dbResult.resultId.race == it.resultId.race }
+              .none { dbResult -> dbResult.resultId.player == it.resultId.player }
         }
 
     logger.info("Saving {} new race results to the database...", newSrlResults.size)

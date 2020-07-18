@@ -60,13 +60,13 @@ internal class SrlPlayerImporterTest {
       }
 
       Player(playerId, playerName, results)
-    }.`when`(playerRepositoryMock).findBySrlNameIgnoreCase(playerName)
+    }.`when`(playerRepositoryMock).findByNameSrlIgnoreCase(playerName)
 
     givenPlayersOnSrl(SrlPlayer(playerId, playerName))
 
     val actualPlayer = importer.importPlayer(playerName)
 
-    assertThat(actualPlayer?.srlId)
+    assertThat(actualPlayer?.idSrl)
         .`as`("Wrong player returned")
         .isEqualTo(playerId)
 

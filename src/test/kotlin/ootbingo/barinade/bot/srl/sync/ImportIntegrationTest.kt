@@ -47,13 +47,13 @@ internal class ImportIntegrationTest(@Autowired private val playerRepository: Pl
                     srlBingoRace("9", srlResult(1, username1, 100), srlResult(2, username2, 101)))
 
     srlPlayerImporter.importPlayer(username1)
-    assertThat(raceRepository.findBySrlId("9")?.raceResults).hasSize(1)
+    assertThat(raceRepository.findByRaceId("9")?.raceResults).hasSize(1)
 
     srlPlayerImporter.importPlayer(username2)
 
-    assertThat(raceRepository.findBySrlId("1")?.raceResults).hasSize(1)
-    assertThat(raceRepository.findBySrlId("5")?.raceResults).hasSize(1)
-    assertThat(raceRepository.findBySrlId("9")?.raceResults?.map { it.player.srlName })
+    assertThat(raceRepository.findByRaceId("1")?.raceResults).hasSize(1)
+    assertThat(raceRepository.findByRaceId("5")?.raceResults).hasSize(1)
+    assertThat(raceRepository.findByRaceId("9")?.raceResults?.map { it.resultId.player.nameSrl })
         .containsExactlyInAnyOrder(username1, username2)
   }
 
