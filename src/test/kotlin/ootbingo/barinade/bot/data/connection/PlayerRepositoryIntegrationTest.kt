@@ -29,7 +29,7 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
       raceGoals.add(UUID.randomUUID().toString())
     }
 
-    val player = playerRepository.save(Player(0, "name", mutableListOf()))
+    val player = playerRepository.save(Player(null, 0, null, "name", null, mutableListOf()))
 
     val savedRaces = raceGoals.map {
       Race("${Random.nextLong()}",

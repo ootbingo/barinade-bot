@@ -28,12 +28,12 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
     val srlId = Random.nextLong(0, 10000)
     val playerName = UUID.randomUUID().toString()
 
-    playerRepository.save(Player(srlId, playerName, mutableListOf()))
+    playerRepository.save(Player(null, srlId, null, playerName, null, mutableListOf()))
 
-    val actualPlayer = playerRepository.findByNameSrlIgnoreCase(playerName.toUpperCase())
+    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(playerName.toUpperCase())
 
-    assertThat(actualPlayer!!.nameSrl).isEqualTo(playerName)
-    assertThat(actualPlayer.idSrl).isEqualTo(srlId)
+    assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
+    assertThat(actualPlayer.srlId).isEqualTo(srlId)
   }
 
   @Test
@@ -42,7 +42,7 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
 
     val srlName = "player"
 
-    val player = Player(0, srlName)
+    val player = Player(null, 0, null, srlName)
     val savedPlayer = playerRepository.save(player)
 
     val race = Race("123", "", ZonedDateTime.now())
@@ -56,7 +56,7 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
     playerRepository.save(savedPlayer)
     raceRepository.save(savedRace)
 
-    val actualPlayer = playerRepository.findByNameSrlIgnoreCase(srlName)!!
+    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(srlName)!!
     val actualResults = actualPlayer.raceResults
     val actualRaces = actualPlayer.races
 

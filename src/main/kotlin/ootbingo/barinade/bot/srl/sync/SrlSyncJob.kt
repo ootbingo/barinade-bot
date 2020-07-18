@@ -46,7 +46,7 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading players from the database...")
     val dbPlayers = playerRepository.findAll()
-    val dbUsernames = dbPlayers.map { it.nameSrl }
+    val dbUsernames = dbPlayers.map { it.srlName }
     logger.info("Players loaded.")
     logger.info("Found {} players on SRL and {} players in the database.", srlPlayers.size, dbUsernames.size)
 
@@ -57,10 +57,10 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
           srlHttpClient.getPlayerByName(it)
         }
         .map {
-          val player = dbPlayers.lastOrNull { p -> p.idSrl == it.id }
+          val player = dbPlayers.lastOrNull { p -> p.srlId == it.id }
           if (player != null) {
-            logger.info("Player {} changed name to {}.", player.nameSrl, it.name)
-            player.nameSrl = it.name
+            logger.info("Player {} changed name to {}.", player.srlName, it.name)
+            player.srlName = it.name
             player
           } else {
             Player(it, emptyList())
@@ -123,7 +123,7 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
     logger.info("Players loaded.")
 
     fun getPlayerWithUsername(username: String) =
-        dbPlayers.last { it.nameSrl == username }
+        dbPlayers.last { it.srlName == username }
 
     val allResultsOfIncompleteRaces = incompleteDbRaces
         .map { race -> race to allRaces.lastOrNull { it.id == race.raceId } }

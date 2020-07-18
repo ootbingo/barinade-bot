@@ -2,35 +2,43 @@ package ootbingo.barinade.bot.data.model
 
 import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.srl.api.model.SrlPlayer
+import java.io.Serializable
 import javax.persistence.CascadeType
+import javax.persistence.EmbeddedId
 import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.OneToMany
 
 @Entity
 @Open
-data class Player(@Id var idSrl: Long = 0,
-                  var nameSrl: String = "",
-                  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "resultId.player") var raceResults: MutableList<RaceResult> = mutableListOf()) {
+data class Player(@Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id: Long? = null,
+                  var srlId: Long? = 0,
+                  var racetimeId: String? = null,
+                  var srlName: String? = "",
+                  var racetimeName: String? = null,
+                  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "resultId.player")
+                  var raceResults: MutableList<RaceResult> = mutableListOf()) {
 
   val races: List<Race>
     get() = raceResults.map { it.resultId.race }
 
   constructor(srlPlayer: SrlPlayer, races: List<Race>) :
-      this(srlPlayer.id, srlPlayer.name, races.mapNotNull {
+      this(null, srlPlayer.id, null, srlPlayer.name, null, races.mapNotNull {
         it.raceResults
-            .findLast { result -> result.resultId.player.nameSrl == srlPlayer.name }
+            .findLast { result -> result.resultId.player.srlName == srlPlayer.name }
       }.toMutableList())
 
   override fun equals(other: Any?): Boolean {
     return when {
       this === other -> true
-      other is Player -> idSrl == other.idSrl
+      other is Player -> id == other.id
       else -> false
     }
   }
 
-  override fun hashCode() = idSrl.hashCode()
+  override fun hashCode() = id.hashCode()
 
-  override fun toString(): String = "Player(srlName=$nameSrl)"
+  override fun toString(): String = "Player(srlName=$srlName, racetimeName=$racetimeName)"
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 interface PlayerRepository : CrudRepository<Player, Long> {
 
-  fun findByNameSrlIgnoreCase(srlName: String): Player?
+  fun findBySrlNameIgnoreCase(srlName: String): Player?
 
   @Query("""
     select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.id, r.datetime)
@@ -21,7 +21,7 @@ interface PlayerRepository : CrudRepository<Player, Long> {
   
     where res.resultId.player in (
 	    from Player p
-	    where upper(p.nameSrl) = upper(:username)
+	    where upper(p.srlName) = upper(:username)
     )
   
    order by r.datetime desc

@@ -112,8 +112,11 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   }
 
   private fun givenPlayersOnSrl(vararg players: Player) {
-    players.forEach {
-      whenever(srlHttpClientMock.getPlayerByName(it.nameSrl)).thenReturn(SrlPlayer(it.idSrl, it.nameSrl))
+    players
+        .filterNot { it.srlName == null || it.srlId == null }
+        .forEach {
+      whenever(srlHttpClientMock.getPlayerByName(it.srlName!!))
+          .thenReturn(SrlPlayer(it.srlId!!, it.srlName!!))
     }
   }
 
@@ -132,10 +135,10 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   //<editor-fold desc="Then">
 
   private fun thenDbPlayerWithName(username: String) =
-      playerRepository.findByNameSrlIgnoreCase(username) ?: throw NullPointerException()
+      playerRepository.findBySrlNameIgnoreCase(username) ?: throw NullPointerException()
 
   private infix fun Player.hasId(id: Long) {
-    assertThat(this.idSrl).isEqualTo(id)
+    assertThat(this.srlId).isEqualTo(id)
   }
 
   private fun thenRaceWithId(id: Int) =
@@ -154,7 +157,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
       assertThat(
           raceResultRepository.findAll()
               .filter { res -> res.resultId.race == this }
-              .last { res -> res.resultId.player.nameSrl == it.first }.time.seconds
+              .last { res -> res.resultId.player.srlName == it.first }.time.seconds
       ).isEqualTo(it.second.toLong())
     }
 
@@ -185,9 +188,9 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   //<editor-fold desc="Helper">
 
-  private infix fun String.withId(id: Long): Player = Player(id, this)
+  private infix fun String.withId(id: Long): Player = Player(null, id, null, this)
   private fun result(playerName: String, raceId: String, time: Int) =
-      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!, playerRepository.findByNameSrlIgnoreCase(playerName)!!),
+      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!, playerRepository.findBySrlNameIgnoreCase(playerName)!!),
                  time = Duration.ofSeconds(time.toLong()))
 
   //<editor-fold desc="SRL Race Builder">

@@ -19,20 +19,20 @@ internal class PlayerDaoTest {
 
   private val dao = PlayerDao(playerRepositoryMock, srlPlayerImporterMock)
 
-  private val knownPlayers = mutableMapOf<String, Player>()
+  private val knownSrlPlayers = mutableMapOf<String, Player>()
 
   @BeforeEach
   internal fun setup() {
     doAnswer {
-      knownPlayers[it.getArgument(0)]
-    }.`when`(playerRepositoryMock).findByNameSrlIgnoreCase(anyString())
+      knownSrlPlayers[it.getArgument(0)]
+    }.`when`(playerRepositoryMock).findBySrlNameIgnoreCase(anyString())
   }
 
   @Test
   internal fun returnsNullIfPlayerNotKnown() {
 
     givenPlayersOnSrl()
-    givenPlayersInDb()
+    givenSrlPlayersInDb()
 
     assertThat(dao.getPlayerByName("some name")).isNull()
   }
@@ -44,17 +44,19 @@ internal class PlayerDaoTest {
     val playerId = Random.nextLong(0, 10000)
 
     givenPlayersOnSrl(srlPlayer(playerId, playerName))
-    givenPlayersInDb(player(playerId, playerName))
+    givenSrlPlayersInDb(player(playerId, playerName))
 
     val actualPlayer = dao.getPlayerByName(playerName)
 
-    assertThat(actualPlayer!!.nameSrl).isEqualTo(playerName)
-    assertThat(actualPlayer.idSrl).isEqualTo(playerId)
+    assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
+    assertThat(actualPlayer.srlId).isEqualTo(playerId)
     verifyZeroInteractions(srlPlayerImporterMock)
   }
 
-  private fun givenPlayersInDb(vararg players: Player) {
-    players.forEach { knownPlayers[it.nameSrl] = it }
+  private fun givenSrlPlayersInDb(vararg players: Player) {
+    players
+        .filterNot { it.srlName == null }
+        .forEach { knownSrlPlayers[it.srlName!!] = it }
   }
 
   private fun givenPlayersOnSrl(vararg srlPlayers: SrlPlayer) {
@@ -62,13 +64,13 @@ internal class PlayerDaoTest {
     doAnswer {
       val player = srlPlayers.findLast { p -> p.name == it.getArgument(0) }
       if (player != null) {
-        knownPlayers[player.name] = Player(player.id, player.name)
+        knownSrlPlayers[player.name] = Player(null, player.id, null, player.name)
       }
       player?.let { Player(it, listOf()) }
     }.`when`(srlPlayerImporterMock).importPlayer(anyString())
   }
 
-  private fun player(id: Long, username: String): Player = Player(id, username)
+  private fun player(id: Long, username: String): Player = Player(null, id, null, username)
 
   private fun srlPlayer(id: Long, username: String): SrlPlayer = SrlPlayer(id, username)
 
@@ -78,12 +80,12 @@ internal class PlayerDaoTest {
     val playerName = UUID.randomUUID().toString()
     val playerId = Random.nextLong(0, 10000)
 
-    givenPlayersInDb()
+    givenSrlPlayersInDb()
     givenPlayersOnSrl(srlPlayer(playerId, playerName))
 
     val actualPlayer = dao.getPlayerByName(playerName)
 
-    assertThat(actualPlayer).isEqualTo(Player(playerId, playerName))
+    assertThat(actualPlayer).isEqualTo(Player(null, playerId, null, playerName))
     verify(srlPlayerImporterMock).importPlayer(playerName)
   }
 

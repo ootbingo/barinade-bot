@@ -23,9 +23,14 @@ class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
 
   fun importRacesForUser(player: Player) {
 
-    logger.info("Import races of player ${player.nameSrl}")
+    if (player.srlId == null || player.srlName == null) {
+      logger.error("Player is not on SRL")
+      return
+    }
 
-    val srlRaces = srlHttpClient.getRacesByPlayerName(player.nameSrl)
+    logger.info("Import races of player ${player.srlName}")
+
+    val srlRaces = srlHttpClient.getRacesByPlayerName(player.srlName!!)
         .filter { it.game in whitelistedGames }
 
     val emptyRaces = srlRaces
@@ -41,9 +46,9 @@ class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
         val srlResult = srlRaces
             .findLast { srlRace -> srlRace.id == it.raceId }
             ?.results
-            ?.findLast { srlResult -> srlResult.player.toLowerCase() == player.nameSrl.toLowerCase() }
+            ?.findLast { srlResult -> srlResult.player.toLowerCase() == player.srlName!!.toLowerCase() }
             ?: run {
-              logger.error("No result for player ${player.nameSrl} found in race with ID ${storedRace.raceId}")
+              logger.error("No result for player ${player.srlName} found in race with ID ${storedRace.raceId}")
               return@forEach
             }
 

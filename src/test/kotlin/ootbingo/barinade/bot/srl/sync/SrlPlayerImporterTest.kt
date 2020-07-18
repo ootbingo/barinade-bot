@@ -50,7 +50,7 @@ internal class SrlPlayerImporterTest {
 
     doAnswer {
       raceImported.set(true)
-    }.`when`(srlRaceImporterMock).importRacesForUser(Player(playerId, playerName))
+    }.`when`(srlRaceImporterMock).importRacesForUser(Player(null, playerId, null, playerName))
 
     doAnswer {
       val results = if (raceImported.get()) {
@@ -59,14 +59,14 @@ internal class SrlPlayerImporterTest {
         mutableListOf()
       }
 
-      Player(playerId, playerName, results)
-    }.`when`(playerRepositoryMock).findByNameSrlIgnoreCase(playerName)
+      Player(null, playerId, null, playerName, null, results)
+    }.`when`(playerRepositoryMock).findBySrlNameIgnoreCase(playerName)
 
     givenPlayersOnSrl(SrlPlayer(playerId, playerName))
 
     val actualPlayer = importer.importPlayer(playerName)
 
-    assertThat(actualPlayer?.idSrl)
+    assertThat(actualPlayer?.srlId)
         .`as`("Wrong player returned")
         .isEqualTo(playerId)
 
@@ -85,7 +85,7 @@ internal class SrlPlayerImporterTest {
 
     importer.importPlayer(playerName)
 
-    verify(playerRepositoryMock).save(Player(playerId, playerName))
+    verify(playerRepositoryMock).save(Player(null, playerId, null, playerName))
   }
 
   @Test
@@ -98,7 +98,7 @@ internal class SrlPlayerImporterTest {
 
     importer.importPlayer(playerName)
 
-    verify(srlRaceImporterMock).importRacesForUser(Player(playerId, playerName))
+    verify(srlRaceImporterMock).importRacesForUser(Player(null, playerId, null, playerName))
   }
 
   private fun givenPlayersOnSrl(vararg players: SrlPlayer) {

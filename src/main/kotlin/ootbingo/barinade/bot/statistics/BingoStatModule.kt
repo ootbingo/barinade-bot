@@ -48,11 +48,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val average = average(queryInfo)
 
     if (average.raceCount == 0) {
-      return Answer.ofText("${queryInfo.player.nameSrl} has not finished any bingos")
+      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
     }
 
     return Answer
-        .ofText("The average of ${queryInfo.player.nameSrl}'s last ${average.raceCount} bingos is: ${average.result} " +
+        .ofText("The average of ${queryInfo.player.srlName}'s last ${average.raceCount} bingos is: ${average.result} " +
                     "(Forfeits: ${average.forfeitsSkipped})")
   }
 
@@ -79,11 +79,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val median = median(queryInfo)
 
     if (median.raceCount == 0) {
-      return Answer.ofText("${queryInfo.player.nameSrl} has not finished any bingos")
+      return Answer.ofText("${queryInfo.player.srlName} has not finished any bingos")
     }
 
     return Answer
-        .ofText("The median of ${queryInfo.player.nameSrl}'s last ${median.raceCount} bingos is: ${median.result} " +
+        .ofText("The median of ${queryInfo.player.srlName}'s last ${median.raceCount} bingos is: ${median.result} " +
                     "(Forfeits: ${median.forfeitsSkipped})")
   }
 
@@ -166,8 +166,12 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     var forfeitsSkipped = 0
 
+    if (queryInfo.player.srlName == null) {
+      TODO("Also look for racetime")
+    }
+
     val allBingos = queryInfo.player
-        .let { playerDao.findResultsForPlayer(it.nameSrl) }
+        .let { playerDao.findResultsForPlayer(it.srlName!!) }
         .asSequence()
         .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
         .toMutableList()
@@ -238,7 +242,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     val player = playerDao.getPlayerByName(username)
 
-    val allBingos = player?.let { playerDao.findResultsForPlayer(it.nameSrl) }
+    if (player != null && player.srlName == null) {
+      TODO("Also look for racetime")
+    }
+
+    val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName!!) }
         ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {

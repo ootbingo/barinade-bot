@@ -50,7 +50,7 @@ internal class BingoStatModuleTest {
       val test = players[it.getArgument(0)]
           ?.races
           ?.map { r ->
-            val result = r.raceResults.findLast { res -> res.resultId.player.nameSrl == it.getArgument(0) }
+            val result = r.raceResults.findLast { res -> res.resultId.player.srlName == it.getArgument(0) }
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime)
           }
       test
@@ -584,7 +584,7 @@ internal class BingoStatModuleTest {
     times
         .map {
           RaceResult(RaceResult.ResultId(Race("", "", ZonedDateTime.now(), Platform.SRL, mutableListOf()),
-                                         Player(0, username, mutableListOf())), 1, Duration.ofSeconds(it.toLong()), ResultType.FINISH)
+                                         Player(null, 0, null, username, null, mutableListOf())), 1, Duration.ofSeconds(it.toLong()), ResultType.FINISH)
         }
         .map {
 
@@ -605,9 +605,9 @@ internal class BingoStatModuleTest {
       it.raceResults.forEach { result -> result.resultId.race = it }
     }
 
-    val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
+    val oldPlayer = players[username] ?: Player(null, 0, null, username, null, mutableListOf())
     val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
-      it.raceResults.findLast { result -> result.resultId.player.nameSrl == oldPlayer.nameSrl }
+      it.raceResults.findLast { result -> result.resultId.player.srlName == oldPlayer.srlName }
     }).toMutableList())
 
     players[username] = player

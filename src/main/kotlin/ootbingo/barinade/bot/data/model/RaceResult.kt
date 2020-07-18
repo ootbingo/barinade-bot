@@ -6,8 +6,11 @@ import java.time.Duration
 import javax.persistence.Embeddable
 import javax.persistence.EmbeddedId
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
+import javax.persistence.JoinColumns
 import javax.persistence.ManyToOne
 
 @Entity
@@ -15,10 +18,8 @@ import javax.persistence.ManyToOne
 data class RaceResult(@EmbeddedId var resultId: ResultId = ResultId(),
                       var place: Long = 0,
                       var time: Duration = Duration.ofSeconds(0),
+                      @Enumerated(EnumType.STRING)
                       var resultType: ResultType = ResultType.FINISH) {
-
-//  fun getRace() = resultId.race
-//  fun getPlayer() = resultId.player
 
   fun isForfeit(): Boolean = time.isNegative
 

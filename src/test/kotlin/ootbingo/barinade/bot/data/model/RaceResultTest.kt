@@ -12,7 +12,7 @@ internal class RaceResultTest {
   @ValueSource(longs = [-1, -2, -5, -99, -1000])
   internal fun isForfeitWhenTimeIsNegative(time: Long) {
 
-    val result = RaceResult(RaceResult.ResultId(mock(Race::class.java), Player(0, "", mutableListOf())),
+    val result = RaceResult(RaceResult.ResultId(mock(Race::class.java), Player(null, 0, null, "", null, mutableListOf())),
                             999, Duration.ofSeconds(time))
 
     assertThat(result.isForfeit()).isTrue()

@@ -53,7 +53,7 @@ internal class ImportIntegrationTest(@Autowired private val playerRepository: Pl
 
     assertThat(raceRepository.findByRaceId("1")?.raceResults).hasSize(1)
     assertThat(raceRepository.findByRaceId("5")?.raceResults).hasSize(1)
-    assertThat(raceRepository.findByRaceId("9")?.raceResults?.map { it.resultId.player.nameSrl })
+    assertThat(raceRepository.findByRaceId("9")?.raceResults?.map { it.resultId.player.srlName })
         .containsExactlyInAnyOrder(username1, username2)
   }
 

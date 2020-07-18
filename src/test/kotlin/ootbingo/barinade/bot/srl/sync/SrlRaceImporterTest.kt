@@ -43,7 +43,7 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
-    importer.importRacesForUser(Player(0, playerName))
+    importer.importRacesForUser(Player(null, 0, null, playerName))
 
     thenRacesWithIdsAreSaved(1, 2, 3)
   }
@@ -58,7 +58,7 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
-    importer.importRacesForUser(Player(0, playerName))
+    importer.importRacesForUser(Player(null, 0, null, playerName))
 
     thenRacesWithIdsAreSaved(1, 3)
   }
@@ -73,7 +73,7 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
-    importer.importRacesForUser(Player(0, playerName))
+    importer.importRacesForUser(Player(null, 0, null, playerName))
 
     thenResultIsSaved(playerName, races[0], 42)
   }
@@ -89,7 +89,7 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
-    importer.importRacesForUser(Player(0, playerName))
+    importer.importRacesForUser(Player(null, 0, null, playerName))
 
     thenResultIsSaved(playerName, races[0], 42)
     thenResultIsSaved(playerName, races[2], 44)
@@ -105,9 +105,9 @@ internal class SrlRaceImporterTest {
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
     givenRacesInDb(
-        Race("1", raceResults = mutableListOf(RaceResult(RaceResult.ResultId(player = Player(nameSrl = playerName)), place = 42))))
+        Race("1", raceResults = mutableListOf(RaceResult(RaceResult.ResultId(player = Player(srlName = playerName)), place = 42))))
 
-    importer.importRacesForUser(Player(0, playerName))
+    importer.importRacesForUser(Player(null, 0, null, playerName))
 
     verify(raceRepositoryMock, times(0)).save(any<Race>())
     verify(raceRepositoryMock, times(0)).saveAll(any<Iterable<Race>>())
@@ -128,7 +128,7 @@ internal class SrlRaceImporterTest {
     val lastSavedResult = raceCaptor
         .allValues
         .findLast { it.raceId == race.id }
-        ?.let { it.raceResults.findLast { r -> r.resultId.player.nameSrl == player } }
+        ?.let { it.raceResults.findLast { r -> r.resultId.player.srlName == player } }
 
     assertThat(lastSavedResult?.place).isEqualTo(place)
   }
