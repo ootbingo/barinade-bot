@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.data
 
+import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.data.connection.PlayerRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
@@ -92,12 +93,12 @@ internal class PlayerDaoTest {
   @Test
   internal fun redirectsResultQuery() {
 
-    val playerName = UUID.randomUUID().toString()
+    val player = Player(42)
     val playerRepositoryMock = mock(PlayerRepository::class.java)
     val expectedResult = listOf<ResultInfo>()
 
-    `when`(playerRepositoryMock.findResultsForPlayer(playerName)).thenReturn(expectedResult)
+    whenever(playerRepositoryMock.findResultsForPlayer(player)).thenReturn(expectedResult)
 
-    assertThat(dao.findResultsForPlayer(playerName)).isEqualTo(expectedResult)
+    assertThat(dao.findResultsForPlayer(player)).isEqualTo(expectedResult)
   }
 }

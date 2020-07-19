@@ -100,9 +100,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return Answer.ofText(errorMessage)
     }
 
-    playerDao.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
+    val player = playerDao.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
 
-    val bingos = playerDao.findResultsForPlayer(username)
+    val bingos = playerDao.findResultsForPlayer(player)
         .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (bingos.isEmpty()) {
@@ -166,12 +166,8 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     var forfeitsSkipped = 0
 
-    if (queryInfo.player.srlName == null) {
-      TODO("Also look for racetime")
-    }
-
     val allBingos = queryInfo.player
-        .let { playerDao.findResultsForPlayer(it.srlName!!) }
+        .let { playerDao.findResultsForPlayer(it) }
         .asSequence()
         .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
         .toMutableList()
@@ -241,11 +237,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     val player = playerDao.getPlayerByName(username)
 
-    if (player != null && player.srlName == null) {
-      TODO("Also look for racetime")
-    }
-
-    val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName!!) }
+    val allBingos = player?.let { playerDao.findResultsForPlayer(it) }
         ?.filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {

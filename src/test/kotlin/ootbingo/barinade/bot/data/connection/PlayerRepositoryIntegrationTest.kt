@@ -52,7 +52,7 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
         }
         .toList()
 
-    val actualResults = playerRepository.findResultsForPlayer("name")
+    val actualResults = playerRepository.findResultsForPlayer(player)
 
     assertThat(actualResults).containsExactlyElementsOf(expectedRaces)
   }

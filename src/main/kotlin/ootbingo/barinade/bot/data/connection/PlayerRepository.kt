@@ -4,7 +4,6 @@ import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
-import org.springframework.data.repository.Repository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Component
 
@@ -19,12 +18,9 @@ interface PlayerRepository : CrudRepository<Player, Long> {
     inner join fetch Race r
     on r = res.resultId.race
   
-    where res.resultId.player in (
-	    from Player p
-	    where upper(p.srlName) = upper(:username)
-    )
+    where res.resultId.player = :player
   
    order by r.datetime desc
   """)
-  fun findResultsForPlayer(@Param("username") username: String): List<ResultInfo>
+  fun findResultsForPlayer(player: Player): List<ResultInfo>
 }

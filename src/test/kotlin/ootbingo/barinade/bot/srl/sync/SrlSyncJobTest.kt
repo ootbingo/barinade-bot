@@ -272,7 +272,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
     fun build(): SrlPastRace =
         SrlPastRace(id = id.toString(), goal = goal, date = date, numentrants = results.size.toLong(),
-                    results = results).also { println(it) }
+                    results = results)
   }
 
   class ResultsBuilder {

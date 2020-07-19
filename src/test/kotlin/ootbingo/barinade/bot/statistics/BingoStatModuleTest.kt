@@ -1,5 +1,10 @@
 package ootbingo.barinade.bot.statistics
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doAnswer
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.whenever
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
@@ -7,7 +12,6 @@ import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.data.model.Platform
@@ -20,7 +24,6 @@ import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -31,7 +34,7 @@ import kotlin.random.Random
 
 internal class BingoStatModuleTest {
 
-  private val playerDaoMock = mock(PlayerDao::class.java)
+  private val playerDaoMock = mock<PlayerDao>()
   private val module = BingoStatModule(playerDaoMock)
   private val players = mutableMapOf<String, Player>()
 
@@ -44,17 +47,17 @@ internal class BingoStatModuleTest {
   @BeforeEach
   internal fun setup() {
     doAnswer { players[it.getArgument(0)] }
-        .`when`(playerDaoMock).getPlayerByName(anyString())
+        .whenever(playerDaoMock).getPlayerByName(any())
 
     doAnswer {
-      val test = players[it.getArgument(0)]
+      val test = players[it.getArgument<Player>(0).srlName!!]
           ?.races
           ?.map { r ->
-            val result = r.raceResults.findLast { res -> res.resultId.player.srlName == it.getArgument(0) }
+            val result = r.raceResults.findLast { res -> res.resultId.player.srlName == it.getArgument<Player>(0).srlName!! }
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
       test
-    }.`when`(playerDaoMock).findResultsForPlayer(anyString())
+    }.whenever(playerDaoMock).findResultsForPlayer(any<Player>())
   }
 
   //<editor-fold desc="Average">
@@ -597,7 +600,7 @@ internal class BingoStatModuleTest {
         }
         .map {
           val spy = spy(it)
-          `when`(spy.isBingo()).thenReturn(bingo)
+          whenever(spy.isBingo()).thenReturn(bingo)
           spy
         }
         .forEach { races.add(it) }
@@ -632,20 +635,20 @@ internal class BingoStatModuleTest {
 
   private fun whenDiscordMessageIsSent(user: String, message: String): Answer<AnswerInfo>? {
 
-    val discordUser = UserImpl(0, mock(JDAImpl::class.java))
+    val discordUser = UserImpl(0, mock())
     discordUser.name = user
 
-    val discordMessageMock = mock(Message::class.java)
-    `when`(discordMessageMock.author).thenReturn(discordUser)
+    val discordMessageMock = mock<Message>()
+    whenever(discordMessageMock.author).thenReturn(discordUser)
 
     return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
   }
 
   private fun whenIrcMessageIsSent(username: String, message: String): Answer<AnswerInfo>? {
 
-    val messageInfoMock = mock(IrcMessageInfo::class.java)
-    `when`(messageInfoMock.nick).thenReturn(username)
-    `when`(messageInfoMock.channel).thenReturn("")
+    val messageInfoMock = mock<IrcMessageInfo>()
+    whenever(messageInfoMock.nick).thenReturn(username)
+    whenever(messageInfoMock.channel).thenReturn("")
 
     return whenMessageIsSent(message, messageInfoMock)
   }
