@@ -21,7 +21,7 @@ data class RaceResult(@EmbeddedId var resultId: ResultId = ResultId(),
                       @Enumerated(EnumType.STRING)
                       var resultType: ResultType = ResultType.FINISH) {
 
-  fun isForfeit(): Boolean = time.isNegative
+  fun isForfeit(): Boolean = resultType != ResultType.FINISH
 
   override fun toString(): String = "RaceResult(time=${time.seconds})"
 

@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.data.connection.RaceRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlGame
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
@@ -14,6 +15,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import java.time.Duration
 import java.util.UUID
 
 internal class SrlRaceImporterTest {
@@ -111,6 +113,39 @@ internal class SrlRaceImporterTest {
 
     verify(raceRepositoryMock, times(0)).save(any<Race>())
     verify(raceRepositoryMock, times(0)).saveAll(any<Iterable<Race>>())
+  }
+
+  @Test
+  internal fun importsWithTheCorrectResultType() {
+
+    val name = UUID.randomUUID().toString()
+
+    val races = listOf(
+        SrlPastRace("1", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(1)))),
+        SrlPastRace("2", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(2)))),
+        SrlPastRace("3", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(-1)))),
+        SrlPastRace("4", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(-2))))
+    )
+
+    givenRacesForPlayer(name, *races.toTypedArray())
+    givenRacesInDb()
+
+    importer.importRacesForUser(Player(null, 0, null, name))
+
+    thenResultTypesAre("1" to ResultType.FINISH, "2" to ResultType.FINISH,
+                       "3" to ResultType.FORFEIT, "4" to ResultType.FORFEIT)
+  }
+
+  private fun thenResultTypesAre(vararg results: Pair<String, ResultType>) {
+
+    val raceCaptor = argumentCaptor<Race>()
+    verify(raceRepositoryMock, atLeast(1)).save(raceCaptor.capture())
+
+    val races = raceCaptor.allValues
+
+    results.forEach {
+      assertThat(races.last { r->r.raceId == it.first }.raceResults[0].resultType).isEqualTo(it.second)
+    }
   }
 
   private fun givenRacesInDb(vararg races: Race) {

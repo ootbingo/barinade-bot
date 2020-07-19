@@ -48,7 +48,7 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
         .asSequence()
         .sortedByDescending { it.datetime }
         .map {
-          ResultInfo(it.raceResults[0].time, it.goal, it.raceId, it.datetime)
+          ResultInfo(it.raceResults[0].time, it.goal, it.raceId, it.datetime, it.raceResults[0].resultType)
         }
         .toList()
 

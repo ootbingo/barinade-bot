@@ -5,6 +5,7 @@ import ootbingo.barinade.bot.data.model.Platform
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -52,8 +53,10 @@ class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
               return@forEach
             }
 
+        val resultType = if (srlResult.time.isNegative) ResultType.FORFEIT else ResultType.FINISH
+
         storedRace.raceResults
-            .add(RaceResult(RaceResult.ResultId(storedRace, player), srlResult.place, srlResult.time))
+            .add(RaceResult(RaceResult.ResultId(storedRace, player), srlResult.place, srlResult.time, resultType))
         raceRepository.save(storedRace)
       }
     }

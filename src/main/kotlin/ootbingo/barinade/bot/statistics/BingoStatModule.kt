@@ -11,7 +11,7 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
-import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
@@ -103,7 +103,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     playerDao.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
 
     val bingos = playerDao.findResultsForPlayer(username)
-        .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
+        .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (bingos.isEmpty()) {
       return Answer.ofText("$username has not finished any bingos")
@@ -111,7 +111,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     return Answer.ofText(
         bingos
-            .filter { RaceResult(time = it.time).isForfeit() }
+            .filter { it.resultType != ResultType.FINISH }
             .count()
             .toDouble()
             .let { 100 * it / bingos.count().toDouble() }
@@ -173,7 +173,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val allBingos = queryInfo.player
         .let { playerDao.findResultsForPlayer(it.srlName!!) }
         .asSequence()
-        .filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
+        .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
         .toMutableList()
 
     val toAverage = mutableListOf<ResultInfo>()
@@ -181,9 +181,8 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
 
       val bingo = allBingos.removeAt(0)
-      val result = RaceResult(time = bingo.time)
 
-      if (result.isForfeit()) {
+      if (bingo.resultType != ResultType.FINISH) {
         forfeitsSkipped++
       } else {
         toAverage.add(bingo)
@@ -247,14 +246,14 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     }
 
     val allBingos = player?.let { playerDao.findResultsForPlayer(it.srlName!!) }
-        ?.filter { Race(it.raceId, it.goal, it.recordDate).isBingo() }
+        ?.filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {
       return null
     }
 
     return allBingos
-        .filter { RaceResult(time = it.time).isForfeit() }
+        .filter { it.resultType != ResultType.FINISH }
         .count()
         .toDouble()
         .let { it / allBingos.count() }

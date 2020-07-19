@@ -14,7 +14,7 @@ interface PlayerRepository : CrudRepository<Player, Long> {
   fun findBySrlNameIgnoreCase(srlName: String): Player?
 
   @Query("""
-    select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.id, r.datetime)
+    select new ootbingo.barinade.bot.data.model.helper.ResultInfo(res.time, r.goal, r.id, r.datetime, res.resultType)
     from RaceResult res
     inner join fetch Race r
     on r = res.resultId.race

@@ -51,7 +51,7 @@ internal class BingoStatModuleTest {
           ?.races
           ?.map { r ->
             val result = r.raceResults.findLast { res -> res.resultId.player.srlName == it.getArgument(0) }
-            ResultInfo(result!!.time, r.goal, r.raceId, r.datetime)
+            ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
       test
     }.`when`(playerDaoMock).findResultsForPlayer(anyString())
@@ -583,8 +583,9 @@ internal class BingoStatModuleTest {
 
     times
         .map {
-          RaceResult(RaceResult.ResultId(Race("", "", ZonedDateTime.now(), Platform.SRL, mutableListOf()),
-                                         Player(null, 0, null, username, null, mutableListOf())), 1, Duration.ofSeconds(it.toLong()), ResultType.FINISH)
+          RaceResult(RaceResult.ResultId(Race(), Player(srlName = username, raceResults = mutableListOf())), 1,
+                     Duration.ofSeconds(it.toLong()),
+                     if (it > 0) ResultType.FINISH else ResultType.FORFEIT)
         }
         .map {
 
