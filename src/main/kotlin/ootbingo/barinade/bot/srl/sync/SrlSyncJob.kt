@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.data.connection.RaceResultRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
@@ -133,7 +134,8 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
           it.second.results.map { result ->
             RaceResult(RaceResult.ResultId(it.first, getPlayerWithUsername(result.player)),
                        result.place,
-                       result.time)
+                       result.time,
+                       if (result.time.isNegative) ResultType.FORFEIT else ResultType.FINISH)
           }
         }
 

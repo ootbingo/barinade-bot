@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.data.connection.RaceResultRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.Race
 import ootbingo.barinade.bot.data.model.RaceResult
+import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.srl.api.model.SrlPastRace
 import ootbingo.barinade.bot.srl.api.model.SrlPlayer
@@ -97,6 +98,59 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     thenResultCount isEqualTo 5
   }
 
+  @Test
+  @DirtiesContext
+  internal fun syncsRacesWithCorrectResultTypes() {
+
+    givenPlayersInDb("Alpha" withId 1, "Beta" withId 2)
+    givenRacesInDb(Race("991"))
+    givenResultsInDb(result("Alpha", "991", 551))
+
+    givenPlayersOnSrl("Alpha" withId 1, "Beta" withId 2, "Gamma" withId 3)
+    givenRacesOnSrl(
+        pastRace {
+          id = 991
+          goal = "race1"
+          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
+          results {
+            result {
+              player = "Alpha"
+              time = 551
+            }
+            result {
+              player = "Gamma"
+              time = 552
+            }
+          }
+        },
+        pastRace {
+          id = 992
+          goal = "race2"
+          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
+          results {
+            result {
+              player = "Beta"
+              time = -1
+            }
+            result {
+              player = "Gamma"
+              time = 661
+            }
+            result {
+              player = "Alpha"
+              time = -2
+            }
+          }
+        }
+    )
+
+    whenJobIsExecuted()
+
+    thenDbPlayerWithName("Alpha") hasResultTypes listOf(ResultType.FINISH, ResultType.FORFEIT)
+    thenDbPlayerWithName("Beta") hasResultTypes listOf(ResultType.FORFEIT)
+    thenDbPlayerWithName("Gamma") hasResultTypes listOf(ResultType.FINISH, ResultType.FINISH)
+  }
+
   //<editor-fold desc="Given">
 
   private fun givenPlayersInDb(vararg players: Player) {
@@ -115,9 +169,9 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     players
         .filterNot { it.srlName == null || it.srlId == null }
         .forEach {
-      whenever(srlHttpClientMock.getPlayerByName(it.srlName!!))
-          .thenReturn(SrlPlayer(it.srlId!!, it.srlName!!))
-    }
+          whenever(srlHttpClientMock.getPlayerByName(it.srlName!!))
+              .thenReturn(SrlPlayer(it.srlId!!, it.srlName!!))
+        }
   }
 
   private fun givenRacesOnSrl(vararg races: SrlPastRace) {
@@ -171,6 +225,12 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         .containsExactlyInAnyOrder(*times.toTypedArray())
   }
 
+  private infix fun Player.hasResultTypes(types: Collection<ResultType>) {
+
+    assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.resultType })
+        .containsExactlyInAnyOrder(*types.toTypedArray())
+  }
+
   private val thenPlayerCount: Int
     get() = playerRepository.findAll().count()
 
@@ -190,7 +250,8 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   private infix fun String.withId(id: Long): Player = Player(null, id, null, this)
   private fun result(playerName: String, raceId: String, time: Int) =
-      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!, playerRepository.findBySrlNameIgnoreCase(playerName)!!),
+      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!,
+                                     playerRepository.findBySrlNameIgnoreCase(playerName)!!),
                  time = Duration.ofSeconds(time.toLong()))
 
   //<editor-fold desc="SRL Race Builder">
