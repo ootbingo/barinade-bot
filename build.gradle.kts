@@ -32,7 +32,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramanga:lily:0.1.1")
+  implementation("de.scaramanga:lily:0.1.2")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
