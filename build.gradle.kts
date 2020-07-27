@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
   java
-  id("org.springframework.boot") version "2.1.8.RELEASE"
+  id("org.springframework.boot") version "2.3.2.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
@@ -133,5 +133,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.0"
+  gradleVersion = "6.3"
 }
