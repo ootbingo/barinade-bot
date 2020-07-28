@@ -1,14 +1,14 @@
-package ootbingo.barinade.bot.configuration
+package ootbingo.barinade.bot.srl.api.client
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
 
 @Configuration
-class HttpConfiguration {
+class SrlHttpClientConfiguration {
 
   @Bean
-  fun getRestTemplate(): RestTemplate {
+  fun srlRestTemplate(): RestTemplate {
     return RestTemplate()
   }
 }
