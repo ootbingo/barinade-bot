@@ -49,7 +49,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
-    exclude(module = "junit")
+    exclude(module = "junit-vintage-engine")
     exclude(module = "hamcrest-library")
     exclude(module = "hamcrest-core")
     exclude(module = "json-path")

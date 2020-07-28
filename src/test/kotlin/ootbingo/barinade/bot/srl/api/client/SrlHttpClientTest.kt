@@ -3,18 +3,15 @@ package ootbingo.barinade.bot.srl.api.client
 import ootbingo.barinade.bot.srl.api.SrlApiProperties
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.*
 import org.springframework.test.web.client.response.MockRestResponseCreators.*
+import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -23,25 +20,14 @@ import java.util.UUID
 import kotlin.random.Random
 
 @ExtendWith(SpringExtension::class)
-@RestClientTest(components = [SrlHttpClient::class, SrlApiProperties::class])
-@AutoConfigureWebClient(registerRestTemplate = true)
 internal class SrlHttpClientTest {
 
   private val baseUrl = "http://example.org"
 
-  @Autowired
-  private var properties: SrlApiProperties? = null
-
-  @Autowired
-  private var server: MockRestServiceServer? = null
-
-  @Autowired
-  private var client: SrlHttpClient? = null
-
-  @BeforeEach
-  internal fun setup() {
-    requireNotNull(properties).baseUrl = baseUrl
-  }
+  private var properties: SrlApiProperties = SrlApiProperties(baseUrl)
+  private val restTemplate = RestTemplate()
+  private var server: MockRestServiceServer = MockRestServiceServer.createServer(restTemplate)
+  private var client: SrlHttpClient = SrlHttpClient(properties, restTemplate)
 
   @Test
   internal fun getsPlayer() {
@@ -64,10 +50,10 @@ internal class SrlHttpClientTest {
     """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/players/$playerName"))
-        ?.andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/players/$playerName"))
+        .andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
 
-    val player = requireNotNull(client?.getPlayerByName(playerName))
+    val player = requireNotNull(client.getPlayerByName(playerName))
 
     val soft = SoftAssertions()
 
@@ -100,10 +86,10 @@ internal class SrlHttpClientTest {
     """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/players/$playerName"))
-        ?.andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/players/$playerName"))
+        .andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
 
-    assertThat(client?.getPlayerByName(playerName)).isNull()
+    assertThat(client.getPlayerByName(playerName)).isNull()
   }
 
   @Test
@@ -112,10 +98,10 @@ internal class SrlHttpClientTest {
     val playerName = UUID.randomUUID().toString()
 
     server
-        ?.expect(requestTo("$baseUrl/players/$playerName"))
-        ?.andRespond(withStatus(HttpStatus.NOT_FOUND))
+        .expect(requestTo("$baseUrl/players/$playerName"))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND))
 
-    assertThat(client?.getPlayerByName(playerName)).isNull()
+    assertThat(client.getPlayerByName(playerName)).isNull()
   }
 
   @Test
@@ -138,10 +124,10 @@ internal class SrlHttpClientTest {
     """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/games/$abbreviation"))
-        ?.andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/games/$abbreviation"))
+        .andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
 
-    val game = requireNotNull(client?.getGameByAbbreviation(abbreviation))
+    val game = requireNotNull(client.getGameByAbbreviation(abbreviation))
 
     val soft = SoftAssertions()
 
@@ -160,10 +146,10 @@ internal class SrlHttpClientTest {
     val abbreviation = UUID.randomUUID().toString()
 
     server
-        ?.expect(requestTo("$baseUrl/games/$abbreviation"))
-        ?.andRespond(withStatus(HttpStatus.NOT_FOUND))
+        .expect(requestTo("$baseUrl/games/$abbreviation"))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND))
 
-    assertThat(client?.getGameByAbbreviation(abbreviation)).isNull()
+    assertThat(client.getGameByAbbreviation(abbreviation)).isNull()
   }
 
   @Test
@@ -204,10 +190,10 @@ internal class SrlHttpClientTest {
     """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/pastraces?player=$playerName&pageSize=2000"))
-        ?.andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/pastraces?player=$playerName&pageSize=2000"))
+        .andRespond(withSuccess(json, MediaType.APPLICATION_JSON))
 
-    val races = requireNotNull(client?.getRacesByPlayerName(playerName))
+    val races = requireNotNull(client.getRacesByPlayerName(playerName))
 
     val soft = SoftAssertions()
 
@@ -273,22 +259,22 @@ internal class SrlHttpClientTest {
     """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=1"))
-        ?.andRespond(withSuccess(jsonWithPlayers("Konrad", "Ludwig"), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=1"))
+        .andRespond(withSuccess(jsonWithPlayers("Konrad", "Ludwig"), MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=2"))
-        ?.andRespond(withSuccess(jsonWithPlayers("Ludwig", "Gerhard"), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=2"))
+        .andRespond(withSuccess(jsonWithPlayers("Ludwig", "Gerhard"), MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=3"))
-        ?.andRespond(withSuccess(jsonWithPlayers("Willy", "Helmut"), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=3"))
+        .andRespond(withSuccess(jsonWithPlayers("Willy", "Helmut"), MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=4"))
-        ?.andRespond(withSuccess(emptyJson, MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/pastraces?game=oot&pageSize=2000&page=4"))
+        .andRespond(withSuccess(emptyJson, MediaType.APPLICATION_JSON))
 
-    val allRaces = client?.getAllRacesOfGame("oot") ?: emptySet()
+    val allRaces = client.getAllRacesOfGame("oot")
     val abstractRaces =
         allRaces.map { it.results }
             .map { it.map { r -> r.player to r.place } }

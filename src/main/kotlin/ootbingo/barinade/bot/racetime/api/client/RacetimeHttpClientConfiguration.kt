@@ -4,6 +4,7 @@ import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
+import ootbingo.barinade.bot.racetime.api.model.RacetimeEntrant
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,6 +26,7 @@ class RacetimeHttpClientConfiguration {
       .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
       .registerTypeAdapter(Duration::class.java, durationDeserializer)
       .registerTypeAdapter(Instant::class.java, instantDeserializer)
+      .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
       .create()
 
   private val durationDeserializer = JsonDeserializer { json, _, _ ->
@@ -33,5 +35,11 @@ class RacetimeHttpClientConfiguration {
 
   private val instantDeserializer = JsonDeserializer { json, _, _ ->
     Instant.parse(json.asString)
+  }
+
+  private val entrantStatusDeserializer = JsonDeserializer { json, _, _ ->
+    RacetimeEntrant.RacetimeEntrantStatus
+        .values()
+        .find { it.name.equals(json.asJsonObject.get("value").asString, true) }
   }
 }

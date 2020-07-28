@@ -2,39 +2,24 @@ package ootbingo.barinade.bot.racetime.api.client
 
 import ootbingo.barinade.bot.racetime.api.RacetimeApiProperties
 import org.assertj.core.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.*
-import org.springframework.test.web.client.response.MockRestResponseCreators
+import org.springframework.test.web.client.response.MockRestResponseCreators.*
 import java.util.UUID
 
 @ExtendWith(SpringExtension::class)
-@RestClientTest(components = [RacetimeHttpClient::class, RacetimeApiProperties::class])
-@AutoConfigureWebClient(registerRestTemplate = true)
 internal class RacetimeHttpClientTest {
 
   private val baseUrl = "http://example.com"
 
-  @Autowired
-  private var properties: RacetimeApiProperties? = null
-
-  @Autowired
-  private var server: MockRestServiceServer? = null
-
-  @Autowired
-  private var client: RacetimeHttpClient? = null
-
-  @BeforeEach
-  internal fun setup() {
-    requireNotNull(properties).baseUrl = baseUrl
-  }
+  private val properties: RacetimeApiProperties = RacetimeApiProperties(baseUrl)
+  private val restTemplate = RacetimeHttpClientConfiguration().racetimeRestTemplate()
+  private val server: MockRestServiceServer = MockRestServiceServer.createServer(restTemplate)
+  private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties)
 
   @Test
   internal fun findsAllRacesOfGame() {
@@ -100,26 +85,23 @@ internal class RacetimeHttpClientTest {
         """.trimIndent()
 
     server
-        ?.expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=1"))
-        ?.andRespond(
-            MockRestResponseCreators.withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=1"))
+        .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=2"))
-        ?.andRespond(
-            MockRestResponseCreators.withSuccess(categoryRacesJson(random(), random(), random()),
-                                                 MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=2"))
+        .andRespond(withSuccess(categoryRacesJson(random(), random(), random()),
+                                 MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=3"))
-        ?.andRespond(
-            MockRestResponseCreators.withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=3"))
+        .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        ?.expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=4"))
-        ?.andRespond(MockRestResponseCreators.withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
+        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=4"))
+        .andRespond(withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
 
-    val allRaces = client?.getAllRacesOfGame("oot") ?: emptySet()
+    val allRaces = client.getAllRacesOfGame("oot")
 
     assertThat(allRaces).hasSize(7)
   }
