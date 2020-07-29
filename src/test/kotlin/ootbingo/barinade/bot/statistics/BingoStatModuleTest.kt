@@ -26,8 +26,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.math.roundToLong
 import kotlin.random.Random
@@ -53,7 +51,9 @@ internal class BingoStatModuleTest {
       val test = players[it.getArgument<Player>(0).srlName!!]
           ?.races
           ?.map { r ->
-            val result = r.raceResults.findLast { res -> res.resultId.player.srlName == it.getArgument<Player>(0).srlName!! }
+            val result = r.raceResults.findLast { res ->
+              res.resultId.player.srlName == it.getArgument<Player>(0).srlName!!
+            }
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
       test
@@ -595,7 +595,7 @@ internal class BingoStatModuleTest {
           val goal = if (bingo) "speedrunslive.com/tools/oot-bingo"
           else ""
 
-          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), Platform.SRL,
+          Race("0", goal, Instant.ofEpochSecond(timestamp--), Platform.SRL,
                mutableListOf(it))
         }
         .map {

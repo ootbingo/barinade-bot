@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
@@ -34,7 +35,7 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
     val savedRaces = raceGoals.map {
       Race("${Random.nextLong()}",
            it,
-           ZonedDateTime.now().plusSeconds(Random.nextLong(0, 10000)),
+           Instant.now().plusSeconds(Random.nextLong(0, 10000)),
            Platform.SRL,
            mutableListOf())
     }.map {

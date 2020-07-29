@@ -91,7 +91,7 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
         .filter { it.second != null }
         .map { it.first to it.second!! }
         .filter {
-          it.first.date.toInstant() != it.second.datetime.toInstant() || it.first.goal != it.second.goal
+          it.first.date != it.second.datetime || it.first.goal != it.second.goal
         }
         .map {
           it.second.datetime = it.first.date

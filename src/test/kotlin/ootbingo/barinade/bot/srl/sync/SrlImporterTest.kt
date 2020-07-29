@@ -18,12 +18,12 @@ import org.mockito.Mockito.*
 import java.time.Duration
 import java.util.UUID
 
-internal class SrlRaceImporterTest {
+internal class SrlImporterTest {
 
   private val srlHttpClientMock = mock(SrlHttpClient::class.java)
   private val raceRepositoryMock = mock(RaceRepository::class.java)
 
-  private val importer = SrlRaceImporter(srlHttpClientMock, raceRepositoryMock)
+  private val importer = SrlImporter(srlHttpClientMock, raceRepositoryMock)
 
   private val oot = SrlGame(1, "Ocarina of Time", "oot", 1.0, 1)
   private val ootbingo = SrlGame(2, "Ocarina of Time Bingo", "ootbingo", 1.0, 2)

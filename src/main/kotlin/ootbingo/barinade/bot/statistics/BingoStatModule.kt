@@ -15,6 +15,7 @@ import ootbingo.barinade.bot.data.model.ResultType
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
+import org.slf4j.LoggerFactory
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
@@ -22,6 +23,8 @@ import java.util.Locale
 
 @LilyModule
 class BingoStatModule(private val playerDao: PlayerDao) {
+
+  private val logger = LoggerFactory.getLogger(BingoStatModule::class.java)
 
   private val errorMessage = "An error occurred finding the player."
 
@@ -193,7 +196,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     val toAverage = allRacesForComputation(queryInfo)
 
     return toAverage.races
-        .map { it.time.seconds }
+        .map {
+          it.time?.seconds?: logMissingResultTime(it.raceId)
+        }
         .average()
         .let { Duration.ofSeconds(it.toLong()).standardFormat() }
         .let { ComputationResult(it, toAverage.races.size, toAverage.forfeitsSkipped) }
@@ -208,7 +213,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     }
 
     return toMedian.races
-        .map { it.time.seconds }
+        .map {
+          it.time?.seconds?: logMissingResultTime(it.raceId)
+        }
         .median()
         .let { Duration.ofSeconds(it).standardFormat() }
         .let { ComputationResult(it, toMedian.races.size, toMedian.forfeitsSkipped) }
@@ -227,7 +234,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
-        ?.map { it.time.seconds }
+        ?.map {
+          it.time?.seconds?: logMissingResultTime(it.raceId)
+        }
         ?.let { if (it.isEmpty()) return null else it }
         ?.median()
         ?.let { Duration.ofSeconds(it) }
@@ -249,6 +258,11 @@ class BingoStatModule(private val playerDao: PlayerDao) {
         .count()
         .toDouble()
         .let { it / allBingos.count() }
+  }
+
+  private fun logMissingResultTime(raceId: String): Long {
+    logger.error("Finished race without time: {}", raceId)
+    return -1L
   }
 
   private inner class QueryInfo(val player: Player, val raceCount: Int)

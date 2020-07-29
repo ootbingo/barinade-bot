@@ -45,7 +45,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         pastRace {
           id = 991
           goal = "race1"
-          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
+          date = Instant.ofEpochSecond(10000991)
           results {
             result {
               player = "Alpha"
@@ -60,7 +60,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         pastRace {
           id = 992
           goal = "race2"
-          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
+          date = Instant.ofEpochSecond(10000992)
           results {
             result {
               player = "Beta"
@@ -86,11 +86,11 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     thenDbPlayerWithName("Gamma") hasRaceTimes setOf(552, 662)
 
     thenRaceWithId(991) hasGoal "race1"
-    thenRaceWithId(991) hasDate ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
+    thenRaceWithId(991) hasDate Instant.ofEpochSecond(10000991)
     thenRaceWithId(991) hasResults setOf("Alpha" to 551, "Gamma" to 552)
 
     thenRaceWithId(992) hasGoal "race2"
-    thenRaceWithId(992) hasDate ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
+    thenRaceWithId(992) hasDate Instant.ofEpochSecond(10000992)
     thenRaceWithId(992) hasResults setOf("Alpha" to 663, "Beta" to 661, "Gamma" to 662)
 
     thenPlayerCount isEqualTo 3
@@ -111,7 +111,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         pastRace {
           id = 991
           goal = "race1"
-          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000991), ZoneId.systemDefault())
+          date = Instant.ofEpochSecond(10000991)
           results {
             result {
               player = "Alpha"
@@ -126,7 +126,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
         pastRace {
           id = 992
           goal = "race2"
-          date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(10000992), ZoneId.systemDefault())
+          date = Instant.ofEpochSecond(10000992)
           results {
             result {
               player = "Beta"
@@ -202,7 +202,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     assertThat(this.goal).isEqualTo(goal)
   }
 
-  private infix fun Race.hasDate(date: ZonedDateTime) {
+  private infix fun Race.hasDate(date: Instant) {
     assertThat(this.datetime).isEqualTo(date)
   }
 
@@ -211,7 +211,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
       assertThat(
           raceResultRepository.findAll()
               .filter { res -> res.resultId.race == this }
-              .last { res -> res.resultId.player.srlName == it.first }.time.seconds
+              .last { res -> res.resultId.player.srlName == it.first }.time?.seconds
       ).isEqualTo(it.second.toLong())
     }
 
@@ -221,7 +221,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   private infix fun Player.hasRaceTimes(times: Collection<Long>) {
 
-    assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.time.seconds })
+    assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.time?.seconds })
         .containsExactlyInAnyOrder(*times.toTypedArray())
   }
 
@@ -261,8 +261,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
   class PastRaceBuilder(var id: Int = -1,
                         var goal: String = "",
-                        var date: ZonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(0),
-                                                                          ZoneId.systemDefault())) {
+                        var date: Instant = Instant.ofEpochSecond(0)) {
 
     private lateinit var results: List<SrlResult>
 

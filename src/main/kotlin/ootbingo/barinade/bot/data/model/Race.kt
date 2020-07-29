@@ -3,6 +3,7 @@ package ootbingo.barinade.bot.data.model
 import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.persistence.CascadeType
@@ -17,7 +18,7 @@ import javax.persistence.OneToMany
 @Open
 data class Race(@Id var raceId: String = "",
                 var goal: String = "",
-                var datetime: ZonedDateTime = ZonedDateTime.now(),
+                var datetime: Instant = Instant.now(),
                 @Enumerated(EnumType.STRING)
                 var platform: Platform = Platform.SRL,
                 @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE], mappedBy = "resultId.race", fetch = FetchType.EAGER)
@@ -42,7 +43,7 @@ data class Race(@Id var raceId: String = "",
         containsAny(blacklistedWords) -> false
 
         contains("speedrunslive.com/tools/oot-bingo") ->
-          this@Race.datetime.isBefore(ZonedDateTime.of(2019, 9, 21, 0, 0, 0, 0, ZoneId.of("UTC")))
+          this@Race.datetime.isBefore(ZonedDateTime.of(2019, 9, 21, 0, 0, 0, 0, ZoneId.of("UTC")).toInstant())
         matches(Regex("https?://ootbingo\\.github\\.io/bingo/v\\d+\\.\\d/bingo\\.html.*")) -> true
 
         else -> false

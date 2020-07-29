@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
@@ -45,7 +46,7 @@ internal class DbIntegrationTest(@Autowired val playerRepository: PlayerReposito
     val player = Player(null, 0, null, srlName)
     val savedPlayer = playerRepository.save(player)
 
-    val race = Race("123", "", ZonedDateTime.now())
+    val race = Race("123", "", Instant.now())
     val savedRace = raceRepository.save(race)
 
     val result = RaceResult(RaceResult.ResultId(savedRace, savedPlayer), 1, Duration.ofSeconds(12))

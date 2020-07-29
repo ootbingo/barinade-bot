@@ -7,10 +7,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class DateTimeDeserializer : JsonDeserializer<ZonedDateTime>() {
+class InstantDeserializer : JsonDeserializer<Instant>() {
 
-  override fun deserialize(parser: JsonParser?, ctxt: DeserializationContext?): ZonedDateTime {
+  override fun deserialize(parser: JsonParser?, ctxt: DeserializationContext?): Instant {
 
-    return ZonedDateTime.ofInstant(Instant.ofEpochSecond(requireNotNull(parser?.text?.toLong())), ZoneId.of("UTC"))
+    return Instant.ofEpochSecond(requireNotNull(parser?.text?.toLong()))
   }
 }

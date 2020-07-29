@@ -205,7 +205,7 @@ internal class SrlHttpClientTest {
     soft.assertThat(race.game.name).isEqualTo(gameName)
     soft.assertThat(race.game.abbrev).isEqualTo(abbrev)
     soft.assertThat(race.goal).isEqualTo(goal)
-    soft.assertThat(race.date).isEqualTo(ZonedDateTime.ofInstant(Instant.ofEpochSecond(date), ZoneId.of("UTC")))
+    soft.assertThat(race.date).isEqualTo(Instant.ofEpochSecond(date))
 
     assertThat(race.results).hasSize(1)
 

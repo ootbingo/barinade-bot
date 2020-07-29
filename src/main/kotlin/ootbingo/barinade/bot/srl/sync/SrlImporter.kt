@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class SrlRaceImporter(private val srlHttpClient: SrlHttpClient,
-                      private val raceRepository: RaceRepository) {
+class SrlImporter(private val srlHttpClient: SrlHttpClient,
+                  private val raceRepository: RaceRepository) {
 
-  private val logger = LoggerFactory.getLogger(SrlRaceImporter::class.java)
+  private val logger = LoggerFactory.getLogger(SrlImporter::class.java)
 
   private val whitelistedGames by lazy {
     listOf("oot", "ootbingo")

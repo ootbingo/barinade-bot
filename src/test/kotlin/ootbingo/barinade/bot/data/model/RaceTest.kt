@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.random.Random
@@ -182,11 +183,12 @@ internal class RaceTest {
     assertThat(race.isBingo()).isFalse()
   }
 
-  private fun race(goal: String, recordDate: ZonedDateTime): Race =
+  private fun race(goal: String, recordDate: Instant): Race =
       Race("0", goal, recordDate, Platform.SRL, mutableListOf())
 
-  private fun race(id: Int, goal: String, recordDate: ZonedDateTime): Race =
+  private fun race(id: Int, goal: String, recordDate: Instant): Race =
       Race("$id", goal, recordDate, Platform.SRL, mutableListOf())
 
-  private fun date(year: Int, month: Int, day: Int) = ZonedDateTime.of(year, month, day, 1, 1, 1, 0, ZoneId.of("UTC"))
+  private fun date(year: Int, month: Int, day: Int) =
+      ZonedDateTime.of(year, month, day, 1, 1, 1, 0, ZoneId.of("UTC")).toInstant()
 }

@@ -17,13 +17,13 @@ import javax.persistence.ManyToOne
 @Open
 data class RaceResult(@EmbeddedId var resultId: ResultId = ResultId(),
                       var place: Long = 0,
-                      var time: Duration = Duration.ofSeconds(0),
+                      var time: Duration? = null,
                       @Enumerated(EnumType.STRING)
                       var resultType: ResultType = ResultType.FINISH) {
 
   fun isForfeit(): Boolean = resultType != ResultType.FINISH
 
-  override fun toString(): String = "RaceResult(time=${time.seconds})"
+  override fun toString(): String = "RaceResult(time=${time?.seconds})"
 
   @Embeddable
   data class ResultId(
