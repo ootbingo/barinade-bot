@@ -4,8 +4,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.data.connection.PlayerRepository
 import ootbingo.barinade.bot.data.model.Player
 import ootbingo.barinade.bot.data.model.helper.ResultInfo
-import ootbingo.barinade.bot.srl.api.model.SrlPlayer
-import ootbingo.barinade.bot.srl.sync.SrlPlayerImporter
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,10 +13,9 @@ import kotlin.random.Random
 
 internal class PlayerDaoTest {
 
-  private val srlPlayerImporterMock = mock(SrlPlayerImporter::class.java)
   private val playerRepositoryMock = mock(PlayerRepository::class.java)
 
-  private val dao = PlayerDao(playerRepositoryMock, srlPlayerImporterMock)
+  private val dao = PlayerDao(playerRepositoryMock)
 
   private val dbPlayers = mutableListOf<Player>()
 
@@ -37,7 +34,6 @@ internal class PlayerDaoTest {
   @Test
   internal fun returnsNullIfPlayerNotKnown() {
 
-    givenPlayersOnSrl()
     givenPlayersInDb()
 
     assertThat(dao.getPlayerByName("some name")).isNull()
@@ -49,14 +45,12 @@ internal class PlayerDaoTest {
     val playerName = UUID.randomUUID().toString()
     val playerId = Random.nextLong(0, 10000)
 
-    givenPlayersOnSrl(srlPlayer(playerId, playerName))
     givenPlayersInDb(Player(playerId, 0, "", "srlName", playerName),
                      Player(-1, 0, "", playerName, "racetimeName"))
 
     val actualPlayer = dao.getPlayerByName(playerName)!!
 
     assertThat(actualPlayer.id).isEqualTo(playerId)
-    verifyZeroInteractions(srlPlayerImporterMock)
   }
 
   @Test
@@ -65,28 +59,11 @@ internal class PlayerDaoTest {
     val playerName = UUID.randomUUID().toString()
     val playerId = Random.nextLong(0, 10000)
 
-    givenPlayersOnSrl(srlPlayer(playerId, playerName))
     givenPlayersInDb(Player(playerId, 0, "", playerName, "racetimeName"))
 
     val actualPlayer = dao.getPlayerByName(playerName)!!
 
     assertThat(actualPlayer.id).isEqualTo(playerId)
-    verifyZeroInteractions(srlPlayerImporterMock)
-  }
-
-  @Test
-  internal fun triggersUserImportIfUserNotInDb() {
-
-    val playerName = UUID.randomUUID().toString()
-    val playerId = Random.nextLong(0, 10000)
-
-    givenPlayersInDb()
-    givenPlayersOnSrl(srlPlayer(playerId, playerName))
-
-    val actualPlayer = dao.getPlayerByName(playerName)
-
-    assertThat(actualPlayer).isEqualTo(Player(null, playerId, null, playerName))
-    verify(srlPlayerImporterMock).importPlayer(playerName)
   }
 
   @Test
@@ -105,16 +82,4 @@ internal class PlayerDaoTest {
 
     dbPlayers.addAll(players)
   }
-
-  private fun givenPlayersOnSrl(vararg srlPlayers: SrlPlayer) {
-
-    doAnswer {
-          srlPlayers
-              .findLast { p -> p.name == it.getArgument(0) }
-              ?.let { Player(it, listOf()) }
-              ?.also  { dbPlayers.add(it) }
-    }.whenever(srlPlayerImporterMock).importPlayer(anyString())
-  }
-
-  private fun srlPlayer(id: Long, username: String): SrlPlayer = SrlPlayer(id, username)
 }
