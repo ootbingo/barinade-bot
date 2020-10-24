@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
@@ -11,7 +12,7 @@ import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 
-class RacetimeImporter(private val playerRepository: PlayerRepository,
+class RacetimeImporter(private val playerHelper: PlayerHelper,
                        private val raceRepository: RaceRepository,
                        private val raceResultRepository: RaceResultRepository) {
 
@@ -24,41 +25,30 @@ class RacetimeImporter(private val playerRepository: PlayerRepository,
       return
     }
 
-    val dbRace = raceRepository.save(race.toDbRace())
+    val dbRace = saveNewRace(race)
     race.entrants.forEach {
-      raceResultRepository.save(it.toDbResult(dbRace))
+      saveNewResult(it, dbRace)
     }
   }
 
-  private fun RacetimeRace.toDbRace(): Race {
+  private fun saveNewRace(race: RacetimeRace) =
+      raceRepository.save(Race(race.name, race.info, race.endedAt!!, Platform.RACETIME, mutableListOf()))
 
-    return Race(
-        name,
-        info,
-        endedAt!!,
-        Platform.RACETIME,
-        mutableListOf()
+  private fun saveNewResult(entrant: RacetimeEntrant, race: Race): RaceResult {
+
+    val player = entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
+
+    return raceResultRepository.save(
+        RaceResult(
+            RaceResult.ResultId(race, player),
+            entrant.place?.toLong() ?: -1,
+            entrant.finishTime,
+            when (entrant.status) {
+              RacetimeEntrant.RacetimeEntrantStatus.DONE -> ResultType.FINISH
+              RacetimeEntrant.RacetimeEntrantStatus.DNF -> ResultType.FORFEIT
+              else -> ResultType.DQ
+            }
+        )
     )
   }
-
-  private fun RacetimeEntrant.toDbResult(race: Race): RaceResult {
-
-    val player = getPlayerFromRacetimeEntrant(this)
-
-    return RaceResult(
-        RaceResult.ResultId(race, player),
-        place?.toLong() ?: -1,
-        finishTime,
-        when (status) {
-          RacetimeEntrant.RacetimeEntrantStatus.DONE -> ResultType.FINISH
-          RacetimeEntrant.RacetimeEntrantStatus.DNF -> ResultType.FORFEIT
-          else -> ResultType.DQ
-        }
-    )
-  }
-
-  private fun getPlayerFromRacetimeEntrant(racetimeEntrant: RacetimeEntrant) =
-      playerRepository.findByRacetimeId(racetimeEntrant.user.id)
-          ?: playerRepository.save(
-              Player(racetimeId = racetimeEntrant.user.id, racetimeName = racetimeEntrant.user.name))
 }

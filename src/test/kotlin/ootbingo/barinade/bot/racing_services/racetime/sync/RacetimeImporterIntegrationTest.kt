@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
@@ -24,7 +25,7 @@ internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepo
                                                @Autowired private val raceRepository: RaceRepository,
                                                @Autowired private val raceResultRepository: RaceResultRepository) {
 
-  private val importer = RacetimeImporter(playerRepository, raceRepository, raceResultRepository)
+  private val importer = RacetimeImporter(PlayerHelper(playerRepository), raceRepository, raceResultRepository)
 
   @Test
   internal fun importsSingleNewBingoRaceWithNewPlayers() {

@@ -14,4 +14,9 @@ class PlayerHelper(private val playerRepository: PlayerRepository) {
 
   fun findResultsForPlayer(player: Player): List<ResultInfo> =
       playerRepository.findResultsForPlayer(player)
+
+  fun getPlayerFromRacetimeId(racetimeId: String, racetimeName: String) =
+      playerRepository.findByRacetimeId(racetimeId)
+          ?: playerRepository.save(
+              Player(racetimeId = racetimeId, racetimeName = racetimeName))
 }
