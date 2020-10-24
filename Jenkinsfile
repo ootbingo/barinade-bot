@@ -66,6 +66,14 @@ pipeline {
         }
 
         stage("Cleanup") {
+
+            when {
+                anyOf {
+                    branch "master"
+                    branch "develop"
+                }
+            }
+
             steps {
                 sh "docker image prune -f"
             }
