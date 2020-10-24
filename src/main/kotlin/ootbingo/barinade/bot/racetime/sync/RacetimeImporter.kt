@@ -15,7 +15,14 @@ class RacetimeImporter(private val playerRepository: PlayerRepository,
                        private val raceRepository: RaceRepository,
                        private val raceResultRepository: RaceResultRepository) {
 
+  fun import(races: Collection<RacetimeRace>) =
+      races.forEach(this::import)
+
   fun import(race: RacetimeRace) {
+
+    if (race.goal.custom || race.goal.name != "Bingo") {
+      return
+    }
 
     val dbRace = raceRepository.save(race.toDbRace())
     race.entrants.forEach {
@@ -36,7 +43,7 @@ class RacetimeImporter(private val playerRepository: PlayerRepository,
 
   private fun RacetimeEntrant.toDbResult(race: Race): RaceResult {
 
-    val player = playerRepository.save(Player(racetimeId = this.user.id, racetimeName = this.user.name))
+    val player = getPlayerFromRacetimeEntrant(this)
 
     return RaceResult(
         RaceResult.ResultId(race, player),
@@ -49,4 +56,9 @@ class RacetimeImporter(private val playerRepository: PlayerRepository,
         }
     )
   }
+
+  private fun getPlayerFromRacetimeEntrant(racetimeEntrant: RacetimeEntrant) =
+      playerRepository.findByRacetimeId(racetimeEntrant.user.id)
+          ?: playerRepository.save(
+              Player(racetimeId = racetimeEntrant.user.id, racetimeName = racetimeEntrant.user.name))
 }
