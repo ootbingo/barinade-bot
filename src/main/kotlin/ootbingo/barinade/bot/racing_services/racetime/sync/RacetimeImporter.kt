@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
+import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
@@ -12,6 +13,7 @@ import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 
+@Open
 class RacetimeImporter(private val playerHelper: PlayerHelper,
                        private val raceRepository: RaceRepository,
                        private val raceResultRepository: RaceResultRepository) {
@@ -19,9 +21,9 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
   fun import(races: Collection<RacetimeRace>) =
       races.forEach(this::import)
 
-  fun import(race: RacetimeRace) {
+  private fun import(race: RacetimeRace) {
 
-    if (race.goal.custom || race.goal.name != "Bingo") {
+    if (race.goal.custom || race.goal.name != "Bingo" || raceRepository.findByRaceId(race.name) != null) {
       return
     }
 

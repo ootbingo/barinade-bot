@@ -212,7 +212,7 @@ internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepo
   //<editor-fold desc="When">
 
   private fun whenRaceIsImported(race: RacetimeRace) {
-    importer.import(race)
+    importer.import(setOf(race))
   }
 
   private fun whenRacesAreImported(races: Collection<RacetimeRace>) {

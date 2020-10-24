@@ -47,9 +47,9 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading players from the database...")
     val dbPlayers = playerRepository.findAll()
-    val dbUsernames = dbPlayers.map { it.srlName }
+    val dbUsernames = dbPlayers.mapNotNull { it.srlName }
     logger.info("Players loaded.")
-    logger.info("Found {} players on SRL and {} players in the database.", srlPlayers.size, dbUsernames.size)
+    logger.info("Found {} players on SRL and {} SRL players in the database.", srlPlayers.size, dbUsernames.size)
 
     val newSrlPlayers = srlPlayers
         .filter { !dbUsernames.contains(it) }
