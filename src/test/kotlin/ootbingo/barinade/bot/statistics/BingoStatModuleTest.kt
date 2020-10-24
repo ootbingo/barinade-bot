@@ -13,13 +13,13 @@ import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.entities.UserImpl
-import ootbingo.barinade.bot.data.PlayerDao
-import ootbingo.barinade.bot.data.model.Platform
-import ootbingo.barinade.bot.data.model.Player
-import ootbingo.barinade.bot.data.model.Race
-import ootbingo.barinade.bot.data.model.RaceResult
-import ootbingo.barinade.bot.data.model.ResultType
-import ootbingo.barinade.bot.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.model.Platform
+import ootbingo.barinade.bot.racing_services.data.model.Player
+import ootbingo.barinade.bot.racing_services.data.model.Race
+import ootbingo.barinade.bot.racing_services.data.model.RaceResult
+import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +32,7 @@ import kotlin.random.Random
 
 internal class BingoStatModuleTest {
 
-  private val playerDaoMock = mock<PlayerDao>()
+  private val playerDaoMock = mock<PlayerHelper>()
   private val module = BingoStatModule(playerDaoMock)
   private val players = mutableMapOf<String, Player>()
 

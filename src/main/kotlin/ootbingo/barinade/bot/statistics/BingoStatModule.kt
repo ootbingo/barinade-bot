@@ -8,11 +8,11 @@ import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import de.scaramanga.lily.irc.connection.IrcMessageInfo
-import ootbingo.barinade.bot.data.PlayerDao
-import ootbingo.barinade.bot.data.model.Player
-import ootbingo.barinade.bot.data.model.Race
-import ootbingo.barinade.bot.data.model.ResultType
-import ootbingo.barinade.bot.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.model.Player
+import ootbingo.barinade.bot.racing_services.data.model.Race
+import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
 import org.slf4j.LoggerFactory
@@ -22,7 +22,7 @@ import java.time.Duration
 import java.util.Locale
 
 @LilyModule
-class BingoStatModule(private val playerDao: PlayerDao) {
+class BingoStatModule(private val playerHelper: PlayerHelper) {
 
   private val logger = LoggerFactory.getLogger(BingoStatModule::class.java)
 
@@ -103,9 +103,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return Answer.ofText(errorMessage)
     }
 
-    val player = playerDao.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
+    val player = playerHelper.getPlayerByName(username) ?: return Answer.ofText("User $username not found")
 
-    val bingos = playerDao.findResultsForPlayer(player)
+    val bingos = playerHelper.findResultsForPlayer(player)
         .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (bingos.isEmpty()) {
@@ -126,7 +126,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
     val username = findUsername(messageInfo)
 
-    return playerDao.getPlayerByName(username)
+    return playerHelper.getPlayerByName(username)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(username)
   }
 
@@ -146,7 +146,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       }
     }
 
-    return playerDao.getPlayerByName(user)
+    return playerHelper.getPlayerByName(user)
         ?.let { QueryInfo(it, parsedRaceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -161,7 +161,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
       return null
     }
 
-    return playerDao.getPlayerByName(user)
+    return playerHelper.getPlayerByName(user)
         ?.let { QueryInfo(it, raceCount) } ?: throw PlayerNotFoundException(user)
   }
 
@@ -170,7 +170,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
     var forfeitsSkipped = 0
 
     val allBingos = queryInfo.player
-        .let { playerDao.findResultsForPlayer(it) }
+        .let { playerHelper.findResultsForPlayer(it) }
         .asSequence()
         .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
         .toMutableList()
@@ -230,7 +230,7 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
   fun median(username: String): Duration? {
 
-    val player = playerDao.getPlayerByName(username)
+    val player = playerHelper.getPlayerByName(username)
     return player
         ?.let { allRacesForComputation(QueryInfo(it, 15)) }
         ?.races
@@ -244,9 +244,9 @@ class BingoStatModule(private val playerDao: PlayerDao) {
 
   fun forfeitRatio(username: String): Double? {
 
-    val player = playerDao.getPlayerByName(username)
+    val player = playerHelper.getPlayerByName(username)
 
-    val allBingos = player?.let { playerDao.findResultsForPlayer(it) }
+    val allBingos = player?.let { playerHelper.findResultsForPlayer(it) }
         ?.filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
 
     if (allBingos.isNullOrEmpty()) {
