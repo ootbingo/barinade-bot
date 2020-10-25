@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
   java
-  id("org.springframework.boot") version "2.1.8.RELEASE"
+  id("org.springframework.boot") version "2.3.2.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
@@ -32,7 +32,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramanga:lily:0.1.1")
+  implementation("de.scaramanga:lily:0.1.2")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -42,12 +42,14 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
+  implementation("com.google.code.gson:gson")
+
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
-    exclude(module = "junit")
+    exclude(module = "junit-vintage-engine")
     exclude(module = "hamcrest-library")
     exclude(module = "hamcrest-core")
     exclude(module = "json-path")
@@ -133,5 +135,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.0"
+  gradleVersion = "6.3"
 }

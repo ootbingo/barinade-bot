@@ -176,6 +176,5 @@ gradle-app.setting
 
 /devetc/
 **/application-dev.yml
-h2db.mv.db
-h2db.trace.db
+h2db*db*
 /src/main/resources/version.properties

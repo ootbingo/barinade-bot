@@ -21,3 +21,15 @@ ootbingo:
     whitelist:
       - raceId: 264444
         goal: https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=848930&mode=normal
+
+
+
+com:
+  speedrunslive:
+    api:
+      base-url: https://api.speedrunslive.com
+
+gg:
+  racetime:
+    api:
+      base-url: https://racetime.gg

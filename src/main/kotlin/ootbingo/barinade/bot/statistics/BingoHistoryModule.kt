@@ -5,20 +5,23 @@ import de.scaramanga.lily.core.annotations.LilyModule
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
-import ootbingo.barinade.bot.data.PlayerDao
 import ootbingo.barinade.bot.extensions.getUsername
 import ootbingo.barinade.bot.extensions.standardFormat
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.model.Race
+import ootbingo.barinade.bot.racing_services.data.model.ResultType
 
 @LilyModule
-class BingoHistoryModule(private val playerDaoMock: PlayerDao) {
+class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("results")
   fun results(command: Command): Answer<AnswerInfo>? {
 
     val username = command.messageInfo?.getUsername()!!
-    val races = playerDaoMock.findResultsForPlayer(username)
-        .filter { !it.isForfeit && it.isBingo }
-        .map { it.time.standardFormat() }
+    val races = playerHelper.findResultsForPlayer(playerHelper.getPlayerByName(username)!!)
+        .asSequence()
+        .filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
+        .mapNotNull { it.time?.standardFormat() }
         .take(10)
         .joinToString(", ")
 

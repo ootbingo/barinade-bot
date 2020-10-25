@@ -1,5 +1,9 @@
 package ootbingo.barinade.bot.statistics
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doAnswer
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
@@ -9,19 +13,19 @@ import de.scaramanga.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
-import ootbingo.barinade.bot.data.PlayerDao
-import ootbingo.barinade.bot.data.model.Player
-import ootbingo.barinade.bot.data.model.Race
-import ootbingo.barinade.bot.data.model.RaceResult
-import ootbingo.barinade.bot.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.model.Platform
+import ootbingo.barinade.bot.racing_services.data.model.Player
+import ootbingo.barinade.bot.racing_services.data.model.Race
+import ootbingo.barinade.bot.racing_services.data.model.RaceResult
+import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
 
@@ -29,8 +33,8 @@ internal class BingoHistoryModuleTest {
 
   //<editor-fold desc="Setup">
 
-  private val playerDaoMock = Mockito.mock(PlayerDao::class.java)
-  private val module = BingoHistoryModule(playerDaoMock)
+  private val playerHelperMock = mock<PlayerHelper>()
+  private val module = BingoHistoryModule(playerHelperMock)
   private val players = mutableMapOf<String, Player>()
 
   private val commands by lazy {
@@ -41,18 +45,21 @@ internal class BingoHistoryModuleTest {
 
   @BeforeEach
   internal fun setup() {
-    Mockito.doAnswer { players[it.getArgument(0)] }
-        .`when`(playerDaoMock).getPlayerByName(Mockito.anyString())
+    doAnswer { players[it.getArgument(0)] }
+        .whenever(playerHelperMock).getPlayerByName(Mockito.anyString())
 
-    Mockito.doAnswer {
-      val test = players[it.getArgument(0)]
+    doAnswer { players[it.getArgument<String>(0)] }.whenever(playerHelperMock).getPlayerByName(any())
+
+    doAnswer {
+      it.getArgument<Player>(0)
           ?.races
           ?.map { r ->
-            val result = r.raceResults.findLast { res -> res.player.srlName == it.getArgument(0) }
-            ResultInfo(result!!.time, r.goal, r.srlId, r.recordDate)
+            val result = r.raceResults.findLast { res ->
+              res.resultId.player.srlName == it.getArgument<Player>(0).srlName
+            }
+            ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
-      test
-    }.`when`(playerDaoMock).findResultsForPlayer(Mockito.anyString())
+    }.whenever(playerHelperMock).findResultsForPlayer(any())
   }
 
   //</editor-fold>
@@ -111,7 +118,13 @@ internal class BingoHistoryModuleTest {
 
     val username = UUID.randomUUID().toString()
 
-    givenBingoTimesForPlayer(username, -5, 1, 2, -3, 3, -99)
+    givenTimesForPlayer(username, true,
+                        BingoTime(42, ResultType.FORFEIT),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(2, ResultType.FINISH),
+                        BingoTime( -3, ResultType.FORFEIT),
+                        BingoTime(3, ResultType.FINISH),
+                        BingoTime(-99, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!results"
 
@@ -121,14 +134,16 @@ internal class BingoHistoryModuleTest {
   //<editor-fold desc="Given">
 
   private fun givenBingoTimesForPlayer(username: String, vararg times: Int) {
-    givenTimesForPlayer(username, true, *times)
+    givenTimesForPlayer(username, true, *(times.map { BingoTime(it) }.toTypedArray()))
   }
 
   private fun givenNonBingoTimesForPlayer(username: String, vararg times: Int) {
-    givenTimesForPlayer(username, false, *times)
+    givenTimesForPlayer(username, false, *(times.map { BingoTime(it) }.toTypedArray()))
   }
 
-  private fun givenTimesForPlayer(username: String, bingo: Boolean, vararg times: Int) {
+  private data class BingoTime(val time: Int, val resultType: ResultType = ResultType.FINISH)
+
+  private fun givenTimesForPlayer(username: String, bingo: Boolean, vararg times: BingoTime) {
 
     val races = ArrayList<Race>()
 
@@ -136,16 +151,15 @@ internal class BingoHistoryModuleTest {
 
     times
         .map {
-          RaceResult(0L, Race("", "", ZonedDateTime.now(), 1, mutableListOf()),
-                     Player(0, username, mutableListOf()), 1, Duration.ofSeconds(it.toLong()), "")
+          RaceResult(RaceResult.ResultId(Race(), Player(srlName = username, racetimeName = username)),
+                     1, Duration.ofSeconds(it.time.toLong()), it.resultType)
         }
         .map {
 
           val goal = if (bingo) "speedrunslive.com/tools/oot-bingo"
           else ""
 
-          Race("0", goal, ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp--), ZoneId.of("UTC")), 1,
-               mutableListOf(it))
+          Race("0", goal, Instant.ofEpochSecond(timestamp--), Platform.SRL, mutableListOf(it))
         }
         .map {
           val spy = Mockito.spy(it)
@@ -155,12 +169,12 @@ internal class BingoHistoryModuleTest {
         .forEach { races.add(it) }
 
     races.forEach {
-      it.raceResults.forEach { result -> result.race = it }
+      it.raceResults.forEach { result -> result.resultId.race = it }
     }
 
-    val oldPlayer = players[username] ?: Player(0, username, mutableListOf())
+    val oldPlayer = players[username] ?: Player(0, srlName = username, racetimeName = username)
     val player = oldPlayer.copy(raceResults = (oldPlayer.raceResults + races.mapNotNull {
-      it.raceResults.findLast { result -> result.player.srlName == oldPlayer.srlName }
+      it.raceResults.findLast { result -> result.resultId.player.srlName == oldPlayer.srlName }
     }).toMutableList())
 
     players[username] = player
