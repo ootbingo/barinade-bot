@@ -22,7 +22,15 @@ class PlayerHelper(private val playerRepository: PlayerRepository, private val u
           ?: playerRepository.save(
               Player(racetimeId = racetimeId, racetimeName = racetimeName))
 
-  fun Player.updateWithData(racetimeId: String? = null, racetimeName: String? = null): Player {
+  fun getPlayerFromSrlId(srlId: Long, srlName: String): Player =
+      playerRepository.findBySrlId(srlId)
+          ?: playerRepository.findByRacetimeNameIgnoreCase(usernameMapper.srlToRacetime(srlName))
+              ?.updateWithData(srlId = srlId, srlName = srlName)
+          ?: playerRepository.save(
+              Player(srlId = srlId, srlName = srlName))
+
+  fun Player.updateWithData(racetimeId: String? = null, racetimeName: String? = null,
+                            srlId: Long? = null, srlName: String? = null): Player {
 
     var changed = false
 
@@ -34,6 +42,16 @@ class PlayerHelper(private val playerRepository: PlayerRepository, private val u
     if (racetimeName != null && this.racetimeName != racetimeName) {
       changed = true
       this.racetimeName = racetimeName
+    }
+
+    if (srlId != null && this.srlId != srlId) {
+      changed = true
+      this.srlId = srlId
+    }
+
+    if (srlName != null && this.srlName != srlName) {
+      changed = true
+      this.srlName = srlName
     }
 
     return if (changed) {
@@ -48,4 +66,14 @@ class PlayerHelper(private val playerRepository: PlayerRepository, private val u
           .findAll()
           .filter { it.racetimeId != null }
           .toSet()
+
+  fun getAllSrlPlayers(): Collection<Player> =
+      playerRepository
+          .findAll()
+          .filter { it.srlId != null }
+          .toSet()
+
+  fun savePlayers(players: Collection<Player>) {
+    playerRepository.saveAll(players)
+  }
 }

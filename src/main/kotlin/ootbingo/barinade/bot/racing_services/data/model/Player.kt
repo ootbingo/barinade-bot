@@ -22,12 +22,6 @@ data class Player(@Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id
   val races: List<Race>
     get() = raceResults.map { it.resultId.race }
 
-  constructor(srlPlayer: SrlPlayer, races: List<Race>) :
-      this(null, srlPlayer.id, null, srlPlayer.name, null, races.mapNotNull {
-        it.raceResults
-            .findLast { result -> result.resultId.player.srlName == srlPlayer.name }
-      }.toMutableList())
-
   override fun equals(other: Any?): Boolean {
     return when {
       this === other -> true

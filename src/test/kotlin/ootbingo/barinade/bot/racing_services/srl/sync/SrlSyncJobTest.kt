@@ -3,6 +3,8 @@ package ootbingo.barinade.bot.racing_services.srl.sync
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.UsernameMapper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
@@ -21,6 +23,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
+import kotlin.random.Random
 
 @DataJpaTest
 internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRepository,
@@ -28,7 +32,10 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
                               @Autowired private val raceResultRepository: RaceResultRepository) {
 
   private val srlHttpClientMock = mock<SrlHttpClient>()
-  private val job = SrlSyncJob(srlHttpClientMock, playerRepository, raceRepository, raceResultRepository)
+  private val job = SrlSyncJob(srlHttpClientMock,
+                               PlayerHelper(playerRepository, UsernameMapper("")),
+                               raceRepository,
+                               raceResultRepository)
 
   @Test
   @DirtiesContext
@@ -147,6 +154,42 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     thenDbPlayerWithName("Alpha") hasResultTypes listOf(ResultType.FINISH, ResultType.FORFEIT)
     thenDbPlayerWithName("Beta") hasResultTypes listOf(ResultType.FORFEIT)
     thenDbPlayerWithName("Gamma") hasResultTypes listOf(ResultType.FINISH, ResultType.FINISH)
+  }
+
+  @Test
+  @DirtiesContext
+  internal fun reusesRacetimePlayers() {
+
+    val racetimeId = UUID.randomUUID().toString()
+    val racetimeName = UUID.randomUUID().toString()
+
+    val srlId = Random.nextLong()
+    val srlName= racetimeName.toUpperCase()
+
+    playerRepository.save(Player(racetimeId = racetimeId, racetimeName = racetimeName))
+
+    givenPlayersOnSrl(srlName withId srlId)
+    givenRacesOnSrl(
+        pastRace {
+          id = 991
+          goal = "race1"
+          date = Instant.ofEpochSecond(10000991)
+          results {
+            result {
+              player = srlName
+              time = 551
+            }
+          }
+        }
+    )
+
+    whenJobIsExecuted()
+
+    val player = playerRepository.findByRacetimeId(racetimeId)
+    assertThat(player?.racetimeId).isEqualTo(racetimeId)
+    assertThat(player?.racetimeName).isEqualTo(racetimeName)
+    assertThat(player?.srlId).isEqualTo(srlId)
+    assertThat(player?.srlName).isEqualTo(srlName)
   }
 
   //<editor-fold desc="Given">

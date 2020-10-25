@@ -1,13 +1,13 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
-import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
+import ootbingo.barinade.bot.extensions.standardFormat
+import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
-import ootbingo.barinade.bot.racing_services.data.model.Player
+import ootbingo.barinade.bot.racing_services.data.model.Platform
 import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.RaceResult
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
-import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.srl.api.client.SrlHttpClient
 import ootbingo.barinade.bot.racing_services.srl.api.model.SrlPastRace
 import org.slf4j.LoggerFactory
@@ -20,7 +20,7 @@ import java.time.Instant
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.srl-sync.enabled"], havingValue = "true")
 class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
-                 private val playerRepository: PlayerRepository,
+                 private val playerHelper: PlayerHelper,
                  private val raceRepository: RaceRepository,
                  private val raceResultRepository: RaceResultRepository) {
 
@@ -46,7 +46,7 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
   private fun syncUsers(srlPlayers: Collection<String>) {
 
     logger.info("Loading players from the database...")
-    val dbPlayers = playerRepository.findAll()
+    val dbPlayers = playerHelper.getAllSrlPlayers()
     val dbUsernames = dbPlayers.mapNotNull { it.srlName }
     logger.info("Players loaded.")
     logger.info("Found {} players on SRL and {} SRL players in the database.", srlPlayers.size, dbUsernames.size)
@@ -64,12 +64,12 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
             player.srlName = it.name
             player
           } else {
-            Player(it, emptyList())
+            playerHelper.getPlayerFromSrlId(it.id, it.name)
           }
         }
 
     logger.info("Save new and changed players to the database...")
-    playerRepository.saveAll(newSrlPlayers)
+    playerHelper.savePlayers(newSrlPlayers)
     logger.info("Players saved.")
   }
 
@@ -117,10 +117,12 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
 
     logger.info("Loading incomplete races from the database...")
     val incompleteDbRaces = raceRepository.findAll()
-        .filter { it.raceResults.size.toLong() != allRaces.last { r -> r.id == it.raceId }.numentrants }
+        .filter { it.raceResults.size.toLong() != allRaces.lastOrNull { r -> r.id == it.raceId }?.numentrants }
+        .filterNotNull()
+
     logger.info("{} races loaded.", incompleteDbRaces.size)
     logger.info("Loading all players from the database...")
-    val dbPlayers = playerRepository.findAll()
+    val dbPlayers = playerHelper.getAllSrlPlayers()
     logger.info("Players loaded.")
 
     fun getPlayerWithUsername(username: String) =

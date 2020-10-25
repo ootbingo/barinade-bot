@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 interface PlayerRepository : CrudRepository<Player, Long> {
 
   fun findBySrlNameIgnoreCase(srlName: String): Player?
+  fun findBySrlId(srlId: Long): Player?
   fun findByRacetimeNameIgnoreCase(racetimeName: String): Player?
   fun findByRacetimeId(racetimeId: String): Player?
 
