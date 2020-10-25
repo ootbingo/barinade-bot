@@ -131,7 +131,7 @@ internal class RaceTest {
   @Test
   internal fun noBingoWhenRaceIdBlacklisted() {
 
-    val raceId = Random.nextInt(0, 999999)
+    val raceId = Random.nextInt(0, 999999).toString()
     BingoRaceProperties.blacklist = listOf(raceId)
 
     val race = race(raceId,
@@ -144,7 +144,7 @@ internal class RaceTest {
   @Test
   internal fun isBingoWhenRaceIdWhitelisted() {
 
-    val raceId = Random.nextInt(0, 999999)
+    val raceId = Random.nextInt(0, 999999).toString()
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
@@ -159,7 +159,7 @@ internal class RaceTest {
     "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
   internal fun isBingoWhenRaceIdWhitelistedAndGoalContainsBlacklistedWords(word: String) {
 
-    val raceId = Random.nextInt(0, 999999)
+    val raceId = Random.nextInt(0, 999999).toString()
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
@@ -172,7 +172,7 @@ internal class RaceTest {
   @Test
   internal fun noBingoWhenRaceIdBlacklistedAndWhitelisted() {
 
-    val raceId = Random.nextInt(0, 999999)
+    val raceId = Random.nextInt(0, 999999).toString()
     BingoRaceProperties.blacklist = listOf(raceId)
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
@@ -186,8 +186,8 @@ internal class RaceTest {
   private fun race(goal: String, recordDate: Instant): Race =
       Race("0", goal, recordDate, Platform.SRL, mutableListOf())
 
-  private fun race(id: Int, goal: String, recordDate: Instant): Race =
-      Race("$id", goal, recordDate, Platform.SRL, mutableListOf())
+  private fun race(id: String, goal: String, recordDate: Instant): Race =
+      Race(id, goal, recordDate, Platform.SRL, mutableListOf())
 
   private fun date(year: Int, month: Int, day: Int) =
       ZonedDateTime.of(year, month, day, 1, 1, 1, 0, ZoneId.of("UTC")).toInstant()

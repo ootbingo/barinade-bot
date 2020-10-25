@@ -29,11 +29,11 @@ data class Race(@Id var raceId: String = "",
     val blacklistedWords = listOf("short", "long", "blackout", "black out", "3x3", "anti", "double", "bufferless",
                                   "child", "jp", "japanese", "bingo-j")
 
-    if (this.raceId.toInt() in BingoRaceProperties.blacklist) {
+    if (this.raceId in BingoRaceProperties.blacklist) {
       return false
     }
 
-    if (this.raceId.toInt() in BingoRaceProperties.whitelist.map { it.raceId }) {
+    if (this.raceId in BingoRaceProperties.whitelist.map { it.raceId }) {
       return true
     }
 
