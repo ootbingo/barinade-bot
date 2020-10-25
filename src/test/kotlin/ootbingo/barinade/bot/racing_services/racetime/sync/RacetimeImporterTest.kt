@@ -45,14 +45,15 @@ internal class RacetimeImporterTest {
   private fun Race.isSavedInDb() {
     whenever(raceRepositoryMock.findByRaceId(this.raceId)).thenReturn(this)
     whenever(raceRepositoryMock.findAll()).thenReturn(setOf(this))
+    whenever(raceRepositoryMock.findAllByPlatform(Platform.RACETIME)).thenReturn(setOf(this))
   }
 
   //</editor-fold>
 
   //<editor-fold desc="When">
 
-  private fun whenRaceIsImported(race: RacetimeRace) = RacetimeImporter(playerHelperMock, raceRepositoryMock,
-                                                                        raceResultRepositoryMock).import(setOf(race))
+  private fun whenRaceIsImported(race: RacetimeRace) =
+      RacetimeImporter(playerHelperMock, raceRepositoryMock, raceResultRepositoryMock).import(setOf(race))
 
   //</editor-fold>
 
