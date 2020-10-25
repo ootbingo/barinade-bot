@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
+import ootbingo.barinade.bot.racing_services.data.model.Platform
 import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.RaceResult
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
@@ -20,8 +21,6 @@ internal class RacetimeImporterTest {
   private val playerHelperMock = mock<PlayerHelper>()
   private val raceRepositoryMock = mock<RaceRepository>()
   private val raceResultRepositoryMock = mock<RaceResultRepository>()
-
-  private val importer = RacetimeImporter(playerHelperMock, raceRepositoryMock, raceResultRepositoryMock)
 
   @Test
   internal fun doesNotOverwriteRace() {
@@ -38,16 +37,22 @@ internal class RacetimeImporterTest {
 
   //<editor-fold desc="Given">
 
-  private fun givenRaceWithId(raceId: String) = Race().apply { this.raceId = raceId }
+  private fun givenRaceWithId(raceId: String) = Race().apply {
+    this.raceId = raceId
+    this.platform = Platform.RACETIME
+  }
 
-  private fun Race.isSavedInDb() =
-      whenever(raceRepositoryMock.findByRaceId(this.raceId)).thenReturn(this)
+  private fun Race.isSavedInDb() {
+    whenever(raceRepositoryMock.findByRaceId(this.raceId)).thenReturn(this)
+    whenever(raceRepositoryMock.findAll()).thenReturn(setOf(this))
+  }
 
   //</editor-fold>
 
   //<editor-fold desc="When">
 
-  private fun whenRaceIsImported(race: RacetimeRace) = importer.import(setOf(race))
+  private fun whenRaceIsImported(race: RacetimeRace) = RacetimeImporter(playerHelperMock, raceRepositoryMock,
+                                                                        raceResultRepositoryMock).import(setOf(race))
 
   //</editor-fold>
 

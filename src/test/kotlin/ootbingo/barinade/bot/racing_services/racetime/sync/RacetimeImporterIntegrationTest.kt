@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
-import com.nhaarman.mockitokotlin2.mock
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.UsernameMapper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository

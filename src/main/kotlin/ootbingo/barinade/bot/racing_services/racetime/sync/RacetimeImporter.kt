@@ -2,7 +2,6 @@ package ootbingo.barinade.bot.racing_services.racetime.sync
 
 import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
 import ootbingo.barinade.bot.racing_services.data.model.Platform
@@ -12,18 +11,37 @@ import ootbingo.barinade.bot.racing_services.data.model.RaceResult
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import org.slf4j.LoggerFactory
 
 @Open
 class RacetimeImporter(private val playerHelper: PlayerHelper,
                        private val raceRepository: RaceRepository,
                        private val raceResultRepository: RaceResultRepository) {
 
+  private val logger = LoggerFactory.getLogger(RacetimeImporter::class.java)
+
+  private val playerCache =
+      playerHelper
+          .also { logger.info("Loading Racetime players from DB...") }
+          .getAllRacetimePlayers()
+          .map { it.racetimeId!! to it }
+          .toMap()
+          .also { logger.info("{} Racetime players found.", it.size) }
+
+  private val raceIds =
+      raceRepository
+          .also { logger.info("Loading Racetime races from DB") }
+          .findAll()
+          .filter { it.platform == Platform.RACETIME }
+          .map { it.raceId }
+          .also { logger.info("{} Racetime races found.", it.size) }
+
   fun import(races: Collection<RacetimeRace>) =
       races.forEach(this::import)
 
   private fun import(race: RacetimeRace) {
 
-    if (race.goal.custom || race.goal.name != "Bingo" || raceRepository.findByRaceId(race.name) != null) {
+    if (race.goal.custom || race.goal.name != "Bingo" || raceIds.contains(race.name)) {
       return
     }
 
@@ -38,7 +56,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
 
   private fun saveNewResult(entrant: RacetimeEntrant, race: Race): RaceResult {
 
-    val player = entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
+    val player = entrantToPlayer(entrant)
 
     return raceResultRepository.save(
         RaceResult(
@@ -53,4 +71,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
         )
     )
   }
+
+  private fun entrantToPlayer(entrant: RacetimeEntrant): Player =
+      playerCache[entrant.user.name] ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
 }

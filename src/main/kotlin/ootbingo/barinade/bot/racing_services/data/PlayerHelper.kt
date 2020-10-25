@@ -42,4 +42,10 @@ class PlayerHelper(private val playerRepository: PlayerRepository, private val u
       this
     }
   }
+
+  fun getAllRacetimePlayers(): Collection<Player> =
+      playerRepository
+          .findAll()
+          .filter { it.racetimeId != null }
+          .toSet()
 }
