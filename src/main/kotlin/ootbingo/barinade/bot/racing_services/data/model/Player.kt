@@ -16,7 +16,7 @@ data class Player(@Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id
                   var racetimeId: String? = null,
                   var srlName: String? = "",
                   var racetimeName: String? = null,
-                  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "resultId.player")
+                  @OneToMany(mappedBy = "resultId.player")
                   var raceResults: MutableList<RaceResult> = mutableListOf()) {
 
   val races: List<Race>

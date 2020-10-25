@@ -26,6 +26,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
           .getAllRacetimePlayers()
           .map { it.racetimeId!! to it }
           .toMap()
+          .toMutableMap()
           .also { logger.info("{} Racetime players found.", it.size) }
 
   private val raceIds =
@@ -45,7 +46,9 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
       return
     }
 
+    logger.info("Importing race ${race.name}...")
     val dbRace = saveNewRace(race)
+
     race.entrants.forEach {
       saveNewResult(it, dbRace)
     }
@@ -73,5 +76,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
   }
 
   private fun entrantToPlayer(entrant: RacetimeEntrant): Player =
-      playerCache[entrant.user.name] ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
+      playerCache[entrant.user.name]
+          ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }.also { println("player $it") }
+              .also { playerCache[entrant.user.name] = it }
 }
