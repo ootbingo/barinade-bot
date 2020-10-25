@@ -8,7 +8,10 @@ ootbingo:
   jobs:
     srl-sync:
       enabled: true
-      cron: 0 0,30 * * * ?
+      cron: 0 0 0 * * ?
+    racetime-sync:
+      enabled: true
+      cron: 0 0 1-23 * * ?
 
 spring:
   datasource:
