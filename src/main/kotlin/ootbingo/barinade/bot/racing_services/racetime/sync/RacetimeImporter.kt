@@ -77,6 +77,6 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
 
   private fun entrantToPlayer(entrant: RacetimeEntrant): Player =
       playerCache[entrant.user.name]
-          ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }.also { println("player $it") }
+          ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
               .also { playerCache[entrant.user.name] = it }
 }
