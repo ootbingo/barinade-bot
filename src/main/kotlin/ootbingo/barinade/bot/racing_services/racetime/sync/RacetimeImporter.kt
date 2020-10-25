@@ -32,8 +32,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
   private val raceIds =
       raceRepository
           .also { logger.info("Loading Racetime races from DB") }
-          .findAll()
-          .filter { it.platform == Platform.RACETIME }
+          .findAllByPlatform(Platform.RACETIME)
           .map { it.raceId }
           .also { logger.info("{} Racetime races found.", it.size) }
 

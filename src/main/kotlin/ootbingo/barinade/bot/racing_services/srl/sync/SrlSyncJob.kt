@@ -76,10 +76,10 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
   private fun syncRaces(srlRaces: Collection<SrlPastRace>) {
 
     logger.info("Loading races from the database...")
-    val dbRaces = raceRepository.findAll()
+    val dbRaces = raceRepository.findAllByPlatform(Platform.SRL)
     val dbRaceIds = dbRaces.map { it.raceId }
     logger.info("Races loaded.")
-    logger.info("Found {} races on SRL and {} races in the database.", srlRaces.size, dbRaceIds.size)
+    logger.info("Found {} races on SRL and {} SRL races in the database.", srlRaces.size, dbRaceIds.size)
 
     val newSrlRaces = srlRaces
         .filter { !dbRaceIds.contains(it.id) }
@@ -116,9 +116,8 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
   private fun syncResults(allRaces: Collection<SrlPastRace>) {
 
     logger.info("Loading incomplete races from the database...")
-    val incompleteDbRaces = raceRepository.findAll()
+    val incompleteDbRaces = raceRepository.findAllByPlatform(Platform.SRL)
         .filter { it.raceResults.size.toLong() != allRaces.lastOrNull { r -> r.id == it.raceId }?.numentrants }
-        .filterNotNull()
 
     logger.info("{} races loaded.", incompleteDbRaces.size)
     logger.info("Loading all players from the database...")
