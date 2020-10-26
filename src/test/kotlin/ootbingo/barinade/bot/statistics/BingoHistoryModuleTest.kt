@@ -38,7 +38,10 @@ internal class BingoHistoryModuleTest {
   private val players = mutableMapOf<String, Player>()
 
   private val commands by lazy {
-    mapOf(Pair("results", module::results))
+    mapOf(
+        "results" to module::results,
+        "best" to module::best
+    )
   }
 
   private lateinit var thenAnswer: Answer<AnswerInfo>
@@ -63,6 +66,8 @@ internal class BingoHistoryModuleTest {
   }
 
   //</editor-fold>
+
+  //<editor-fold desc="!results">
 
   @Test
   internal fun returnsCorrectResultsToDiscord() {
@@ -184,6 +189,119 @@ internal class BingoHistoryModuleTest {
 
     thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
   }
+
+  //</editor-fold>
+
+  //<editor-fold desc="!best">
+
+  @Test
+  internal fun returnsCorrectBestsToDiscord() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 10, 9, 8, 7, 6, 1, 3, 5, 2, 4)
+
+    whenUser(username) sendsDiscordMessage "!best"
+
+    thenAnswer mentionsPlayer username andListsResults listOf("0:00:01", "0:00:02", "0:00:03", "0:00:04", "0:00:05")
+  }
+
+  @Test
+  internal fun returnsCorrectBestsToIrc() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 10, 9, 8, 7, 6, 1, 3, 5, 2, 4)
+
+    whenUser(username) sendsIrcMessage "!best"
+
+    thenAnswer mentionsPlayer username andListsResults listOf("0:00:01", "0:00:02", "0:00:03", "0:00:04", "0:00:05")
+  }
+
+  @Test
+  internal fun onlyListsBingoRacesWhenQueryingBests() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3)
+    givenNonBingoTimesForPlayer(username, 11)
+
+    whenUser(username) sendsIrcMessage "!best"
+
+    thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  @Test
+  internal fun doesNotListForfeitsAsBests() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenTimesForPlayer(username, true,
+                        BingoTime(2, ResultType.FORFEIT),
+                        BingoTime(10, ResultType.FINISH),
+                        BingoTime(11, ResultType.FINISH),
+                        BingoTime(1, ResultType.DQ))
+
+    whenUser(username) sendsIrcMessage "!best"
+
+    thenAnswer listsResults listOf("0:00:10", "0:00:11")
+  }
+
+  @Test
+  internal fun returnsBestsForOtherUsers() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600)
+
+    whenUser(askingUser) sendsIrcMessage "!best $playingUser"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfBests() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 5, 3, 4, 2)
+
+    whenUser(username) sendsIrcMessage "!best 3"
+
+    thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfBestsForDifferentPlayer1() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600, 7, 42)
+
+    whenUser(askingUser) sendsIrcMessage "!best $playingUser 3"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "0:00:07")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfBestsForDifferentPlayer2() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600, 7, 42)
+
+    whenUser(askingUser) sendsIrcMessage "!best 3 $playingUser"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "0:00:07")
+  }
+
+  //</editor-fold>
 
   //<editor-fold desc="Given">
 
