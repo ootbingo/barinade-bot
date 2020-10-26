@@ -17,7 +17,7 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("results")
   fun results(chatCommand: Command): Answer<AnswerInfo>? =
-      query(playerHelper) {
+      playerHelper.query {
 
         command = chatCommand
 
@@ -36,7 +36,7 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("best")
   fun best(chatCommand: Command): Answer<AnswerInfo>? =
-      query(playerHelper) {
+      playerHelper.query {
 
         command = chatCommand
 

@@ -12,7 +12,7 @@ class QueryDefinition(
     var defaultAmount: Int? = null,
     var allowDifferentAmounts: Boolean = true,
     var raceFilter: (Sequence<ResultInfo>) -> Sequence<ResultInfo> = { it },
-    var aggregator: (Sequence<ResultInfo>) -> String = { "" }
+    var aggregator: (List<ResultInfo>) -> String = { "" }
 ) {
 
   fun validate(): Unit? {
@@ -24,7 +24,7 @@ class QueryDefinition(
   }
 }
 
-fun query(playerHelper: PlayerHelper, block: QueryDefinition.() -> Unit): Answer<AnswerInfo>? {
+fun PlayerHelper.query(block: QueryDefinition.() -> Unit): Answer<AnswerInfo>? {
 
   val definition = QueryDefinition().apply(block)
   definition.validate() ?: return null
@@ -44,12 +44,29 @@ fun query(playerHelper: PlayerHelper, block: QueryDefinition.() -> Unit): Answer
     }
   }
 
-  return playerHelper.findResultsForPlayer(playerHelper.getPlayerByName(queryUser)!!)
-      .asSequence()
-      .run(definition.raceFilter)
-      .ifAmount { take(amount!!) }
-      .run(definition.aggregator)
-      .let { Answer.ofText(it.replace("%user%", queryUser).also { println(it) }) }
+  fun List<ResultInfo>.checkForBingos(): List<ResultInfo>? {
+    return if (this.none { it.isBingo() }) {
+      null
+    } else {
+      this
+    }
+  }
+
+  var count = -1
+
+  return (this.getPlayerByName(queryUser) ?: return Answer.ofText("User $queryUser not found"))
+      .let { this.findResultsForPlayer(it) }
+      .checkForBingos()
+      ?.asSequence()
+      ?.run(definition.raceFilter)
+      ?.ifAmount { take(amount!!) }
+      ?.toList()
+      ?.also { count = it.count() }
+      ?.run(definition.aggregator)
+      ?.let { Answer.ofText(
+          it.replace("%user%", queryUser).replace("%count%", count.toString())
+      ) }
+      ?: return Answer.ofText("$queryUser has not finished any bingos")
 }
 
 private data class QueryMetadata(val username: String, val amount: Int?)

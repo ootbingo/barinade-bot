@@ -190,6 +190,28 @@ internal class BingoHistoryModuleTest {
     thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
   }
 
+  @Test
+  internal fun displaysMessageWhenResultsForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenNoBingosFinishedIsReported()
+  }
+
+  @Test
+  internal fun displaysMessageWhenResultsForUnknownPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    whenUser(username) sendsIrcMessage "!results"
+
+    thenUnknownPlayerIsReported()
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="!best">
@@ -299,6 +321,28 @@ internal class BingoHistoryModuleTest {
     whenUser(askingUser) sendsIrcMessage "!best 3 $playingUser"
 
     thenAnswer listsResults listOf("0:00:05", "0:00:07", "0:00:07")
+  }
+
+  @Test
+  internal fun displaysMessageWhenBestsForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    whenUser(username) sendsIrcMessage "!best"
+
+    thenNoBingosFinishedIsReported()
+  }
+
+  @Test
+  internal fun displaysMessageWhenBestsForUnknownPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    whenUser(username) sendsIrcMessage "!best"
+
+    thenUnknownPlayerIsReported()
   }
 
   //</editor-fold>
@@ -412,6 +456,14 @@ internal class BingoHistoryModuleTest {
         .toList()
 
     assertThat(actualResults).containsExactlyElementsOf(expectedResults)
+  }
+
+  private fun thenNoBingosFinishedIsReported() {
+    assertThat(thenAnswer.text!!).endsWith("has not finished any bingos")
+  }
+
+  private fun thenUnknownPlayerIsReported() {
+    assertThat(thenAnswer.text!!).contains("not found")
   }
 
   //</editor-fold>
