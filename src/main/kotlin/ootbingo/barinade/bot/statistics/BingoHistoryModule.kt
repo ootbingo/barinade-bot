@@ -10,63 +10,47 @@ import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 
 @LilyModule
 class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("results")
-  fun results(command: Command): Answer<AnswerInfo>? {
+  fun results(chatCommand: Command): Answer<AnswerInfo>? =
+      query(playerHelper) {
 
-    val queryMetadata = command.asQueryMetadata()
-    val races = playerHelper.findResultsForPlayer(playerHelper.getPlayerByName(queryMetadata.username)!!)
-        .asSequence()
-        .filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
-        .mapNotNull { it.time?.standardFormat() }
-        .take(queryMetadata.amount)
-        .joinToString(", ")
+        command = chatCommand
 
-    return Answer.ofText("The last Bingos of ${queryMetadata.username}: $races")
-  }
+        defaultAmount = 10
+
+        raceFilter = { s ->
+          s.filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
+              .filter { it.time != null }
+        }
+
+        aggregator = { s ->
+          s.joinToString(", ") { it.time!!.standardFormat() }
+              .let { "The last Bingos of %user%: $it" }
+        }
+      }
 
   @LilyCommand("best")
-  fun best(command: Command): Answer<AnswerInfo>? {
+  fun best(chatCommand: Command): Answer<AnswerInfo>? =
+      query(playerHelper) {
 
-    val queryMetadata = command.asQueryMetadata(defaultAmount = 5)
-    val races = playerHelper.findResultsForPlayer(playerHelper.getPlayerByName(queryMetadata.username)!!)
-        .sortedBy { it.time }
-        .asSequence()
-        .filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
-        .mapNotNull { it.time?.standardFormat() }
-        .take(queryMetadata.amount)
-        .joinToString(", ")
+        command = chatCommand
 
-    return Answer.ofText("${queryMetadata.username}'s best bingos: $races")
-  }
+        defaultAmount = 5
 
-  private fun Command.asQueryMetadata(defaultAmount: Int = 10): QueryMetadata {
+        raceFilter = { s ->
+          s.sortedBy { it.time }
+              .filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
+              .filter { it.time != null }
+        }
 
-    fun parseSingleArgument(argument: String): QueryMetadata {
-      return try {
-        messageInfo.getUsername()?.let { QueryMetadata(it, argument.toInt()) } ?: throw IllegalArgumentException()
-      } catch (e: NumberFormatException) {
-        QueryMetadata(argument, defaultAmount)
+        aggregator = { s ->
+          s.joinToString(", ") { it.time!!.standardFormat() }
+              .let { "%user%'s best bingos: $it" }
+        }
       }
-    }
-
-    fun parseDoubleArgument(first: String, second: String): QueryMetadata {
-      return try {
-        QueryMetadata(first, second.toInt())
-      } catch (e: NumberFormatException) {
-        QueryMetadata(second, first.toInt())
-      }
-    }
-
-    return when (argumentCount) {
-      0 -> messageInfo.getUsername()?.let { QueryMetadata(it, defaultAmount) } ?: throw IllegalArgumentException()
-      1 -> parseSingleArgument(getArgument(0))
-      else -> parseDoubleArgument(getArgument(0), getArgument(1))
-    }
-  }
-
-  private class QueryMetadata(val username: String, val amount: Int)
 }
