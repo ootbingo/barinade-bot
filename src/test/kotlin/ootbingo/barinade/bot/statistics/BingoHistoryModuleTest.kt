@@ -122,13 +122,67 @@ internal class BingoHistoryModuleTest {
                         BingoTime(42, ResultType.FORFEIT),
                         BingoTime(1, ResultType.FINISH),
                         BingoTime(2, ResultType.FINISH),
-                        BingoTime( -3, ResultType.FORFEIT),
+                        BingoTime(-3, ResultType.FORFEIT),
                         BingoTime(3, ResultType.FINISH),
                         BingoTime(-99, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!results"
 
     thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  @Test
+  internal fun returnsResultsForOtherUsers() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600)
+
+    whenUser(askingUser) sendsIrcMessage "!results $playingUser"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfResults() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(username, 1, 2, 3, 4, 5)
+
+    whenUser(username) sendsIrcMessage "!results 3"
+
+    thenAnswer listsResults listOf("0:00:01", "0:00:02", "0:00:03")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfResultsForDifferentPlayer1() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600, 7, 42)
+
+    whenUser(askingUser) sendsIrcMessage "!results $playingUser 3"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
+  }
+
+  @Test
+  internal fun returnsSpecifiedNumberOfResultsForDifferentPlayer2() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenBingoTimesForPlayer(playingUser, 5, 7, 3600, 7, 42)
+
+    whenUser(askingUser) sendsIrcMessage "!results 3 $playingUser"
+
+    thenAnswer listsResults listOf("0:00:05", "0:00:07", "1:00:00")
   }
 
   //<editor-fold desc="Given">
