@@ -205,6 +205,31 @@ internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepo
     thenRace(raceId2) hasPlatform Platform.RACETIME
   }
 
+  @Test
+  internal fun doesNotImportUnrecordedRace() {
+
+    val raceId = UUID.randomUUID().toString()
+    val race = RacetimeRace().apply {
+      name = raceId
+      goal = RacetimeRace.RacetimeRaceGoal("Bingo", false)
+      info = "raceInfo"
+      endedAt = Instant.now()
+      recorded = false
+      entrants = listOf(
+          RacetimeEntrant().apply {
+            user = RacetimeUser("user1.first", "user1.second")
+            finishTime = Duration.ofHours(1)
+            place = 1
+            status = DONE
+          }
+      )
+    }
+
+    whenRaceIsImported(race)
+
+    thenRace(raceId).doesNotExistInDb()
+  }
+
   //<editor-fold desc="Given">
 
   fun givenPlayersInDb(vararg players: Player) =
