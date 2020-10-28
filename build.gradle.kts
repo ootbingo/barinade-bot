@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
   java
-  id("org.springframework.boot") version "2.3.2.RELEASE"
+  id("org.springframework.boot") version "2.3.4.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
   kotlin("jvm") version "1.3.50"
   kotlin("plugin.spring") version "1.3.50"
@@ -32,7 +32,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramanga:lily:0.1.2")
+  implementation("de.scaramanga:lily:0.1.3")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
