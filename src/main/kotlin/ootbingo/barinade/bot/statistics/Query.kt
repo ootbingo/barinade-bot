@@ -5,6 +5,7 @@ import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.getUsername
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 
 class QueryDefinition(
@@ -45,7 +46,7 @@ fun PlayerHelper.query(block: QueryDefinition.() -> Unit): Answer<AnswerInfo>? {
   }
 
   fun List<ResultInfo>.checkForBingos(): List<ResultInfo>? {
-    return if (this.none { it.isBingo() }) {
+    return if (this.none { it.isBingo() && it.resultType != ResultType.DQ }) {
       null
     } else {
       this
@@ -57,15 +58,18 @@ fun PlayerHelper.query(block: QueryDefinition.() -> Unit): Answer<AnswerInfo>? {
   return (this.getPlayerByName(queryUser) ?: return Answer.ofText("User $queryUser not found"))
       .let { this.findResultsForPlayer(it) }
       .checkForBingos()
+      ?.filter { it.isBingo() && it.resultType != ResultType.DQ }
       ?.asSequence()
       ?.run(definition.raceFilter)
       ?.ifAmount { take(amount!!) }
       ?.toList()
       ?.also { count = it.count() }
       ?.run(definition.aggregator)
-      ?.let { Answer.ofText(
-          it.replace("%user%", queryUser).replace("%count%", count.toString())
-      ) }
+      ?.let {
+        Answer.ofText(
+            it.replace("%user%", queryUser).replace("%count%", count.toString())
+        )
+      }
       ?: return Answer.ofText("$queryUser has not finished any bingos")
 }
 

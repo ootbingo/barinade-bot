@@ -5,12 +5,9 @@ import de.scaramanga.lily.core.annotations.LilyModule
 import de.scaramanga.lily.core.communication.Answer
 import de.scaramanga.lily.core.communication.AnswerInfo
 import de.scaramanga.lily.core.communication.Command
-import ootbingo.barinade.bot.extensions.getUsername
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
-import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 
 @LilyModule
 class BingoHistoryModule(private val playerHelper: PlayerHelper) {
@@ -23,10 +20,7 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
         defaultAmount = 10
 
-        raceFilter = { s ->
-          s.filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
-              .filter { it.time != null }
-        }
+        raceFilter = { s -> s.filter { it.resultType == ResultType.FINISH && it.time != null } }
 
         aggregator = { s ->
           s.joinToString(", ") { it.time!!.standardFormat() }
@@ -44,13 +38,28 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
         raceFilter = { s ->
           s.sortedBy { it.time }
-              .filter { it.resultType == ResultType.FINISH && Race(it.raceId, it.goal, it.datetime).isBingo() }
-              .filter { it.time != null }
+              .filter { it.resultType == ResultType.FINISH && it.time != null }
         }
 
         aggregator = { s ->
           s.joinToString(", ") { it.time!!.standardFormat() }
               .let { "%user%'s best bingos: $it" }
+        }
+      }
+
+  @LilyCommand("racer")
+  fun racer(chatCommand: Command): Answer<AnswerInfo>? =
+      playerHelper.query {
+
+        command = chatCommand
+
+        allowDifferentAmounts = false
+
+        aggregator = {
+          val finished = it.count { r -> r.resultType == ResultType.FINISH }
+          val forfeited = it.count { r -> r.resultType == ResultType.FORFEIT }
+
+          "%user% has finished $finished bingos and forfeited $forfeited"
         }
       }
 }

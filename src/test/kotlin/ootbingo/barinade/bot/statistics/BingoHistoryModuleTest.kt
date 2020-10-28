@@ -40,7 +40,8 @@ internal class BingoHistoryModuleTest {
   private val commands by lazy {
     mapOf(
         "results" to module::results,
-        "best" to module::best
+        "best" to module::best,
+        "racer" to module::racer
     )
   }
 
@@ -347,6 +348,102 @@ internal class BingoHistoryModuleTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="!racer">
+
+  @Test
+  internal fun returnsCorrectRacerInfoToDiscord() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenTimesForPlayer(username, true,
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.DQ),
+                        BingoTime(1, ResultType.FORFEIT))
+
+    whenUser(username) sendsDiscordMessage "!racer"
+
+    thenAnswer mentionsPlayer username hasCompleted 2 andHasForfeited 1
+  }
+
+  @Test
+  internal fun returnsCorrectRacerInfoToIrc() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenTimesForPlayer(username, true,
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FORFEIT),
+                        BingoTime(1, ResultType.DQ),
+                        BingoTime(1, ResultType.FORFEIT))
+
+    whenUser(username) sendsIrcMessage "!racer"
+
+    thenAnswer mentionsPlayer username hasCompleted 1 andHasForfeited 2
+  }
+
+  @Test
+  internal fun onlyConsidersBingoRacesWhenQueryingRacerInfo() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenTimesForPlayer(username, true,
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FORFEIT),
+                        BingoTime(1, ResultType.FORFEIT))
+    givenNonBingoTimesForPlayer(username, 1, 2, 3, 4)
+
+    whenUser(username) sendsIrcMessage "!racer"
+
+    thenAnswer mentionsPlayer username hasCompleted 3 andHasForfeited 2
+  }
+
+  @Test
+  internal fun returnsRacerInfoForOtherUsers() {
+
+    val askingUser = UUID.randomUUID().toString()
+    val playingUser = UUID.randomUUID().toString()
+
+    givenBingoTimesForPlayer(askingUser, 1)
+    givenTimesForPlayer(playingUser, true,
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FINISH),
+                        BingoTime(1, ResultType.FORFEIT),
+                        BingoTime(1, ResultType.FORFEIT))
+
+    whenUser(askingUser) sendsIrcMessage "!racer $playingUser"
+
+    thenAnswer mentionsPlayer playingUser hasCompleted 3 andHasForfeited 2
+  }
+
+  @Test
+  internal fun displaysMessageWhenRacerInfoForNonBingoPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    givenTimesForPlayer(username, true, BingoTime(1, ResultType.DQ))
+    givenNonBingoTimesForPlayer(username, 1, 3, -2, -3, 2, -1)
+
+    whenUser(username) sendsIrcMessage "!racer"
+
+    thenNoBingosFinishedIsReported()
+  }
+
+  @Test
+  internal fun displaysMessageWhenRacerInfoForUnknownPlayerRequested() {
+
+    val username = UUID.randomUUID().toString()
+
+    whenUser(username) sendsIrcMessage "!racer"
+
+    thenUnknownPlayerIsReported()
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="Given">
 
   private fun givenBingoTimesForPlayer(username: String, vararg times: Int) {
@@ -445,6 +542,32 @@ internal class BingoHistoryModuleTest {
   }
 
   private infix fun Answer<AnswerInfo>.andListsResults(results: List<String>) = listsResults(results)
+
+  private infix fun Answer<AnswerInfo>.hasCompleted(expectedCount: Int): Answer<AnswerInfo> {
+
+    val actualCount = Regex("""[A-Za-z0-9-_.]+ has finished (?<count>\d+) bingos and forfeited \d+""")
+        .find(this.text)!!
+        .groups["count"]!!
+        .value
+        .toInt()
+
+    assertThat(actualCount).isEqualTo(expectedCount)
+
+    return this
+  }
+
+  private infix fun Answer<AnswerInfo>.andHasForfeited(expectedCount: Int): Answer<AnswerInfo> {
+
+    val actualCount = Regex("""[A-Za-z0-9-_.]+ has finished \d+ bingos and forfeited (?<count>\d+)""")
+        .find(this.text)!!
+        .groups["count"]!!
+        .value
+        .toInt()
+
+    assertThat(actualCount).isEqualTo(expectedCount)
+
+    return this
+  }
 
   private infix fun Answer<AnswerInfo>.listsResults(expectedResults: List<String>) {
 

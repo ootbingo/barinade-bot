@@ -35,7 +35,6 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
         raceFilter = {
           it
-              .filter { r -> r.isBingo() }
               .filter { r ->
                 if (r.resultType == ResultType.FORFEIT) {
                   forfeits++
@@ -68,7 +67,6 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
         raceFilter = {
           it
-              .filter { r -> r.isBingo() }
               .filter { r ->
                 if (r.resultType == ResultType.FORFEIT) {
                   forfeits++
@@ -96,8 +94,6 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
         command = chatCommand
 
         allowDifferentAmounts = false
-
-        raceFilter = { it.filter { r -> r.isBingo() && r.resultType != ResultType.DQ } }
 
         aggregator = {
 
