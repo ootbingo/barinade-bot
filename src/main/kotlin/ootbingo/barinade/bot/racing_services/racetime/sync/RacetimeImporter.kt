@@ -41,7 +41,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
 
   private fun import(race: RacetimeRace) {
 
-    if (race.goal.custom || race.goal.name != "Bingo" || raceIds.contains(race.name)) {
+    if (!race.recorded || race.goal.custom || race.goal.name != "Bingo" || raceIds.contains(race.name)) {
       return
     }
 

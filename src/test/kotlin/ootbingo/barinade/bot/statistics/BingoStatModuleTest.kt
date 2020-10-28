@@ -204,14 +204,6 @@ internal class BingoStatModuleTest {
     thenNoBingosFinishedIsReported(username, answer)
   }
 
-  @Test
-  internal fun errorWhenNoMessageInfoForAverage() {
-
-    val answer = whenMessageIsSent("!average", MessageInfo.empty())
-
-    thenErrorIsReported(answer)
-  }
-
   //</editor-fold>
 
   //<editor-fold desc="Median">
@@ -361,17 +353,9 @@ internal class BingoStatModuleTest {
     thenNoBingosFinishedIsReported(username, answer)
   }
 
-  @Test
-  internal fun errorWhenNoMessageInfoForMedian() {
-
-    val answer = whenMessageIsSent("!median", MessageInfo.empty())
-
-    thenErrorIsReported(answer)
-  }
-
   //</editor-fold>
 
-  //<editor-fold desc="Public API">
+  //<editor-fold desc="Public Median API">
 
   @Test
   internal fun calculatesMedianForUser() {
@@ -505,17 +489,9 @@ internal class BingoStatModuleTest {
     thenUserNotFoundIsReported(username, answer)
   }
 
-  @Test
-  internal fun errorWhenNoMessageInfoForForfeitRatio() {
-
-    val answer = whenMessageIsSent("!forfeits", MessageInfo.empty())
-
-    thenErrorIsReported(answer)
-  }
-
   //</editor-fold>
 
-  //<editor-fold desc="Public API">
+  //<editor-fold desc="Public Forfeit API">
 
   @Test
   internal fun calculatesForfeitRatioForUser() {
