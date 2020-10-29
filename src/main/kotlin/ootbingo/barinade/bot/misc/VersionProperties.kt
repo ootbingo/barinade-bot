@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.version
+package ootbingo.barinade.bot.misc
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.PropertySource
