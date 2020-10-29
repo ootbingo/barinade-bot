@@ -52,6 +52,25 @@ internal class RaceTest {
     assertThat(race.isBingo()).isTrue()
   }
 
+  @Test
+  internal fun isBingoWhenJpBetaUrl() {
+
+    val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=424242&mode=normal",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isTrue()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["0.9.6.2", "0.9.5.0-j", "0.9.7.0-j"])
+  internal fun noBingoWhenOtherBeta(beta: String) {
+
+    val race = race("https://ootbingo.github.io/bingo/beta$beta/bingo.html?seed=860838&mode=normal",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
   @ParameterizedTest
   @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
     "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
@@ -123,6 +142,49 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInGithubIoGoalCapitalization(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=$word",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
+    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
+  internal fun noBingoWhenBlacklistedWordInBetaGoal1(word: String) {
+
+    val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal $word",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
+    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
+  internal fun noBingoWhenBlacklistedWordInBetaGoal2(word: String) {
+
+    val race = race("$word https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
+    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
+  internal fun noBingoWhenBlacklistedWordInBetaUrl(word: String) {
+
+    val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word",
+                    date(2019, 10, 27))
+
+    assertThat(race.isBingo()).isFalse()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["SHORT", "loNG", "BLACKout", "Japanese", "bInGo-J"])
+  internal fun noBingoWhenBlacklistedWordInBetaGoalCapitalization(word: String) {
+
+    val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word",
                     date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()

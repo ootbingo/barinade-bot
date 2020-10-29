@@ -45,6 +45,7 @@ data class Race(@Id var raceId: String = "",
         contains("speedrunslive.com/tools/oot-bingo") ->
           this@Race.datetime.isBefore(ZonedDateTime.of(2019, 9, 21, 0, 0, 0, 0, ZoneId.of("UTC")).toInstant())
         matches(Regex("https?://ootbingo\\.github\\.io/bingo/v\\d+\\.\\d/bingo\\.html.*")) -> true
+        matches(Regex("https?://ootbingo\\.github\\.io/bingo/beta0\\.9\\.6\\.\\d-j/bingo\\.html.*")) -> true
 
         else -> false
       }
