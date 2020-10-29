@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-        stage("Build And Run Docker Image (INT)") {
+        stage("Deploy (INT)") {
 
             when {
                 anyOf {
@@ -65,7 +65,7 @@ pipeline {
             }
         }
 
-        stage("Build And Run Docker Image (Prod)") {
+        stage("Deploy (Prod)") {
 
             when {
                 anyOf {
