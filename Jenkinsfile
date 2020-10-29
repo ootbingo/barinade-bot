@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-        stage("Build And Run Docker Image (Dev)") {
+        stage("Build And Run Docker Image (INT)") {
 
             when {
                 anyOf {
@@ -61,6 +61,28 @@ pipeline {
 
                 withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
                     sh "ssh -oStrictHostKeyChecking=no barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/dev/docker-compose.yml up -d --force-recreate bot"
+                }
+            }
+        }
+
+        stage("Build And Run Docker Image (Prod)") {
+
+            when {
+                anyOf {
+                    branch "release/1.0.0"
+                }
+            }
+
+            steps {
+                script {
+                    docker.withRegistry("https://barinade.scaramangado.de:10193", "scaramangado-registry") {
+                        def devImage = docker.build("barinade/bot:prod")
+                        devImage.push()
+                    }
+                }
+
+                withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
+                    sh "ssh -oStrictHostKeyChecking=no barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/prod/docker-compose.yml up -d --force-recreate bot"
                 }
             }
         }
