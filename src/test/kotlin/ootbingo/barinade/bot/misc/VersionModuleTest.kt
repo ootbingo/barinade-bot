@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.version
+package ootbingo.barinade.bot.misc
 
 import com.nhaarman.mockitokotlin2.mock
 import de.scaramanga.lily.core.communication.Answer
@@ -7,7 +7,6 @@ import de.scaramanga.lily.core.communication.Command
 import de.scaramanga.lily.core.communication.MessageInfo
 import de.scaramanga.lily.discord.connection.DiscordMessageInfo
 import net.dv8tion.jda.api.entities.Message
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
