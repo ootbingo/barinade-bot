@@ -12,7 +12,7 @@ pipeline {
 
         stage("Prepare") {
             steps {
-                sh "./gradlew clean -PgithubPackagesUser=$GITHUB_PACKAGE_USR -PgithubPackagesToken=$GITHUB_PACKAGE_PSW"
+                sh "$gradle clean"
             }
         }
 
@@ -34,14 +34,14 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: "sonarcloud_ootbingo", usernameVariable: 'sonarUsername',
                         passwordVariable: 'sonarPassword')]) {
-                    sh "./gradlew sonarqube -PsonarUsername=$sonarUsername -PsonarPassword=$sonarPassword"
+                    sh "$gradle sonarqube -PsonarUsername=$sonarUsername -PsonarPassword=$sonarPassword"
                 }
             }
         }
 
         stage("Build") {
             steps {
-                sh "./gradlew build -x test"
+                sh "$gradle build -x test"
             }
         }
 
