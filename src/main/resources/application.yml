@@ -35,3 +35,8 @@ gg:
   racetime:
     api:
       base-url: https://racetime.gg
+
+logging:
+  file:
+    name: bot.log
+    max-history: 15

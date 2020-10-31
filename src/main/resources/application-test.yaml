@@ -17,6 +17,8 @@ spring:
       ddl-auto: create
 
 logging:
+  file:
+    name:
   level:
     root: OFF
     org:
