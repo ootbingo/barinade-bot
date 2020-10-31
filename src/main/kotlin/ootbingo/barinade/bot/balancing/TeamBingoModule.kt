@@ -1,10 +1,10 @@
 package ootbingo.barinade.bot.balancing
 
-import de.scaramanga.lily.core.annotations.LilyCommand
-import de.scaramanga.lily.core.annotations.LilyModule
-import de.scaramanga.lily.core.communication.Answer
-import de.scaramanga.lily.core.communication.AnswerInfo
-import de.scaramanga.lily.core.communication.Command
+import de.scaramangado.lily.core.annotations.LilyCommand
+import de.scaramangado.lily.core.annotations.LilyModule
+import de.scaramangado.lily.core.communication.Answer
+import de.scaramangado.lily.core.communication.AnswerInfo
+import de.scaramangado.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.allTeamPartitions
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.statistics.BingoStatModule
