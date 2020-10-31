@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "1.0.0"
+version = "1.1.0"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
@@ -26,13 +26,17 @@ repositories {
   mavenCentral()
   jcenter()
   maven {
-    url = uri("http://h2841273.stratoserver.net:10091/repository/maven-releases/")
+    url = uri("https://maven.pkg.github.com/scaramangado/lily")
+    credentials {
+      username = project.properties["githubPackagesUser"]?.let { it as String} ?: ""
+      password = project.properties["githubPackagesToken"]?.let { it as String} ?: ""
+    }
   }
 }
 
 dependencies {
 
-  implementation("de.scaramanga:lily:0.1.3")
+  implementation("de.scaramangado:lily:0.2.0")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")

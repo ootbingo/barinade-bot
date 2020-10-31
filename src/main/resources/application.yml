@@ -1,6 +1,8 @@
 lily:
   commandline:
     enabled: false
+  discord:
+    enable-direct-messages: true
 
 ootbingo:
   races:

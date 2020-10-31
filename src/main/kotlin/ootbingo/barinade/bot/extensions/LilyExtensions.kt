@@ -1,8 +1,8 @@
 package ootbingo.barinade.bot.extensions
 
-import de.scaramanga.lily.core.communication.MessageInfo
-import de.scaramanga.lily.discord.connection.DiscordMessageInfo
-import de.scaramanga.lily.irc.connection.IrcMessageInfo
+import de.scaramangado.lily.core.communication.MessageInfo
+import de.scaramangado.lily.discord.connection.DiscordMessageInfo
+import de.scaramangado.lily.irc.connection.IrcMessageInfo
 
 fun MessageInfo.getUsername(): String? =
     when (this) {

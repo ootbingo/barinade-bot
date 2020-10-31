@@ -122,9 +122,9 @@ internal class SrlImporterTest {
 
     val races = listOf(
         SrlPastRace("1", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(1)))),
-        SrlPastRace("2", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(2)))),
-        SrlPastRace("3", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(-1)))),
-        SrlPastRace("4", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(-2))))
+        SrlPastRace("2", oot, results = listOf(SrlResult(player = name, place = 42, time = Duration.ofSeconds(-2)))),
+        SrlPastRace("3", oot, results = listOf(SrlResult(player = name, place = 9998, time = Duration.ofSeconds(-1)))),
+        SrlPastRace("4", oot, results = listOf(SrlResult(player = name, place = 9999, time = Duration.ofSeconds(-2))))
     )
 
     givenRacesForPlayer(name, *races.toTypedArray())
@@ -133,7 +133,7 @@ internal class SrlImporterTest {
     importer.importRacesForUser(Player(null, 0, null, name))
 
     thenResultTypesAre("1" to ResultType.FINISH, "2" to ResultType.FINISH,
-                       "3" to ResultType.FORFEIT, "4" to ResultType.FORFEIT)
+                       "3" to ResultType.FORFEIT, "4" to ResultType.DQ)
   }
 
   private fun thenResultTypesAre(vararg results: Pair<String, ResultType>) {

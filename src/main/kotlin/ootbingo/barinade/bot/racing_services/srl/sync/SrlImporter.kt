@@ -53,7 +53,11 @@ class SrlImporter(private val srlHttpClient: SrlHttpClient,
               return@forEach
             }
 
-        val resultType = if (srlResult.time.isNegative) ResultType.FORFEIT else ResultType.FINISH
+        val resultType = when (srlResult.place) {
+          9998L -> ResultType.FORFEIT
+          9999L -> ResultType.DQ
+          else -> ResultType.FINISH
+        }
 
         storedRace.raceResults
             .add(RaceResult(RaceResult.ResultId(storedRace, player), srlResult.place, srlResult.time, resultType))
