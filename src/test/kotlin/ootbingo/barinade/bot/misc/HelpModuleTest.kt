@@ -2,11 +2,11 @@ package ootbingo.barinade.bot.misc
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import de.scaramanga.lily.core.communication.Answer
-import de.scaramanga.lily.core.communication.AnswerInfo
-import de.scaramanga.lily.core.communication.Command
-import de.scaramanga.lily.core.communication.MessageInfo
-import de.scaramanga.lily.discord.connection.DiscordMessageInfo
+import de.scaramangado.lily.core.communication.Answer
+import de.scaramangado.lily.core.communication.AnswerInfo
+import de.scaramangado.lily.core.communication.Command
+import de.scaramangado.lily.core.communication.MessageInfo
+import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.entities.UserImpl
 import org.assertj.core.api.Assertions.*

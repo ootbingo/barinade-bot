@@ -2,6 +2,8 @@ pipeline {
 
     environment {
         buildStatus = ""
+        GITHUB_PACKAGE = credentials("lily_github_packages")
+        gradle = "./gradlew -PgithubPackagesUser=$GITHUB_PACKAGE_USR -PgithubPackagesToken=$GITHUB_PACKAGE_PSW"
     }
 
     agent any
@@ -10,14 +12,14 @@ pipeline {
 
         stage("Prepare") {
             steps {
-                sh "./gradlew clean"
+                sh "./gradlew clean -PgithubPackagesUser=$GITHUB_PACKAGE_USR -PgithubPackagesToken=$GITHUB_PACKAGE_PSW"
             }
         }
 
         stage("Test") {
 
             steps {
-                sh "./gradlew test"
+                sh "$gradle test"
             }
 
             post {

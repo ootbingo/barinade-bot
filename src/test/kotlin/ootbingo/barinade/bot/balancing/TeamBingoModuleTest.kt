@@ -1,11 +1,11 @@
 package ootbingo.barinade.bot.balancing
 
 import com.nhaarman.mockitokotlin2.mock
-import de.scaramanga.lily.core.communication.Answer
-import de.scaramanga.lily.core.communication.AnswerInfo
-import de.scaramanga.lily.core.communication.Command
-import de.scaramanga.lily.core.communication.MessageInfo
-import de.scaramanga.lily.irc.connection.IrcMessageInfo
+import de.scaramangado.lily.core.communication.Answer
+import de.scaramangado.lily.core.communication.AnswerInfo
+import de.scaramangado.lily.core.communication.Command
+import de.scaramangado.lily.core.communication.MessageInfo
+import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
