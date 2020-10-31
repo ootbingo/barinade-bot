@@ -7,9 +7,9 @@ plugins {
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
-  kotlin("jvm") version "1.3.50"
-  kotlin("plugin.spring") version "1.3.50"
-  kotlin("plugin.allopen") version "1.3.50"
+  kotlin("jvm") version "1.3.72"
+  kotlin("plugin.spring") version "1.3.72"
+  kotlin("plugin.allopen") version "1.3.72"
   id("org.sonarqube") version "2.7.1"
   jacoco
 }
@@ -28,8 +28,8 @@ repositories {
   maven {
     url = uri("https://maven.pkg.github.com/scaramangado/lily")
     credentials {
-      username = project.properties["githubPackagesUser"]?.let { it as String} ?: ""
-      password = project.properties["githubPackagesToken"]?.let { it as String} ?: ""
+      username = project.properties["githubPackagesUser"]?.let { it as String } ?: ""
+      password = project.properties["githubPackagesToken"]?.let { it as String } ?: ""
     }
   }
 }
@@ -139,5 +139,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.3"
+  gradleVersion = "6.7"
 }
