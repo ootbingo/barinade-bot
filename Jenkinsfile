@@ -57,13 +57,13 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("https://barinade.scaramangado.de:10193", "scaramangado-registry") {
-                        def devImage = docker.build("barinade/bot:dev")
+                        def devImage = docker.build("barinade/bot:int")
                         devImage.push()
                     }
                 }
 
                 withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
-                    sh "ssh -oStrictHostKeyChecking=no barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/dev/docker-compose.yml up -d --force-recreate bot"
+                    sh "ssh -oStrictHostKeyChecking=no barinade@scaramangado.de -i $keyfile docker-compose -f /barinade/barinade-infrastructure/int/docker-compose.yml up -d --force-recreate bot"
                 }
             }
         }
