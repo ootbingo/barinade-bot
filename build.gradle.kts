@@ -4,12 +4,15 @@ import java.nio.charset.StandardCharsets.*
 import java.util.Properties
 
 plugins {
+
+  val kotlinVersion = "1.3.72"
+
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
-  kotlin("jvm") version "1.3.72"
-  kotlin("plugin.spring") version "1.3.72"
-  kotlin("plugin.allopen") version "1.3.72"
+  kotlin("jvm") version kotlinVersion
+  kotlin("plugin.spring") version kotlinVersion
+  kotlin("plugin.allopen") version kotlinVersion
   id("org.sonarqube") version "2.7.1"
   jacoco
 }
@@ -86,6 +89,9 @@ val versionProperties by tasks.register("versionProperties") {
 }
 
 tasks.withType<Test> {
+
+  dependsOn("versionProperties")
+
   useJUnitPlatform()
 
   systemProperties(Pair("spring.profiles.active", "test"))
