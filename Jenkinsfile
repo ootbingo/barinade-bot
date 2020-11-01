@@ -56,10 +56,7 @@ pipeline {
 
             steps {
                 script {
-                    docker.withRegistry("https://barinade.scaramangado.de:10193", "scaramangado-registry") {
-                        def devImage = docker.build("barinade/bot:int")
-                        devImage.push()
-                    }
+                    docker.build("barinade/bot:int")
                 }
 
                 withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
@@ -78,10 +75,7 @@ pipeline {
 
             steps {
                 script {
-                    docker.withRegistry("https://barinade.scaramangado.de:10193", "scaramangado-registry") {
-                        def devImage = docker.build("barinade/bot:prod")
-                        devImage.push()
-                    }
+                    docker.build("barinade/bot:prod")
                 }
 
                 withCredentials([sshUserPrivateKey(credentialsId: "BarinadeSSH", keyFileVariable: 'keyfile')]) {
