@@ -14,9 +14,10 @@ import java.util.UUID
 @ExtendWith(SpringExtension::class)
 internal class RacetimeHttpClientTest {
 
-  private val baseUrl = "http://example.com"
+  private val dataBaseUrl = "http://example.com"
+  private val racingBaseUrl = "http://example.de"
 
-  private val properties: RacetimeApiProperties = RacetimeApiProperties(baseUrl)
+  private val properties: RacetimeApiProperties = RacetimeApiProperties(dataBaseUrl, racingBaseUrl)
   private val restTemplate = RacetimeHttpClientConfiguration().racetimeRestTemplate()
   private val server: MockRestServiceServer = MockRestServiceServer.createServer(restTemplate)
   private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties)
@@ -85,24 +86,65 @@ internal class RacetimeHttpClientTest {
         """.trimIndent()
 
     server
-        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=1"))
+        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=1"))
         .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=2"))
+        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=2"))
         .andRespond(withSuccess(categoryRacesJson(random(), random(), random()),
-                                 MediaType.APPLICATION_JSON))
+                                MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=3"))
+        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=3"))
         .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$baseUrl/oot/races/data?show_entrants=true&page=4"))
+        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=4"))
         .andRespond(withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
 
-    val allRaces = client.getAllRacesOfGame("oot")
+    val allRaces = client.getAllRacesOfGame()
 
     assertThat(allRaces).hasSize(7)
+  }
+
+  @Test
+  internal fun findsCurrentRacesOfGame() {
+
+    val categoryJson = """
+      {
+        "current_races": [
+          {
+            "name": "oot/superb-spaceman-5763",
+            "status": {
+              "value": "open"
+            },
+            "goal": {
+              "name": "Bingo",
+              "custom": false
+            },
+            "info": ""
+          },
+          {
+            "name": "oot/jolly-rogers-5763",
+            "status": {
+              "value": "open"
+            },
+            "goal": {
+              "name": "Bingo",
+              "custom": false
+            },
+            "info": ""
+          }
+        ]
+      }
+    """.trimIndent()
+
+    server
+        .expect(requestTo("$racingBaseUrl/oot/data"))
+        .andRespond(withSuccess(categoryJson, MediaType.APPLICATION_JSON))
+
+    val allRaces = client.getOpenRacesOfGame()
+
+    assertThat(allRaces).hasSize(2)
   }
 }

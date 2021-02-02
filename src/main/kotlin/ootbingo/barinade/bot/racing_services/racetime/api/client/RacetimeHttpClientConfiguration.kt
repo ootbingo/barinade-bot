@@ -28,6 +28,7 @@ class RacetimeHttpClientConfiguration {
       .registerTypeAdapter(Duration::class.java, durationDeserializer)
       .registerTypeAdapter(Instant::class.java, instantDeserializer)
       .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
+      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusDeserializer)
       .create()
 
   private val durationDeserializer = JsonDeserializer { json, _, _ ->

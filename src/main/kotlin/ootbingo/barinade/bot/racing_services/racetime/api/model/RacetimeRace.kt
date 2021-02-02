@@ -4,7 +4,7 @@ import java.time.Instant
 
 data class RacetimeRace(
     var name: String = "",
-    var status: RacetimeRaceStatus,
+    var status: RacetimeRaceStatus = RacetimeRaceStatus.OPEN,
     var goal: RacetimeRaceGoal = RacetimeRaceGoal(),
     var info: String = "",
     var entrants: List<RacetimeEntrant> = emptyList(),
