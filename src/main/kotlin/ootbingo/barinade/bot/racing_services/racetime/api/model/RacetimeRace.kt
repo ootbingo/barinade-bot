@@ -4,6 +4,7 @@ import java.time.Instant
 
 data class RacetimeRace(
     var name: String = "",
+    var status: RacetimeRaceStatus,
     var goal: RacetimeRaceGoal = RacetimeRaceGoal(),
     var info: String = "",
     var entrants: List<RacetimeEntrant> = emptyList(),
@@ -15,4 +16,8 @@ data class RacetimeRace(
       var name: String = "",
       var custom: Boolean = true
   )
+
+  enum class RacetimeRaceStatus {
+    OPEN, INVITATIONAL, PENDING, IN_PROGRESS, FINISHED, CANCELLED
+  }
 }
