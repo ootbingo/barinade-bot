@@ -23,7 +23,7 @@ class RacetimeSyncJob(private val importerSupplier: () -> RacetimeImporter,
     logger.info("Syncing Racetime data with DB...")
 
     logger.info("Find all OoT races on Racetime...")
-    val allRaces = racetimeHttpClient.getAllRacesOfGame()
+    val allRaces = racetimeHttpClient.getAllRaces()
     logger.info("Race data downloaded. Found {} races.", allRaces.size)
 
     val importer = importerSupplier()

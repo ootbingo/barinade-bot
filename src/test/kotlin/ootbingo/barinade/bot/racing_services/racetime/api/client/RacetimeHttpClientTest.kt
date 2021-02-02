@@ -102,7 +102,7 @@ internal class RacetimeHttpClientTest {
         .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=4"))
         .andRespond(withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
 
-    val allRaces = client.getAllRacesOfGame()
+    val allRaces = client.getAllRaces()
 
     assertThat(allRaces).hasSize(7)
   }
@@ -143,7 +143,7 @@ internal class RacetimeHttpClientTest {
         .expect(requestTo("$racingBaseUrl/oot/data"))
         .andRespond(withSuccess(categoryJson, MediaType.APPLICATION_JSON))
 
-    val allRaces = client.getOpenRacesOfGame()
+    val allRaces = client.getOpenRaces()
 
     assertThat(allRaces).hasSize(2)
   }

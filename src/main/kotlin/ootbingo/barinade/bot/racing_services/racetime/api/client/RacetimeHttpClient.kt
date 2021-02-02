@@ -16,7 +16,7 @@ const val OOT: String = "oot"
 class RacetimeHttpClient(private val racetimeRestTemplate: RestTemplate,
                          private val properties: RacetimeApiProperties) {
 
-  fun getAllRacesOfGame(): Collection<RacetimeRace> {
+  fun getAllRaces(): Collection<RacetimeRace> {
 
     fun getPage(page: Int) =
         "${properties.dataBaseUrl}/$OOT/races/data?show_entrants=true&page=$page"
@@ -30,7 +30,7 @@ class RacetimeHttpClient(private val racetimeRestTemplate: RestTemplate,
         .collect(Collectors.toSet())
   }
 
-  fun getOpenRacesOfGame(): Collection<RacetimeRace> {
+  fun getOpenRaces(): Collection<RacetimeRace> {
     val oot = racetimeRestTemplate
         .getForObject(URI.create("${properties.racingBaseUrl}/$OOT/data"), RacetimeCategory::class.java)
 
