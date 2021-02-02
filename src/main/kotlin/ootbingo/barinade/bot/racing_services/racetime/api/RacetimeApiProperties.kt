@@ -5,4 +5,9 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConfigurationProperties("gg.racetime.api")
-data class RacetimeApiProperties(var baseUrl: String = "")
+data class RacetimeApiProperties(
+    var dataBaseUrl: String = "",
+    var racingBaseUrl: String = "",
+    var websocketBaseUrl: String = "",
+    var oauth: RacetimeOAuthProperties = RacetimeOAuthProperties()
+)

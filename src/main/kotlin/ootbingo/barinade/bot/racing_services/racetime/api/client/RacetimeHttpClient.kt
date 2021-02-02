@@ -16,7 +16,7 @@ class RacetimeHttpClient(private val racetimeRestTemplate: RestTemplate,
   fun getAllRacesOfGame(gameAbbreviation: String): Set<RacetimeRace> {
 
     fun getPage(page: Int) =
-        "${properties.baseUrl}/$gameAbbreviation/races/data?show_entrants=true&page=$page"
+        "${properties.dataBaseUrl}/$gameAbbreviation/races/data?show_entrants=true&page=$page"
             .let { racetimeRestTemplate.getForObject(URI.create(it), RacetimeRacePage::class.java) }
 
     return IntStream.iterate(1) { it + 1 }
