@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.util.UUID
@@ -31,7 +32,7 @@ internal class RaceMonitorTest {
 
   @ParameterizedTest
   @EnumSource(RacetimeRace.RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"])
-  internal fun opensRoomForOpenRaces(status: RacetimeRace.RacetimeRaceStatus) {
+  internal fun opensConnectionForOpenRaces(status: RacetimeRace.RacetimeRaceStatus) {
 
     val slug1 = UUID.randomUUID().toString()
     val slug2 = UUID.randomUUID().toString()
@@ -48,7 +49,7 @@ internal class RaceMonitorTest {
 
   @ParameterizedTest
   @EnumSource(RacetimeRace.RacetimeRaceStatus::class, names = ["PENDING", "IN_PROGRESS", "FINISHED", "CANCELLED"])
-  internal fun doesNotOpenRoomForOngoingRaces(status: RacetimeRace.RacetimeRaceStatus) {
+  internal fun doesNotOpenConnectionForOngoingRaces(status: RacetimeRace.RacetimeRaceStatus) {
 
     val slug1 = UUID.randomUUID().toString()
     val slug2 = UUID.randomUUID().toString()
@@ -61,6 +62,19 @@ internal class RaceMonitorTest {
     whenScanningForRaces()
 
     thenConnectionsAreOpenedToRooms()
+  }
+
+  @Test
+  internal fun onlyOpensOneConnectionPerRace() {
+
+    val slug = UUID.randomUUID().toString()
+
+    givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN)
+
+    whenScanningForRaces()
+    whenScanningForRaces()
+
+    thenConnectionsAreOpenedToRooms(slug)
   }
 
   private fun givenOpenRace(slug: String, status: RacetimeRace.RacetimeRaceStatus) {

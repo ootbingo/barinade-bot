@@ -13,12 +13,18 @@ class RaceMonitor(private val httpClient: RacetimeHttpClient,
                   private val connectionFactory: RaceConnectionFactory,
                   private val properties: RacetimeApiProperties) {
 
+  private val raceConnections = mutableSetOf<String>()
+
   @Scheduled(fixedDelay = 5000)
   fun scanForRaces() {
     httpClient.getOpenRaces()
         .filter { it.status in listOf(OPEN, INVITATIONAL) }
         .map { it.name.split("/")[1] }
-        .forEach { connectionFactory.openConnection(websocketUrl(it)) }
+        .filter { it !in raceConnections }
+        .forEach {
+          connectionFactory.openConnection(websocketUrl(it))
+          raceConnections.add(it)
+        }
   }
 
   private fun websocketUrl(slug: String) =
