@@ -3,7 +3,7 @@ pipeline {
     environment {
         buildStatus = ""
         GITHUB_PACKAGE = credentials("lily_github_packages")
-        gradle = "./gradlew -PgithubPackagesUser=$GITHUB_PACKAGE_USR -PgithubPackagesToken=$GITHUB_PACKAGE_PSW"
+        gradle = "./gradlew --no-daemon -PgithubPackagesUser=$GITHUB_PACKAGE_USR -PgithubPackagesToken=$GITHUB_PACKAGE_PSW"
     }
 
     agent any
@@ -12,7 +12,7 @@ pipeline {
 
         stage("Prepare") {
             steps {
-                sh "./gradlew wrapper"
+                sh "./gradlew --no-daemon wrapper"
                 sh "$gradle clean"
             }
         }
