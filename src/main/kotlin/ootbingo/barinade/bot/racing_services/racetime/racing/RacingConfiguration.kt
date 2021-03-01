@@ -1,13 +1,16 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing
 
+import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.socket.WebSocketHttpHeaders
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import java.net.URI
+import java.time.Instant
 
 @Configuration
-class RacingConfiguration {
+class RacingConfiguration(private val oAuthManager: OAuthManager) {
 
   @Bean
   fun raceConnectionFactory() = object : RaceConnectionFactory {
@@ -16,6 +19,7 @@ class RacingConfiguration {
     }
   }
 
+  @Bean
   fun websocketConnector() = object : WebsocketConnector {
     override fun connect(url: String, delegate: RaceConnection): RaceWebsocketHandler {
 
@@ -23,7 +27,7 @@ class RacingConfiguration {
 
       StandardWebSocketClient()
           .doHandshake(handler,
-              WebSocketHttpHeaders().also { it.add("Authorization", "Bearer ${TODO()}") },
+              WebSocketHttpHeaders().also { it.add("Authorization", "Bearer ${oAuthManager.getToken()}") },
               URI.create(url))
 
       return handler

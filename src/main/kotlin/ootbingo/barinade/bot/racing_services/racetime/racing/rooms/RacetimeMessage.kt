@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.racing_services.racetime.racing
+package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser

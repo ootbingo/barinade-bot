@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RaceConnectionFactory
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

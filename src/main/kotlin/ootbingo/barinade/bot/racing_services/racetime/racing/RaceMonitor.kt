@@ -3,6 +3,7 @@ package ootbingo.barinade.bot.racing_services.racetime.racing
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RaceConnectionFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

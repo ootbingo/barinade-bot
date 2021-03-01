@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.api
 
+import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.RacetimeOAuthProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
