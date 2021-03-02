@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.description
 import org.slf4j.LoggerFactory
@@ -43,20 +44,29 @@ class RaceWebsocketHandler(private val delegate: RaceConnection, private val gso
   }
 
   override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+
     logger.debug("Received message in $slug")
     logger.trace(message.payload.toString())
-    TODO("Not yet implemented")
+
+    val json = JsonParser.parseString(message.payload as String).asJsonObject
+
+    val forwarding = when (json["type"].asString) {
+      "chat.message" -> "message" to ChatMessage::class.java
+      "race.data" -> "race" to RaceUpdate::class.java
+      else -> null
+    }
+
+    forwarding?.run { delegate.onMessage(gson.fromJson(json[first].toString(), second)) }
   }
+
 
   override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
     logger.error("Error in $slug: ${exception.description}")
     logger.debug(null, exception)
-    TODO("Not yet implemented")
   }
 
   override fun afterConnectionClosed(session: WebSocketSession, closeStatus: CloseStatus) {
     logger.info("Connection $slug closed: ${closeStatus.reason} (${closeStatus.code})")
-    TODO("Not yet implemented")
   }
 
   override fun supportsPartialMessages() = false

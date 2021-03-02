@@ -27,8 +27,10 @@ class RacetimeHttpClientConfiguration {
       .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
       .registerTypeAdapter(Duration::class.java, durationDeserializer)
       .registerTypeAdapter(Instant::class.java, instantDeserializer)
+      .registerTypeAdapter(Instant::class.java, instantSerializer)
       .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
       .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusDeserializer)
+      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusSerializer)
       .registerTypeAdapter(RacetimeAction::class.java, actionDeserializer)
       .create()
 
@@ -38,6 +40,10 @@ class RacetimeHttpClientConfiguration {
 
   private val instantDeserializer = JsonDeserializer { json, _, _ ->
     Instant.parse(json.asString)
+  }
+
+  private val instantSerializer = JsonSerializer<Instant> { instant, _, _ ->
+    JsonPrimitive(instant.toString())
   }
 
   private val entrantStatusDeserializer = JsonDeserializer { json, _, _ ->
@@ -50,6 +56,10 @@ class RacetimeHttpClientConfiguration {
     RacetimeRace.RacetimeRaceStatus
         .values()
         .find { it.name.equals(json.asJsonObject.get("value").asString, true) }
+  }
+
+  private val raceStatusSerializer = JsonSerializer<RacetimeRace.RacetimeRaceStatus> { status, _, _ ->
+    JsonObject().apply { addProperty("value", status.name) }
   }
 
   private val actionDeserializer: JsonDeserializer<RacetimeAction> = JsonDeserializer { json, _, _ ->

@@ -1,17 +1,15 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
-import org.assertj.core.api.Assertions
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import java.util.*
+import kotlin.random.Random
 
 internal class RaceWebsocketHandlerTest {
 
@@ -35,6 +33,8 @@ internal class RaceWebsocketHandlerTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Tests: Send">
+
   @Test
   internal fun sendsChatMessage() {
 
@@ -55,11 +55,47 @@ internal class RaceWebsocketHandlerTest {
     thenAction isNewGoal goal
   }
 
+  //</editor-fold>
+
+  //<editor-fold desc="Tests: Receive">
+
+  @Test
+  internal fun forwardsChatMessage() {
+
+    val message = UUID.randomUUID().toString()
+
+    whenMessageIsReceived(chatMessage(message))
+
+    thenDelegateReceivesChatMessage(message)
+  }
+
+  @Test
+  internal fun forwardsRaceUpdate() {
+
+    val version = Random.nextInt()
+
+    whenMessageIsReceived(raceUpdate(version))
+
+    thenDelegateReceivesRaceInfo(version)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="When">
+
   private fun whenChatMessageIsSent(message: String) =
-    handler.sendMessage(message)
+      handler.sendMessage(message)
 
   private fun whenGoalIsSet(goal: String) =
       handler.setGoal(goal)
+
+  private fun whenMessageIsReceived(message: String) {
+    handler.handleMessage(sessionMock, TextMessage(message))
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Then">
 
   private lateinit var thenAction: RacetimeAction
 
@@ -72,4 +108,32 @@ internal class RaceWebsocketHandlerTest {
     assertThat(action).isEqualTo("setinfo")
     assertThat((data as SetGoal).info).isEqualTo(goal)
   }
+
+  private fun thenDelegateReceivesChatMessage(message: String) {
+
+    val captor = argumentCaptor<RacetimeMessage>()
+    verify(raceConnectionMock).onMessage(captor.capture())
+
+    assertThat((captor.lastValue as ChatMessage).message).isEqualTo(message)
+  }
+
+  private fun thenDelegateReceivesRaceInfo(version: Int) {
+
+    val captor = argumentCaptor<RacetimeMessage>()
+    verify(raceConnectionMock).onMessage(captor.capture())
+
+    assertThat((captor.lastValue as RaceUpdate).race.version).isEqualTo(version)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Helper">
+
+  private fun chatMessage(message: String) =
+      gson.toJson(mapOf("type" to "chat.message", "message" to ChatMessage(message = message)))
+
+  private fun raceUpdate(version: Int) =
+      gson.toJson(mapOf("type" to "race.data", "race" to RaceUpdate(RacetimeRace(version = version))))
+
+  //</editor-fold>
 }

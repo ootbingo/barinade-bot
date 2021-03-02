@@ -9,7 +9,8 @@ data class RacetimeRace(
     var info: String = "",
     var entrants: List<RacetimeEntrant> = emptyList(),
     var endedAt: Instant? = null,
-    var recorded: Boolean = false
+    var recorded: Boolean = false,
+    var version: Int = 0
 ) {
 
   data class RacetimeRaceGoal(
