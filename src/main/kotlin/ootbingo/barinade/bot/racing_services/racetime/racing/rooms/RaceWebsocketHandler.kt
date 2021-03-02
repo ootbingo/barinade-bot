@@ -1,39 +1,61 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import com.google.gson.Gson
 import ootbingo.barinade.bot.compile.Open
-import org.springframework.web.socket.CloseStatus
-import org.springframework.web.socket.WebSocketHandler
-import org.springframework.web.socket.WebSocketMessage
-import org.springframework.web.socket.WebSocketSession
+import ootbingo.barinade.bot.extensions.description
+import org.slf4j.LoggerFactory
+import org.springframework.web.socket.*
 
 @Open
-class RaceWebsocketHandler : WebSocketHandler {
+class RaceWebsocketHandler(private val delegate: RaceConnection, private val gson: Gson) : WebSocketHandler {
 
   private lateinit var session: WebSocketSession
 
+  private val slug = delegate.slug
+  private val logger = LoggerFactory.getLogger(RaceWebsocketHandler::class.java)
+
   fun sendMessage(message: String) {
-    TODO()
+    logger.debug("Sending chat message to $slug")
+    logger.trace("'$message'")
+
+    sendAction(SendMessage(message))
   }
 
   fun setGoal(goal: String) {
-    TODO()
+    logger.debug("Setting goal in $slug")
+    logger.trace("'$goal'")
+
+    sendAction(SetGoal(goal))
+  }
+
+  private fun sendAction(payload: RacetimeActionPayload) {
+
+    val json = gson.toJson(payload.asAction())
+    logger.trace(json)
+    session.sendMessage(TextMessage(json))
   }
 
   //<editor-fold desc="WebSocket methods">
 
   override fun afterConnectionEstablished(session: WebSocketSession) {
     this.session = session
+    logger.info("Connection to $slug established")
   }
 
   override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+    logger.debug("Received message in $slug")
+    logger.trace(message.payload.toString())
     TODO("Not yet implemented")
   }
 
   override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
+    logger.error("Error in $slug: ${exception.description}")
+    logger.debug(null, exception)
     TODO("Not yet implemented")
   }
 
   override fun afterConnectionClosed(session: WebSocketSession, closeStatus: CloseStatus) {
+    logger.info("Connection $slug closed: ${closeStatus.reason} (${closeStatus.code})")
     TODO("Not yet implemented")
   }
 

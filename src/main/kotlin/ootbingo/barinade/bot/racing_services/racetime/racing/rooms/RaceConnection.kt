@@ -1,15 +1,19 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
+@Open
 class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder) {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
+
+  val slug: String get() = status.slug
 
   fun onMessage(message: RacetimeMessage) {
 
@@ -25,7 +29,7 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
     }
 
     status.race = race
-    logger.debug("Update race status for ${status.slug}")
+    logger.debug("Update race status for $slug")
   }
 
   private fun onRaceStatusChange(old: RacetimeRaceStatus?, new: RacetimeRaceStatus, race: RacetimeRace) {

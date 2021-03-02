@@ -1,11 +1,11 @@
 package ootbingo.barinade.bot.racing_services.racetime.api.client
 
-import com.google.gson.FieldNamingPolicy
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializer
+import com.google.gson.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeAction
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.SendMessage
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.SetGoal
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +29,7 @@ class RacetimeHttpClientConfiguration {
       .registerTypeAdapter(Instant::class.java, instantDeserializer)
       .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
       .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusDeserializer)
+      .registerTypeAdapter(RacetimeAction::class.java, actionDeserializer)
       .create()
 
   private val durationDeserializer = JsonDeserializer { json, _, _ ->
@@ -49,5 +50,19 @@ class RacetimeHttpClientConfiguration {
     RacetimeRace.RacetimeRaceStatus
         .values()
         .find { it.name.equals(json.asJsonObject.get("value").asString, true) }
+  }
+
+  private val actionDeserializer: JsonDeserializer<RacetimeAction> = JsonDeserializer { json, _, _ ->
+
+    val action = json.asJsonObject["action"].asString
+    val data = json.asJsonObject["data"].asJsonObject
+
+    val payload = when (action) {
+      "message" -> SendMessage(data["message"].asString, data["guid"].asString)
+      "setinfo" -> SetGoal(data["info"].asString)
+      else -> throw JsonParseException("Cannot parse ${json.asString}")
+    }
+
+    RacetimeAction(action, payload)
   }
 }
