@@ -1,13 +1,11 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.oauth
 
-import com.google.gson.Gson
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 

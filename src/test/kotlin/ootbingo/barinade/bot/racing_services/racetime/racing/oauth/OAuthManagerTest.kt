@@ -2,7 +2,6 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.oauth
 
 import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
-import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test
@@ -98,7 +97,7 @@ internal class OAuthManagerTest {
   }
 
   private fun givenClientCredentials(clientId: String, clientSecret: String) {
-    properties.oauth = RacetimeOAuthProperties(clientId, clientSecret)
+    properties.oauth = RacetimeApiProperties.RacetimeOAuthProperties(clientId, clientSecret)
   }
 
   private fun givenTokenReturned(newToken: String, expiresInSeconds: Long, testInvocation: () -> Unit) {

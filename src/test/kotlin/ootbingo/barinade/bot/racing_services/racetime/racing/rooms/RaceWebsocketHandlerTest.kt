@@ -133,7 +133,7 @@ internal class RaceWebsocketHandlerTest {
       gson.toJson(mapOf("type" to "chat.message", "message" to ChatMessage(message = message)))
 
   private fun raceUpdate(version: Int) =
-      gson.toJson(mapOf("type" to "race.data", "race" to RaceUpdate(RacetimeRace(version = version))))
+      gson.toJson(mapOf("type" to "race.data", "race" to RacetimeRace(version = version)))
 
   //</editor-fold>
 }

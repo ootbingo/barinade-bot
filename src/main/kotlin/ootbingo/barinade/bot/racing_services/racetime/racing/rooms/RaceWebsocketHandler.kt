@@ -51,12 +51,12 @@ class RaceWebsocketHandler(private val delegate: RaceConnection, private val gso
     val json = JsonParser.parseString(message.payload as String).asJsonObject
 
     val forwarding = when (json["type"].asString) {
-      "chat.message" -> "message" to ChatMessage::class.java
-      "race.data" -> "race" to RaceUpdate::class.java
+      "chat.message" ->  gson.fromJson(json["message"].toString(), ChatMessage::class.java)
+      "race.data" -> gson.fromJson(json.toString(), RaceUpdate::class.java)
       else -> null
     }
 
-    forwarding?.run { delegate.onMessage(gson.fromJson(json[first].toString(), second)) }
+    forwarding?.run { delegate.onMessage(this) }
   }
 
 

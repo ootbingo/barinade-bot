@@ -36,9 +36,9 @@ gg:
       data-base-url: http://localhost:8000
       racing-base-url: http://localhost:8000
       websocket-base-url: ws://localhost:8000
-    oauth:
-      client-id:
-      client-secret:
+      oauth:
+        client-id:
+        client-secret:
 
 logging:
   file:

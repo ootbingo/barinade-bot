@@ -10,7 +10,6 @@ class ChatMessage(
     var id: String = "",
     var user: RacetimeUser? = null,
     var bot: String? = null,
-    var postedAt: Instant = Instant.EPOCH,
     var message: String = "",
     var messagePlain: String = "",
     var highlight: Boolean = false,

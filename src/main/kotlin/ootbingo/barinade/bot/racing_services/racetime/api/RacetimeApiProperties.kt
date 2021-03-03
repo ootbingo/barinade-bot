@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.racing_services.racetime.api
 
-import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.RacetimeOAuthProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
@@ -11,4 +10,10 @@ data class RacetimeApiProperties(
     var racingBaseUrl: String = "",
     var websocketBaseUrl: String = "",
     var oauth: RacetimeOAuthProperties = RacetimeOAuthProperties()
-)
+) {
+
+  data class RacetimeOAuthProperties(
+      var clientId: String = "",
+      var clientSecret: String = ""
+  )
+}
