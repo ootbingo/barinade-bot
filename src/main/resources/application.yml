@@ -24,8 +24,6 @@ ootbingo:
       - raceId: 264444
         goal: https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=848930&mode=normal
 
-
-
 com:
   speedrunslive:
     api:
@@ -33,8 +31,14 @@ com:
 
 gg:
   racetime:
+    enable-racing: true
     api:
-      base-url: https://racetime.gg
+      data-base-url: http://localhost:8000
+      racing-base-url: http://localhost:8000
+      websocket-base-url: ws://localhost:8000
+      oauth:
+        client-id:
+        client-secret:
 
 logging:
   file:

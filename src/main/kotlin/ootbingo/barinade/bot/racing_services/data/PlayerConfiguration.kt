@@ -6,7 +6,7 @@ import org.springframework.core.io.ClassPathResource
 import java.util.stream.Collectors
 
 @Configuration
-class RacingConfiguration {
+class PlayerConfiguration {
 
   @Bean
   fun userMappingCsv(): String {

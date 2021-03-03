@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
 
-  val kotlinVersion = "1.3.72"
+  val kotlinVersion = "1.4.21"
 
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "1.2.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
@@ -50,6 +50,10 @@ dependencies {
   implementation(kotlin("reflect"))
 
   implementation("com.google.code.gson:gson")
+
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.15")
+  implementation("org.springframework:spring-websocket")
+  implementation("org.springframework:spring-messaging")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
