@@ -15,6 +15,19 @@ jobs:
         with:
           java-version: 11
       - name: Test
-        run: ./gradlew -PgithubPackageUser=${{ secrets.PACKAGE_USER }} -PgithubPackageToken=${{ secrets.PACKAGE_PWD }} test
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          arguments: test
+          gradle-version: wrapper
+          properties: |
+            githubPackageUser=${{ secrets.PACKAGE_USER }}
+            githubPackageToken=${{ secrets.PACKAGE_PWD }}
       - name: Build
-        run: ./gradlew -PgithubPackageUser=${{ secrets.PACKAGE_USER }} -PgithubPackageToken=${{ secrets.PACKAGE_PWD }} build -x check
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          arguments: build -x check
+          gradle-version: wrapper
+          properties: |
+            githubPackageUser=${{ secrets.PACKAGE_USER }}
+            githubPackageToken=${{ secrets.PACKAGE_PWD }}
+
