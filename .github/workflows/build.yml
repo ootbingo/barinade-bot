@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Prepare
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Java Setup
         uses: actions/setup-java@v1
         with:
