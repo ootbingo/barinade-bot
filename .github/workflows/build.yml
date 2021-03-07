@@ -56,4 +56,12 @@ jobs:
       - name: Deploy
         run: |
           ssh -oStrictHostKeyChecking=no barinade@scaramangado.de /barinade/barinade-infrastructure/deploy.sh ${{ secrets.PACKAGE_USER }} ${{ secrets.PACKAGE_PWD}} ${GITHUB_REF#refs/heads/}
+      - name: Notify (Success)
+        uses: appleboy/discord-action@master
+        if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/gh-actions' }}
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          args: Build of ${GITHUB_REF#refs/heads/} successful
+          color: #00ff00
 
