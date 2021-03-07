@@ -20,14 +20,14 @@ jobs:
           arguments: test
           gradle-version: wrapper
           properties: |
-            githubPackageUser=${{ secrets.PACKAGE_USER }}
-            githubPackageToken=${{ secrets.PACKAGE_PWD }}
+            githubPackagesUser=${{ secrets.PACKAGE_USER }}
+            githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: Build
         uses: burrunan/gradle-cache-action@v1
         with:
           arguments: build -x check
           gradle-version: wrapper
           properties: |
-            githubPackageUser=${{ secrets.PACKAGE_USER }}
-            githubPackageToken=${{ secrets.PACKAGE_PWD }}
+            githubPackagesUser=${{ secrets.PACKAGE_USER }}
+            githubPackagesToken=${{ secrets.PACKAGE_PWD }}
 
