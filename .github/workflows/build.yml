@@ -44,4 +44,6 @@ jobs:
           properties: |
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
+      - name: Docker
+        run: ./push-container.sh ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
 
