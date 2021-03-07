@@ -12,6 +12,9 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: ${{ secrets.BARINADE_SSH_KEY }}
+      - name: Save Branch Name
+        id: branch
+        run: echo ::set-output name=BRANCH::${GITHUB_REF/refs\/heads\//}
       - name: Prepare
         uses: actions/checkout@v2
         with:
@@ -62,6 +65,14 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "Build of ${GITHUB_REF#refs/heads/} successful"
+          message: Build of ${{ steps.branch.outputs.BRANCH }} successful
           color: "#00ff00"
+      - name: Notify (Fail)
+        uses: appleboy/discord-action@master
+        if: ${{ failure() }}
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: Build of ${{ steps.branch.outputs.BRANCH }} failed
+          color: "#ff0000"
 
