@@ -15,6 +15,6 @@ jobs:
         with:
           java-version: 11
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew -PgithubPackageUser=${{ secrets.PACKAGE_USER }} -PgithubPackageToken=${{ secrets.PACKAGE_PWD }} test
       - name: Build
-        run: ./gradlew build -x check
+        run: ./gradlew -PgithubPackageUser=${{ secrets.PACKAGE_USER }} -PgithubPackageToken=${{ secrets.PACKAGE_PWD }} build -x check
