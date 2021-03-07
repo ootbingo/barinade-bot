@@ -62,6 +62,6 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          args: Build of ${GITHUB_REF#refs/heads/} successful
-          color: #00ff00
+          message: "Build of ${GITHUB_REF#refs/heads/} successful"
+          color: "#00ff00"
 
