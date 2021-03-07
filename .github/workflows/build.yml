@@ -8,6 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.BARINADE_SSH_KEY }}
       - name: Prepare
         uses: actions/checkout@v2
         with:
@@ -18,6 +22,7 @@ jobs:
           java-version: 11
       - name: Test
         uses: burrunan/gradle-cache-action@v1
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           arguments: test
           gradle-version: wrapper
@@ -26,6 +31,7 @@ jobs:
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: SonarQube
         uses: burrunan/gradle-cache-action@v1
+        if: ${{ github.ref == 'refs/heads/master' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -45,5 +51,9 @@ jobs:
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: Docker
+        if: ${{ github.event_name == 'push' }}
         run: ./push-container.sh ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy
+        run: |
+          ssh -oStrictHostKeyChecking=no barinade@scaramangado.de /barinade/barinade-infrastructure/deploy.sh ${{ secrets.PACKAGE_USER }} ${{ secrets.PACKAGE_PWD}} ${GITHUB_REF#refs/heads/}
 

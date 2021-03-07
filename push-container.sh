@@ -2,11 +2,10 @@
 
 echo "$2" | docker login docker.pkg.github.com -u $1 --password-stdin
 
-local TAG
 case $(git branch --show-current) in
-	master) TAG=prod ; break ;;
-	develop) TAG=int ; break ;;
-	feature/gh-actions) TAG=int ; break ;;
+	master) TAG=prod ;;
+	develop) TAG=int ;;
+	feature/gh-actions) TAG=int ;;
 	*) echo "Building images is only available on master and develop" && exit 1 ;;
 esac
 
