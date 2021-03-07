@@ -1,0 +1,20 @@
+name: Build Barinade Bot
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare
+        uses: actions/checkout@v2
+      - name: Java Setup
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Test
+        run: ./gradlew test
+      - name: Build
+        run: ./gradlew build -x check
