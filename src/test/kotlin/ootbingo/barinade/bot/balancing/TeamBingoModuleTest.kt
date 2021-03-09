@@ -1,18 +1,21 @@
 package ootbingo.barinade.bot.balancing
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
 import de.scaramangado.lily.core.communication.MessageInfo
 import de.scaramangado.lily.irc.connection.IrcMessageInfo
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 internal class TeamBingoModuleTest {
@@ -24,7 +27,7 @@ internal class TeamBingoModuleTest {
 
   private val commands by lazy {
     mapOf(Pair("teamtime", module::teamTime),
-          Pair("balance", module::balance))
+        Pair("balance", module::balance))
   }
 
   //<editor-fold desc="!teamtime">
@@ -35,8 +38,8 @@ internal class TeamBingoModuleTest {
     val soft = SoftAssertions()
 
     mapOf(Pair("1:20:00", "3:20:00"),
-          Pair("1:10:00", "2:47:00"),
-          Pair("1:32:48", "4:02:14"))
+        Pair("1:10:00", "2:47:00"),
+        Pair("1:32:48", "4:02:14"))
         .forEach { (normal, blackout) ->
           val answer = whenIrcMessageIsSent("!teamtime $normal")
           thenCalculatedTeamTimeEquals(answer, blackout, soft)
@@ -129,30 +132,30 @@ internal class TeamBingoModuleTest {
     val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
 
     doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
-        .`when`(partitionerMock).invoke(anyList(), eq(3))
+        .whenever(partitionerMock).invoke(anyList(), eq(3))
 
     doAnswer {
       val team1 = mock(Team::class.java)
       val team2 = mock(Team::class.java)
 
-      `when`(team1.members).thenReturn(usernames.subList(0, 3).map { TeamMember(it, 0, 0.0) })
-      `when`(team2.members).thenReturn(usernames.subList(3, 6).map { TeamMember(it, 0, 0.0) })
+      whenever(team1.members).thenReturn(usernames.subList(0, 3).map { TeamMember(it, 0, 0.0) })
+      whenever(team2.members).thenReturn(usernames.subList(3, 6).map { TeamMember(it, 0, 0.0) })
 
-      `when`(team1.predictedTime).thenReturn(teamTimes[0])
-      `when`(team2.predictedTime).thenReturn(teamTimes[1])
+      whenever(team1.predictedTime).thenReturn(teamTimes[0])
+      whenever(team2.predictedTime).thenReturn(teamTimes[1])
 
-      `when`(team1.toString()).thenCallRealMethod()
-      `when`(team2.toString()).thenCallRealMethod()
+      whenever(team1.toString()).thenCallRealMethod()
+      whenever(team2.toString()).thenCallRealMethod()
 
       listOf(team1, team2)
     }
-        .`when`(teamBalancerMock).findBestTeamBalance(anyList())
+        .whenever(teamBalancerMock).findBestTeamBalance(anyList())
 
     val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
 
     thenReportedTeamsAre(answer,
-                         Pair(usernames.subList(0, 3).toSet(), teamTimes[0]),
-                         Pair(usernames.subList(3, 6).toSet(), teamTimes[1]))
+        Pair(usernames.subList(0, 3).toSet(), teamTimes[0]),
+        Pair(usernames.subList(3, 6).toSet(), teamTimes[1]))
   }
 
   @Test
@@ -164,30 +167,30 @@ internal class TeamBingoModuleTest {
     val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
 
     doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
-        .`when`(partitionerMock).invoke(anyList(), eq(2))
+        .whenever(partitionerMock).invoke(anyList(), eq(2))
 
     doAnswer {
       val team1 = mock(Team::class.java)
       val team2 = mock(Team::class.java)
 
-      `when`(team1.members).thenReturn(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) })
-      `when`(team2.members).thenReturn(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) })
+      whenever(team1.members).thenReturn(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) })
+      whenever(team2.members).thenReturn(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) })
 
-      `when`(team1.predictedTime).thenReturn(teamTimes[0])
-      `when`(team2.predictedTime).thenReturn(teamTimes[1])
+      whenever(team1.predictedTime).thenReturn(teamTimes[0])
+      whenever(team2.predictedTime).thenReturn(teamTimes[1])
 
-      `when`(team1.toString()).thenCallRealMethod()
-      `when`(team2.toString()).thenCallRealMethod()
+      whenever(team1.toString()).thenCallRealMethod()
+      whenever(team2.toString()).thenCallRealMethod()
 
       listOf(team1, team2)
     }
-        .`when`(teamBalancerMock).findBestTeamBalance(anyList())
+        .whenever(teamBalancerMock).findBestTeamBalance(anyList())
 
     val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
 
     thenReportedTeamsAre(answer,
-                         Pair(usernames.subList(0, 2).toSet(), teamTimes[0]),
-                         Pair(usernames.subList(2, 4).toSet(), teamTimes[1]))
+        Pair(usernames.subList(0, 2).toSet(), teamTimes[0]),
+        Pair(usernames.subList(2, 4).toSet(), teamTimes[1]))
   }
 
   @Test
@@ -204,14 +207,22 @@ internal class TeamBingoModuleTest {
     thenErrorMessageMentions(answer, username2, username3)
   }
 
+  @Test
+  internal fun balancingIsDeactivatedOnRacetime() {
+
+    val answer = whenRacetimeMessageIsSent("!balance a b ${UUID.randomUUID()}")
+
+    thenMessageContains(answer, "character limit")
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Given">
 
   private fun givenUser(username: String, median: Long, forfeitRatio: Double) {
 
-    `when`(bingoStatModuleMock.median(username)).thenReturn(Duration.ofSeconds(median))
-    `when`(bingoStatModuleMock.forfeitRatio(username)).thenReturn(forfeitRatio)
+    whenever(bingoStatModuleMock.median(username)).thenReturn(Duration.ofSeconds(median))
+    whenever(bingoStatModuleMock.forfeitRatio(username)).thenReturn(forfeitRatio)
   }
 
   //</editor-fold>
@@ -221,8 +232,8 @@ internal class TeamBingoModuleTest {
   private fun whenIrcMessageIsSent(message: String): Answer<AnswerInfo>? {
 
     val messageInfoMock = mock(IrcMessageInfo::class.java)
-    `when`(messageInfoMock.nick).thenReturn("")
-    `when`(messageInfoMock.channel).thenReturn("")
+    whenever(messageInfoMock.nick).thenReturn("")
+    whenever(messageInfoMock.channel).thenReturn("")
 
     require(message.matches(Regex("!.*"))) { "Not a valid command" }
 
@@ -232,6 +243,19 @@ internal class TeamBingoModuleTest {
     require(commands.containsKey(command)) { "Command not known" }
 
     return commands.getValue(command).invoke(generateCommand(message, messageInfoMock))
+  }
+
+  private fun whenRacetimeMessageIsSent(message: String): Answer<AnswerInfo>? {
+
+    require(message.matches(Regex("!.*"))) { "Not a valid command" }
+
+    val parts = message.split(" ")
+    val command = parts[0].replace("!", "")
+
+    require(commands.containsKey(command)) { "Command not known" }
+
+    return commands.getValue(command).invoke(generateCommand(message,
+        RacetimeMessageInfo(ChatMessage(message = message, messagePlain = message))))
   }
 
   //</editor-fold>
@@ -298,6 +322,10 @@ internal class TeamBingoModuleTest {
         .map { it.trim() }
 
     assertThat(usernames).containsExactlyInAnyOrderElementsOf(errorUsers)
+  }
+
+  private fun thenMessageContains(answer: Answer<AnswerInfo>?, partialMessage: String) {
+    assertThat(answer?.text).containsIgnoringCase(partialMessage)
   }
 
   //</editor-fold>

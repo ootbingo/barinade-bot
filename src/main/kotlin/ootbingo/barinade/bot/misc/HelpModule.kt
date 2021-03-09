@@ -5,14 +5,16 @@ import de.scaramangado.lily.core.annotations.LilyModule
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
+import ootbingo.barinade.bot.extensions.conditionalAnswer
 
 @LilyModule
 class HelpModule {
 
   @LilyCommand("help")
   fun help(command: Command): Answer<AnswerInfo>? =
-      Answer.ofText(
-          """
+      conditionalAnswer(command) {
+
+        discordMessage = """
             The following commands are available:
             ```
             !average : Average time of your most recent bingos
@@ -27,5 +29,8 @@ class HelpModule {
             !teamtime: Projected blackout time for a team
             ```
           """.trimIndent()
-      )
+
+        racetimeMessage =
+            "Available commands: !average, !median, !forfeits, !results, !best, !racer"
+      }
 }
