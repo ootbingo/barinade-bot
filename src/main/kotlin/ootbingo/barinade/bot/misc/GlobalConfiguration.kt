@@ -9,4 +9,14 @@ class GlobalConfiguration {
 
   @Bean
   fun currentTimeSupplier(): () -> Instant = { Instant.now() }
+
+  @Bean
+  fun shameMessages(): () -> List<String> = {
+    GlobalConfiguration::class.java.classLoader
+        .getResource("shame.txt")
+        ?.readText(Charsets.UTF_8)
+        ?.lines()
+        ?.filter { it.isNotBlank() }
+        ?: emptyList()
+  }
 }

@@ -124,6 +124,7 @@ sonarqube {
     property("sonar.host.url", "https://sonarcloud.io")
     property("sonar.login", sonarPassword)
     property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+    property("sonar.exclusions", "**/*Configuration.kt")
   }
 }
 
