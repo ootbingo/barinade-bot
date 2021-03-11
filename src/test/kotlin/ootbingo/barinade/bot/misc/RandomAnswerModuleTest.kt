@@ -9,7 +9,6 @@ import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -23,9 +22,9 @@ internal class RandomAnswerModuleTest {
   private lateinit var shameList: List<String>
   private val module = spy(RandomAnswerModule { shameList })
 
-  private val commands = mapOf(Pair("shame", module::shame))
+  private val commands = mapOf("shame" to module::shame, "pick" to module::pick)
 
-  private lateinit var answer: String
+  private var answer: String? = null
 
   //</editor-fold>
 
@@ -46,6 +45,8 @@ internal class RandomAnswerModuleTest {
   }
 
   //</editor-fold>
+
+  //<editor-fold desc="!shame">
 
   @Test
   internal fun shameCallsMetaFunctionWithShameList() {
@@ -71,7 +72,7 @@ internal class RandomAnswerModuleTest {
 
     whenDiscordMessageIsSent("", "!shame")
 
-    thenAnswerIsSent(answer)
+    thenAnswerMatches(answer)
   }
 
   @Test
@@ -84,8 +85,45 @@ internal class RandomAnswerModuleTest {
 
     whenRacetimeMessageIsSent("", "!shame")
 
-    thenAnswerIsSent(answer)
+    thenAnswerMatches(answer)
   }
+
+  //</editor-fold>
+
+  //<editor-fold desc="!pick">
+
+  @Test
+  internal fun pickCallsMetaFunction() {
+
+    whenRacetimeMessageIsSent("any", "!pick")
+
+    thenMetaFunctionIsCalledWith(
+        "ROW1", "ROW2", "ROW3", "ROW4", "ROW5", "COL1", "COL2", "COL3", "COL4", "COL5", "TL-BR", "BL-TR"
+    )
+  }
+
+  @Test
+  internal fun pickReturnsRandomRowAndUsername() {
+
+    val row = UUID.randomUUID().toString()
+    val username = UUID.randomUUID().toString()
+
+    givenMetaFunctionReturns(row)
+
+    whenRacetimeMessageIsSent(username, "!pick")
+
+    thenAnswerMatches(Regex("""$username:.*$row"""))
+  }
+
+  @Test
+  internal fun pickDoesNotReturnOnDiscord() {
+
+    whenDiscordMessageIsSent("any", "!pick")
+
+    thenNoAnswerIsSent()
+  }
+
+  //</editor-fold>
 
   //<editor-fold desc="Given">
 
@@ -130,7 +168,7 @@ internal class RandomAnswerModuleTest {
 
     require(commands.containsKey(command)) { "Command not known" }
 
-    answer = commands.getValue(command).invoke(generateCommand(message, messageInfo))?.text!!
+    answer = commands.getValue(command).invoke(generateCommand(message, messageInfo))?.text
   }
 
   //</editor-fold>
@@ -143,8 +181,16 @@ internal class RandomAnswerModuleTest {
     assertThat(captor.lastValue).containsExactlyInAnyOrderElementsOf(expectedValues.toList())
   }
 
-  private fun thenAnswerIsSent(expectedText: String) {
+  private fun thenAnswerMatches(expectedText: String) {
     assertThat(answer).isEqualTo(expectedText)
+  }
+
+  private fun thenAnswerMatches(regex: Regex) {
+    assertThat(answer).matches(regex.toPattern())
+  }
+
+  private fun thenNoAnswerIsSent() {
+    assertThat(answer).isNull()
   }
 
   //</editor-fold>
