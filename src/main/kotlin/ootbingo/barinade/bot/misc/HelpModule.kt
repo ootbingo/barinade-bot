@@ -27,10 +27,12 @@ class HelpModule {
             
             !balance : Balance up to 12 players into bingo teams
             !teamtime: Projected blackout time for a team
+            
+            !shame   : Express your disapproval
             ```
           """.trimIndent()
 
         racetimeMessage =
-            "Available commands: !average, !median, !forfeits, !results, !best, !racer"
+            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !shame, !pick"
       }
 }
