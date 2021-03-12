@@ -7,6 +7,7 @@ import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.IN_PROGRESS
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.OPEN
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.assertj.core.api.Assertions.assertThat
@@ -195,6 +196,62 @@ internal class RaceConnectionTest {
   @Test
   internal fun doesNotCloseConnectionWithoutStatusChange() {
     thenWebsocketIsClosed(false)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Race Modes">
+
+  @Test
+  internal fun blackoutMode() {
+
+    givenRaceStatus(OPEN)
+
+    whenTextMessageReceived(chatMessage("!short"))
+    whenTextMessageReceived(chatMessage("!blackout"))
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
+  }
+
+  @Test
+  internal fun shortMode() {
+
+    givenRaceStatus(OPEN)
+
+    whenTextMessageReceived(chatMessage("!blackout"))
+    whenTextMessageReceived(chatMessage("!short"))
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=short(&.*|$)")
+  }
+
+  @Test
+  internal fun normalMode() {
+
+    givenRaceStatus(OPEN)
+
+    whenTextMessageReceived(chatMessage("!nobingo"))
+    whenTextMessageReceived(chatMessage("!normal"))
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
+  }
+
+  @Test
+  internal fun noBingo() {
+
+    givenRaceStatus(OPEN)
+
+    whenTextMessageReceived(chatMessage("!normal"))
+    whenTextMessageReceived(chatMessage("!nobingo"))
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenGoalIsNotChanged()
   }
 
   //</editor-fold>
