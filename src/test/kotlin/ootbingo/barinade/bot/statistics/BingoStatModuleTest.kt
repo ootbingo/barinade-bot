@@ -57,7 +57,7 @@ internal class BingoStatModuleTest {
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
       test
-    }.whenever(playerDaoMock).findResultsForPlayer(any<Player>())
+    }.whenever(playerDaoMock).findResultsForPlayer(any())
   }
 
   //<editor-fold desc="Average">
@@ -685,10 +685,6 @@ internal class BingoStatModuleTest {
 
   private fun thenUserNotFoundIsReported(username: String, answer: Answer<AnswerInfo>?) =
       assertThat(answer?.text).matches("""^.*$username .*not found.*$""")
-
-  private fun thenErrorIsReported(answer: Answer<AnswerInfo>?) {
-    assertThat(answer?.text).contains("error")
-  }
 
   //</editor-fold>
 

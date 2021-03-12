@@ -20,7 +20,7 @@ internal class RacetimeSyncJobTest {
   internal fun passesRacesFromClientToImporter() {
 
     val allRaces = setOf(RacetimeRace(), RacetimeRace(), RacetimeRace())
-    whenever(httpClientMock.getAllRacesOfGame("oot")).thenReturn(allRaces)
+    whenever(httpClientMock.getAllRaces()).thenReturn(allRaces)
 
     job.execute()
 

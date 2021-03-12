@@ -36,8 +36,7 @@ class RacetimeImporter(private val playerHelper: PlayerHelper,
           .map { it.raceId }
           .also { logger.info("{} Racetime races found.", it.size) }
 
-  fun import(races: Collection<RacetimeRace>) =
-      races.forEach(this::import)
+  fun import(races: Collection<RacetimeRace>): Unit = races.forEach(this::import)
 
   private fun import(race: RacetimeRace) {
 

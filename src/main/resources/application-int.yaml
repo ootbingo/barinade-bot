@@ -13,6 +13,12 @@ ootbingo:
       enabled: true
       cron: 0 30 1-23 * * ?
 
+gg:
+  racetime:
+    enable-racing: false
+    api:
+      data-base-url: https://racetime.gg
+
 spring:
   datasource:
     url: jdbc:postgresql://scaramangado.de:10010/BARINADE
@@ -28,6 +34,3 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-
-logging:
-  file: bot.log

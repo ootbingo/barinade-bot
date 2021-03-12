@@ -11,7 +11,7 @@ class TeamBalancer {
     var smallestDifference = Long.MAX_VALUE
 
     for (partition in teamPartitions) {
-      val difference = partition.map { it.predictedTime.toSeconds() }.let { it.max()!! - it.min()!! }
+      val difference = partition.map { it.predictedTime.toSeconds() }.let { it.maxOrNull()!! - it.minOrNull()!! }
       if (difference < smallestDifference) {
         smallestDifference = difference
         result = partition

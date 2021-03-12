@@ -7,6 +7,7 @@ import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.allTeamPartitions
 import ootbingo.barinade.bot.extensions.standardFormat
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
 
 @LilyModule
@@ -42,6 +43,10 @@ class TeamBingoModule(private val bingoStatModule: BingoStatModule, private val 
 
   @LilyCommand("balance")
   fun balance(command: Command): Answer<AnswerInfo>? {
+
+    if (command.messageInfo is RacetimeMessageInfo) {
+      return Answer.ofText("Due to character limits on racetime.gg balancing is only available on Discord")
+    }
 
     val maxTeamSize = when (command.argumentCount) {
       in 0..3 -> return Answer.ofText("Please specify at least four players.")

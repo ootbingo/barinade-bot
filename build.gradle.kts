@@ -4,18 +4,21 @@ import java.nio.charset.StandardCharsets.*
 import java.util.Properties
 
 plugins {
+
+  val kotlinVersion = "1.4.21"
+
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
   id("io.spring.dependency-management") version "1.0.8.RELEASE"
-  kotlin("jvm") version "1.3.50"
-  kotlin("plugin.spring") version "1.3.50"
-  kotlin("plugin.allopen") version "1.3.50"
+  kotlin("jvm") version kotlinVersion
+  kotlin("plugin.spring") version kotlinVersion
+  kotlin("plugin.allopen") version kotlinVersion
   id("org.sonarqube") version "2.7.1"
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "1.1.0"
+version = "2.0.0-RELEASE"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
@@ -28,8 +31,8 @@ repositories {
   maven {
     url = uri("https://maven.pkg.github.com/scaramangado/lily")
     credentials {
-      username = project.properties["githubPackagesUser"]?.let { it as String} ?: ""
-      password = project.properties["githubPackagesToken"]?.let { it as String} ?: ""
+      username = project.properties["githubPackagesUser"]?.let { it as String } ?: ""
+      password = project.properties["githubPackagesToken"]?.let { it as String } ?: ""
     }
   }
 }
@@ -47,6 +50,10 @@ dependencies {
   implementation(kotlin("reflect"))
 
   implementation("com.google.code.gson:gson")
+
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.15")
+  implementation("org.springframework:spring-websocket")
+  implementation("org.springframework:spring-messaging")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
@@ -86,6 +93,9 @@ val versionProperties by tasks.register("versionProperties") {
 }
 
 tasks.withType<Test> {
+
+  dependsOn("versionProperties")
+
   useJUnitPlatform()
 
   systemProperties(Pair("spring.profiles.active", "test"))
@@ -114,6 +124,7 @@ sonarqube {
     property("sonar.host.url", "https://sonarcloud.io")
     property("sonar.login", sonarPassword)
     property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+    property("sonar.exclusions", "**/*Configuration.kt")
   }
 }
 
@@ -139,5 +150,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.3"
+  gradleVersion = "6.7"
 }
