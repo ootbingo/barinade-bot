@@ -5,6 +5,7 @@ import de.scaramangado.lily.core.annotations.LilyModule
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
+import ootbingo.barinade.bot.extensions.getUsername
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 
 @LilyModule
@@ -17,7 +18,7 @@ class RandomAnswerModule(private val shameMessages: () -> List<String>) {
 
   @LilyCommand("shame")
   fun shame(command: Command): Answer<AnswerInfo>? =
-      Answer.ofText(randomValue(shameList))
+      Answer.ofText(randomValue(shameList).replace("<name>", command.messageInfo.getUsername() ?: "ERROR"))
 
   @LilyCommand("pick")
   fun pick(command: Command): Answer<AnswerInfo>? =
