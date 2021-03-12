@@ -20,6 +20,7 @@ class RaceMonitor(private val httpClient: RacetimeHttpClient,
   fun scanForRaces() {
     httpClient.getOpenRaces()
         .filter { it.status in listOf(OPEN, INVITATIONAL) }
+        .filter { !it.goal.custom && it.goal.name == "Bingo" }
         .map { it.name.split("/")[1] }
         .filter { it !in raceConnections }
         .forEach {
