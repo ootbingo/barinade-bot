@@ -254,6 +254,18 @@ internal class RaceConnectionTest {
     thenGoalIsNotChanged()
   }
 
+  @Test
+  internal fun childMode() {
+
+    givenRaceStatus(OPEN)
+
+    whenTextMessageReceived(chatMessage("!child"))
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: https://doctorno124.github.io/childkek/bingo.html?.*&mode=normal(&.*|$)")
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Given">

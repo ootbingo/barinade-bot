@@ -18,7 +18,13 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
 
   private var mode: Mode = NORMAL
-  private val modes = mapOf("!normal" to NORMAL, "!blackout" to BLACKOUT, "!short" to SHORT, "!nobingo" to NO_BINGO)
+  private val modes = mapOf(
+      "!normal" to NORMAL,
+      "!blackout" to BLACKOUT,
+      "!short" to SHORT,
+      "!child" to CHILD,
+      "!nobingo" to NO_BINGO
+  )
 
   val slug: String = raceEndpoint.split("/").last()
 
@@ -66,7 +72,7 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
       logger.info("Received initial race data for ${race.name}")
 
       websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
-      websocket.sendMessage("Change modes: '!normal', '!blackout', '!short', '!nobingo'")
+      websocket.sendMessage("Change modes: !normal, !blackout, !short, !child, !nobingo")
       websocket.sendMessage("Current mode: normal")
     }
 
@@ -77,8 +83,11 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
         return
       }
 
-      val goal =
-          "https://ootbingo.github.io/bingo/v10.1/bingo.html?seed=${generateSeed()}&mode=${mode.name.toLowerCase()}"
+      val goal = if (mode != CHILD) {
+        "https://ootbingo.github.io/bingo/v10.1/bingo.html?seed=${generateSeed()}&mode=${mode.name.toLowerCase()}"
+      } else {
+        "https://doctorno124.github.io/childkek/bingo.html?seed=${generateSeed()}&mode=normal"
+      }
 
       websocket.setGoal(goal)
       websocket.sendMessage("Filename: ${generateFilename()}")
@@ -105,6 +114,6 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
   }
 
   private enum class Mode {
-    NORMAL, BLACKOUT, SHORT, NO_BINGO
+    NORMAL, BLACKOUT, SHORT, CHILD, NO_BINGO
   }
 }
