@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import java.util.*
@@ -19,7 +20,9 @@ internal class RaceWebsocketHandlerTest {
   private val sessionMock = mock<WebSocketSession>()
   private val gson = RacetimeHttpClientConfiguration().racetimeGson()
 
-  private val handler = RaceWebsocketHandler(raceConnectionMock, gson)
+  private var handshakeCounter = 0
+
+  private val handler = RaceWebsocketHandler(raceConnectionMock, gson) { handshakeCounter++ }
 
   @BeforeEach
   internal fun setup() {
@@ -81,6 +84,51 @@ internal class RaceWebsocketHandlerTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Tests: Reconnect and Disconnect">
+
+  @Test
+  internal fun reconnects() {
+
+    whenWebsocketDisconnects(CloseStatus.SERVER_ERROR)
+
+    thenNumberOfReconnectionsIsEqualTo(1)
+  }
+
+  @Test
+  internal fun doesNotReconnectWhenConnectionClosesNormally() {
+
+    whenWebsocketDisconnects(CloseStatus.NORMAL)
+
+    thenNumberOfReconnectionsIsEqualTo(0)
+  }
+
+  @Test
+  internal fun onlyReconnectTenTimes() {
+
+    repeat(50) { whenWebsocketDisconnects(CloseStatus.NO_STATUS_CODE) }
+
+    thenNumberOfReconnectionsIsEqualTo(10)
+  }
+
+  @Test
+  internal fun doesNotReconnectAfterClosure() {
+
+    whenConnectionClosureIsRequested()
+    whenWebsocketDisconnects(CloseStatus.NO_STATUS_CODE)
+
+    thenNumberOfReconnectionsIsEqualTo(0)
+  }
+
+  @Test
+  internal fun disconnectsSession() {
+
+    whenConnectionClosureIsRequested()
+
+    thenSessionIsClosed()
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="When">
 
   private fun whenChatMessageIsSent(message: String) =
@@ -91,6 +139,14 @@ internal class RaceWebsocketHandlerTest {
 
   private fun whenMessageIsReceived(message: String) {
     handler.handleMessage(sessionMock, TextMessage(message))
+  }
+
+  private fun whenWebsocketDisconnects(closeStatus: CloseStatus) {
+    handler.afterConnectionClosed(sessionMock, closeStatus)
+  }
+
+  private fun whenConnectionClosureIsRequested() {
+    handler.disconnect()
   }
 
   //</editor-fold>
@@ -123,6 +179,14 @@ internal class RaceWebsocketHandlerTest {
     verify(raceConnectionMock).onMessage(captor.capture())
 
     assertThat((captor.lastValue as RaceUpdate).race.version).isEqualTo(version)
+  }
+
+  private fun thenNumberOfReconnectionsIsEqualTo(expectedReconnections: Int) {
+    assertThat(handshakeCounter - 1).isEqualTo(expectedReconnections)
+  }
+
+  private fun thenSessionIsClosed() {
+    verify(sessionMock).close(CloseStatus.NORMAL)
   }
 
   //</editor-fold>

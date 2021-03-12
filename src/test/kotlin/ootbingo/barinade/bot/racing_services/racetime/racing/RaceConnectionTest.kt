@@ -25,9 +25,11 @@ internal class RaceConnectionTest {
   private val websocketMock = mock<RaceWebsocketHandler>()
   private val connection: RaceConnection
 
+  private var disconnectCommandSent = false
+
   init {
     whenever(connectorMock.connect(any(), any())).thenReturn(websocketMock)
-    connection = RaceConnection("", connectorMock, statusHolder, thenDispatcher)
+    connection = RaceConnection("", connectorMock, statusHolder, thenDispatcher) { disconnectCommandSent = true }
   }
 
   @Test
@@ -35,7 +37,7 @@ internal class RaceConnectionTest {
 
     val url = UUID.randomUUID().toString()
 
-    val connection = RaceConnection(url, connectorMock, RaceStatusHolder(), thenDispatcher)
+    val connection = RaceConnection(url, connectorMock, RaceStatusHolder(), thenDispatcher) { }
 
     verify(connectorMock).connect(url, connection)
   }
@@ -69,7 +71,7 @@ internal class RaceConnectionTest {
 
     whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
 
-    thenNoChatMessageIsSent()
+    thenNoWelcomeMessageIsSent()
   }
 
   @ParameterizedTest
@@ -78,7 +80,7 @@ internal class RaceConnectionTest {
 
     whenNewRaceUpdateIsReceived(status)
 
-    thenNoChatMessageIsSent()
+    thenNoWelcomeMessageIsSent()
   }
 
   //</editor-fold>
@@ -128,6 +130,7 @@ internal class RaceConnectionTest {
     whenNewRaceUpdateIsReceived(IN_PROGRESS)
 
     thenNoChatMessageIsSent()
+    thenWebsocketIsClosed(false)
   }
 
   //</editor-fold>
@@ -178,6 +181,24 @@ internal class RaceConnectionTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Disconnect">
+
+  @ParameterizedTest
+  @EnumSource(RacetimeRaceStatus::class, names = ["FINISHED", "CANCELLED"])
+  internal fun closesConnectionWhenRaceEnds(newStatus: RacetimeRaceStatus) {
+
+    whenNewRaceUpdateIsReceived(newStatus)
+
+    thenWebsocketIsClosed()
+  }
+
+  @Test
+  internal fun doesNotCloseConnectionWithoutStatusChange() {
+    thenWebsocketIsClosed(false)
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="Given">
 
   private fun givenRaceStatus(status: RacetimeRaceStatus) {
@@ -221,6 +242,10 @@ internal class RaceConnectionTest {
     assertThat(messagesSent).isEmpty()
   }
 
+  private fun thenNoWelcomeMessageIsSent() {
+    assertThat(messagesSent).noneMatch { it.startsWith("Welcome") }
+  }
+
   private fun thenChatMessageMatches(regex: String) {
     assertThat(messagesSent).anyMatch { it.matches(Regex(regex)) }
   }
@@ -246,6 +271,10 @@ internal class RaceConnectionTest {
 
   private fun Dispatcher.wasNotCalled() =
       verifyZeroInteractions(this)
+
+  private fun thenWebsocketIsClosed(expected: Boolean = true) {
+    assertThat(disconnectCommandSent).isEqualTo(expected)
+  }
 
   //</editor-fold>
 

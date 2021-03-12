@@ -11,12 +11,12 @@ import kotlin.random.Random
 
 @Open
 class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
-                     private val dispatcher: Dispatcher) {
+                     private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit) {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
 
-  val slug: String get() = status.slug
+  val slug: String = raceEndpoint.split("/").last()
 
   fun onMessage(message: RacetimeMessage) {
 
@@ -25,6 +25,8 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
       is ChatMessage -> onChatMessage(message)
     }
   }
+
+  fun closeWebsocket() = websocket.disconnect()
 
   private fun onRaceUpdate(race: RacetimeRace) {
 
@@ -47,12 +49,14 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
 
   private fun onRaceStatusChange(old: RacetimeRaceStatus?, new: RacetimeRaceStatus, race: RacetimeRace) {
 
+    logger.info("Status change in ${race.name}: $old -> $new")
+
     if (old == null && new in listOf(OPEN, INVITATIONAL)) {
       logger.info("Received initial race data for ${race.name}")
 
       websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
-      websocket.sendMessage("Commands: '!mode en', '!mode jp', '!mode blackout', '!mode short' and '!nobingo'")
-      websocket.sendMessage("Current mode: JP")
+      websocket.sendMessage("Change modes: '!normal', '!blackout', '!short', '!nobingo'")
+      websocket.sendMessage("Current mode: normal")
     }
 
     if (new == IN_PROGRESS && old != null && old !in listOf(FINISHED, CANCELLED)) {
@@ -63,6 +67,12 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
       websocket.setGoal(goal)
       websocket.sendMessage("Filename: ${generateFilename()}")
       websocket.sendMessage("Goal: $goal")
+    }
+
+    if (new in listOf(FINISHED, CANCELLED)) {
+      websocket.sendMessage("The race has concluded. Good bye.")
+      logger.info("Closing websocket...")
+      disconnect()
     }
   }
 
