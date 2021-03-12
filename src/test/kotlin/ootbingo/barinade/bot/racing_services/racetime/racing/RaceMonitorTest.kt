@@ -39,9 +39,9 @@ internal class RaceMonitorTest {
     val slug2 = UUID.randomUUID().toString()
     val slug3 = UUID.randomUUID().toString()
 
-    givenOpenRace(slug1, status)
-    givenOpenRace(slug2, status)
-    givenOpenRace(slug3, status)
+    givenOpenRace(slug1, status, bingoGoal)
+    givenOpenRace(slug2, status, bingoGoal)
+    givenOpenRace(slug3, status, bingoGoal)
 
     whenScanningForRaces()
 
@@ -56,9 +56,9 @@ internal class RaceMonitorTest {
     val slug2 = UUID.randomUUID().toString()
     val slug3 = UUID.randomUUID().toString()
 
-    givenOpenRace(slug1, status)
-    givenOpenRace(slug2, status)
-    givenOpenRace(slug3, status)
+    givenOpenRace(slug1, status, bingoGoal)
+    givenOpenRace(slug2, status, bingoGoal)
+    givenOpenRace(slug3, status, bingoGoal)
 
     whenScanningForRaces()
 
@@ -70,7 +70,7 @@ internal class RaceMonitorTest {
 
     val slug = UUID.randomUUID().toString()
 
-    givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN)
+    givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN, bingoGoal)
 
     whenScanningForRaces()
     whenScanningForRaces()
@@ -78,8 +78,35 @@ internal class RaceMonitorTest {
     thenConnectionsAreOpenedToRooms(slug)
   }
 
-  private fun givenOpenRace(slug: String, status: RacetimeRace.RacetimeRaceStatus) {
-    openRaces.add(RacetimeRace("oot/$slug", status))
+  @Test
+  internal fun doesNotOpenConnectionToNonBingoRoom() {
+
+    val slug = UUID.randomUUID().toString()
+
+    givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN,
+                  RacetimeRace.RacetimeRaceGoal("GSR", false))
+
+    whenScanningForRaces()
+
+    thenConnectionsAreOpenedToRooms()
+  }
+
+  @Test
+  internal fun doesNotOpenConnectionToCustomGoalRoom() {
+
+    val slug = UUID.randomUUID().toString()
+
+    givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN,
+                  RacetimeRace.RacetimeRaceGoal("Bingo", true))
+
+    whenScanningForRaces()
+
+    thenConnectionsAreOpenedToRooms()
+  }
+
+  private fun givenOpenRace(slug: String, status: RacetimeRace.RacetimeRaceStatus,
+                            goal: RacetimeRace.RacetimeRaceGoal) {
+    openRaces.add(RacetimeRace("oot/$slug", status, goal))
   }
 
   private fun whenScanningForRaces() {
@@ -95,4 +122,6 @@ internal class RaceMonitorTest {
       }
     }
   }
+
+  private val bingoGoal = RacetimeRace.RacetimeRaceGoal("Bingo", false)
 }
