@@ -28,11 +28,14 @@ class HelpModule {
             !balance : Balance up to 12 players into bingo teams
             !teamtime: Projected blackout time for a team
             
+            !golds   : List Golden Rupee Chests
+            !silvers : List Silver Rupee Rooms
+            
             !shame   : Express your disapproval
             ```
           """.trimIndent()
 
         racetimeMessage =
-            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !shame, !pick"
+            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !shame, !pick"
       }
 }
