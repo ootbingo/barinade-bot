@@ -68,7 +68,7 @@ internal class RaceConnectionTest {
   @Test
   internal fun onlySendsWelcomeOnce() {
 
-    givenRaceStatus(RacetimeRaceStatus.OPEN)
+    givenRaceStatus(OPEN)
 
     whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
 
@@ -264,6 +264,32 @@ internal class RaceConnectionTest {
     whenNewRaceUpdateIsReceived(IN_PROGRESS)
 
     thenChatMessageMatches("Goal: https://doctorno124.github.io/childkek/bingo.html?.*&mode=normal(&.*|$)")
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Team Races">
+
+  @Test
+  internal fun initialModeNormal() {
+
+    whenNewRaceUpdateIsReceived(OPEN)
+    thenChatMessageMatches("Current mode: normal")
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
+  }
+
+  @Test
+  internal fun initialModeBlackoutForTeamRaces() {
+
+    whenNewRaceUpdateIsReceived(RacetimeRace(name = "oot/abc", status = OPEN, teamRace = true))
+    thenChatMessageMatches("Current mode: blackout")
+
+    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+
+    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
   }
 
   //</editor-fold>

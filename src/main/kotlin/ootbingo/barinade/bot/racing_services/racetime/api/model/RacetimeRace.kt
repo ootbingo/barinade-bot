@@ -10,12 +10,13 @@ data class RacetimeRace(
     var entrants: List<RacetimeEntrant> = emptyList(),
     var endedAt: Instant? = null,
     var recorded: Boolean = false,
-    var version: Int = 0
+    var version: Int = 0,
+    var teamRace: Boolean = false,
 ) {
 
   data class RacetimeRaceGoal(
       var name: String = "",
-      var custom: Boolean = true
+      var custom: Boolean = true,
   )
 
   enum class RacetimeRaceStatus {
