@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
 
-  val kotlinVersion = "1.4.21"
+  val kotlinVersion = "1.4.32"
 
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "2.0.1-RELEASE"
+version = "2.0.2-SNAPSHOT"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
@@ -150,5 +150,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.7"
+  gradleVersion = "6.8.3"
 }
