@@ -71,9 +71,13 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
     if (old == null && new in listOf(OPEN, INVITATIONAL)) {
       logger.info("Received initial race data for ${race.name}")
 
+      if (race.teamRace) {
+        mode = BLACKOUT
+      }
+
       websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
       websocket.sendMessage("Change modes: !normal, !blackout, !short, !child, !nobingo")
-      websocket.sendMessage("Current mode: normal")
+      websocket.sendMessage("Current mode: ${mode.name.toLowerCase()}")
     }
 
     if (new == IN_PROGRESS && old != null && old !in listOf(FINISHED, CANCELLED)) {
