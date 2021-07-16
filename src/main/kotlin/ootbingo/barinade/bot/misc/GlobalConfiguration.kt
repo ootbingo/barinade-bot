@@ -2,6 +2,7 @@ package ootbingo.barinade.bot.misc
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import java.time.Instant
 
 @Configuration
@@ -18,5 +19,10 @@ class GlobalConfiguration {
         ?.lines()
         ?.filter { it.isNotBlank() }
         ?: emptyList()
+  }
+
+  @Bean
+  fun parallelTaskScheduling(): ThreadPoolTaskScheduler {
+    return ThreadPoolTaskScheduler().apply { poolSize = 10 }
   }
 }
