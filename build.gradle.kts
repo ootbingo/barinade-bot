@@ -13,7 +13,7 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   kotlin("plugin.allopen") version kotlinVersion
-  id("org.sonarqube") version "2.7.1"
+  id("org.sonarqube") version "3.3"
   jacoco
 }
 
