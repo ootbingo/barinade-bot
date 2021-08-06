@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileWriter
-import java.nio.charset.StandardCharsets.*
-import java.util.Properties
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.*
 
 plugins {
 
@@ -34,11 +34,19 @@ repositories {
       password = project.properties["githubPackagesToken"]?.let { it as String } ?: ""
     }
   }
+  maven {
+    name = "m2-dv8tion"
+    url = uri("https://m2.dv8tion.net/releases")
+  }
 }
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.0")
+  implementation("de.scaramangado:lily:0.2.0") {
+    // TODO Upgrade Lily
+    exclude(module = "JDA")
+  }
+  implementation("net.dv8tion:JDA:4.3.0_277")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
