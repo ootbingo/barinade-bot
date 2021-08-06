@@ -9,7 +9,7 @@ plugins {
 
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
-  id("io.spring.dependency-management") version "1.0.8.RELEASE"
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   kotlin("plugin.allopen") version kotlinVersion
