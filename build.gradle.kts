@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
 
-  val kotlinVersion = "1.4.32"
+  val kotlinVersion = "1.5.21"
 
   java
   id("org.springframework.boot") version "2.3.4.RELEASE"
@@ -27,7 +27,6 @@ java {
 
 repositories {
   mavenCentral()
-  jcenter()
   maven {
     url = uri("https://maven.pkg.github.com/scaramangado/lily")
     credentials {
@@ -109,7 +108,7 @@ tasks.withType<Test> {
 
 tasks.withType<JacocoReport> {
   reports {
-    xml.isEnabled = true
+    xml.required.set(true)
   }
 }
 
@@ -141,14 +140,14 @@ fun executeCommand(command: String) =
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-  jvmTarget = "1.8"
+  jvmTarget = "11"
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-  jvmTarget = "1.8"
+  jvmTarget = "11"
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.8.3"
+  gradleVersion = "7.1.1"
 }
