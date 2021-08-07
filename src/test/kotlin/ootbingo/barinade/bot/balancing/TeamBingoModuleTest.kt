@@ -313,7 +313,7 @@ internal class TeamBingoModuleTest {
   private fun thenErrorMessageMentions(answer: Answer<AnswerInfo>?, vararg usernames: String) {
 
     requireNotNull(answer)
-    require(answer.text.matches(Regex("Error[^:]*:[^:]*")))
+    assertThat(answer.text).matches(Regex("Error[^:]*:[^:]*").toPattern())
 
     val errorUsers = answer.text
         .split(":")[1]
