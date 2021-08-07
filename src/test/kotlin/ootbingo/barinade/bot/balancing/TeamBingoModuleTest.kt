@@ -12,6 +12,7 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.Racetime
 import ootbingo.barinade.bot.statistics.BingoStatModule
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.time.Duration
@@ -28,6 +29,12 @@ internal class TeamBingoModuleTest {
   private val commands by lazy {
     mapOf(Pair("teamtime", module::teamTime),
         Pair("balance", module::balance))
+  }
+
+  @BeforeEach
+  internal fun setup() {
+    whenever(bingoStatModuleMock.median(anyString())).thenReturn(null)
+    whenever(bingoStatModuleMock.forfeitRatio(anyString())).thenReturn(null)
   }
 
   //<editor-fold desc="!teamtime">
