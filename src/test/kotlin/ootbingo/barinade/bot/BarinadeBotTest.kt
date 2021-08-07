@@ -2,7 +2,6 @@ package ootbingo.barinade.bot
 
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.NoSuchElementException
 
 internal class BarinadeBotTest {
 

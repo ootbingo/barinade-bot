@@ -13,8 +13,10 @@ import java.util.stream.IntStream
 const val OOT: String = "oot"
 
 @Component
-class RacetimeHttpClient(private val racetimeRestTemplate: RestTemplate,
-                         private val properties: RacetimeApiProperties) {
+class RacetimeHttpClient(
+    private val racetimeRestTemplate: RestTemplate,
+    private val properties: RacetimeApiProperties,
+) {
 
   fun getAllRaces(): Collection<RacetimeRace> {
 

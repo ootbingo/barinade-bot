@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConditionalOnProperty("gg.racetime.enable-racing", havingValue = "true")
-class RaceMonitor(private val httpClient: RacetimeHttpClient,
-                  private val connectionFactory: RaceConnectionFactory,
-                  private val properties: RacetimeApiProperties) {
+class RaceMonitor(
+    private val httpClient: RacetimeHttpClient,
+    private val connectionFactory: RaceConnectionFactory,
+    private val properties: RacetimeApiProperties,
+) {
 
   private val raceConnections = mutableSetOf<String>()
 

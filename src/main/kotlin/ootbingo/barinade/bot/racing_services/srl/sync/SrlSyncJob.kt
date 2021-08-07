@@ -19,10 +19,12 @@ import java.time.Instant
 
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.srl-sync.enabled"], havingValue = "true")
-class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
-                 private val playerHelper: PlayerHelper,
-                 private val raceRepository: RaceRepository,
-                 private val raceResultRepository: RaceResultRepository) {
+class SrlSyncJob(
+    private val srlHttpClient: SrlHttpClient,
+    private val playerHelper: PlayerHelper,
+    private val raceRepository: RaceRepository,
+    private val raceResultRepository: RaceResultRepository,
+) {
 
   private val logger = LoggerFactory.getLogger(SrlSyncJob::class.java)
 
@@ -134,9 +136,9 @@ class SrlSyncJob(private val srlHttpClient: SrlHttpClient,
         .flatMap {
           it.second.results.map { result ->
             RaceResult(RaceResult.ResultId(it.first, getPlayerWithUsername(result.player)),
-                       result.place,
-                       result.time,
-                       if (result.time.isNegative) ResultType.FORFEIT else ResultType.FINISH)
+                result.place,
+                result.time,
+                if (result.time.isNegative) ResultType.FORFEIT else ResultType.FINISH)
           }
         }
 

@@ -13,7 +13,7 @@ class QueryDefinition(
     var defaultAmount: Int? = null,
     var allowDifferentAmounts: Boolean = true,
     var raceFilter: (Sequence<ResultInfo>) -> Sequence<ResultInfo> = { it },
-    var aggregator: (List<ResultInfo>) -> String = { "" }
+    var aggregator: (List<ResultInfo>) -> String = { "" },
 ) {
 
   fun validate(): Unit? {

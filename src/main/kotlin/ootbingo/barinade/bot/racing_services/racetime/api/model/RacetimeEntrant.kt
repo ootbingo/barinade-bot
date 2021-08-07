@@ -6,7 +6,7 @@ data class RacetimeEntrant(
     var user: RacetimeUser = RacetimeUser(),
     var finishTime: Duration? = null,
     var place: Int? = null,
-    var status: RacetimeEntrantStatus? = null
+    var status: RacetimeEntrantStatus? = null,
 ) {
 
   enum class RacetimeEntrantStatus {

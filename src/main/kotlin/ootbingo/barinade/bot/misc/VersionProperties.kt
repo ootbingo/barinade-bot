@@ -9,5 +9,5 @@ import org.springframework.stereotype.Component
 @PropertySource("classpath:version.properties")
 class VersionProperties(
     var version: String? = null,
-    var build: String? = null
+    var build: String? = null,
 )

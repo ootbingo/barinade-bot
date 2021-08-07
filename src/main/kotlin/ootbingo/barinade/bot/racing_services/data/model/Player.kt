@@ -1,23 +1,19 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
 import ootbingo.barinade.bot.compile.Open
-import ootbingo.barinade.bot.racing_services.srl.api.model.SrlPlayer
-import javax.persistence.CascadeType
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.OneToMany
+import javax.persistence.*
 
 @Entity
 @Open
-data class Player(@Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id: Long? = null,
-                  var srlId: Long? = 0,
-                  var racetimeId: String? = null,
-                  var srlName: String? = "",
-                  var racetimeName: String? = null,
-                  @OneToMany(mappedBy = "resultId.player")
-                  var raceResults: MutableList<RaceResult> = mutableListOf()) {
+data class Player(
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id: Long? = null,
+    var srlId: Long? = 0,
+    var racetimeId: String? = null,
+    var srlName: String? = "",
+    var racetimeName: String? = null,
+    @OneToMany(mappedBy = "resultId.player")
+    var raceResults: MutableList<RaceResult> = mutableListOf(),
+) {
 
   val races: List<Race>
     get() = raceResults.map { it.resultId.race }

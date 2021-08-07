@@ -3,7 +3,7 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.web.socket.CloseStatus

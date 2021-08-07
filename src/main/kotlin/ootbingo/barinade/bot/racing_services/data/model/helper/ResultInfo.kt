@@ -10,7 +10,8 @@ data class ResultInfo(
     val goal: String,
     val raceId: String,
     val datetime: Instant,
-    val resultType: ResultType
+    val resultType: ResultType,
 ) {
+
   fun isBingo() = Race("", goal, datetime).isBingo()
 }

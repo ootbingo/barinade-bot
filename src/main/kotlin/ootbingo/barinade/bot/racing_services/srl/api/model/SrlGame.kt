@@ -1,7 +1,9 @@
 package ootbingo.barinade.bot.racing_services.srl.api.model
 
-data class SrlGame(var id: Long = 0, var name: String = "", var abbrev: String = "", var popularity: Double = 0.0,
-                   var popularityrank: Long = 0) {
+data class SrlGame(
+    var id: Long = 0, var name: String = "", var abbrev: String = "", var popularity: Double = 0.0,
+    var popularityrank: Long = 0,
+) {
 
   override fun equals(other: Any?): Boolean {
 

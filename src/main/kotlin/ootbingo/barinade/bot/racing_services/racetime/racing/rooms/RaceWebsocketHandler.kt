@@ -8,8 +8,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
 @Open
-class RaceWebsocketHandler(private val delegate: RaceConnection, private val gson: Gson,
-                           private val handshake: (WebSocketHandler) -> Unit) : WebSocketHandler {
+class RaceWebsocketHandler(
+    private val delegate: RaceConnection, private val gson: Gson,
+    private val handshake: (WebSocketHandler) -> Unit,
+) : WebSocketHandler {
 
   private lateinit var session: WebSocketSession
 

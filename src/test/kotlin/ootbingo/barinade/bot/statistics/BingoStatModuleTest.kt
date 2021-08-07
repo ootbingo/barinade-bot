@@ -1,10 +1,6 @@
 package ootbingo.barinade.bot.statistics
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.spy
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -14,11 +10,7 @@ import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.model.Platform
-import ootbingo.barinade.bot.racing_services.data.model.Player
-import ootbingo.barinade.bot.racing_services.data.model.Race
-import ootbingo.barinade.bot.racing_services.data.model.RaceResult
-import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
@@ -26,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
@@ -38,8 +30,8 @@ internal class BingoStatModuleTest {
 
   private val commands by lazy {
     mapOf(Pair("average", module::average),
-          Pair("median", module::median),
-          Pair("forfeits", module::forfeitRatio))
+        Pair("median", module::median),
+        Pair("forfeits", module::forfeitRatio))
   }
 
   @BeforeEach
@@ -563,8 +555,8 @@ internal class BingoStatModuleTest {
     times
         .map {
           RaceResult(RaceResult.ResultId(Race(), Player(srlName = username, raceResults = mutableListOf())), 1,
-                     Duration.ofSeconds(it.toLong()),
-                     if (it > 0) ResultType.FINISH else ResultType.FORFEIT)
+              Duration.ofSeconds(it.toLong()),
+              if (it > 0) ResultType.FINISH else ResultType.FORFEIT)
         }
         .map {
 
@@ -572,7 +564,7 @@ internal class BingoStatModuleTest {
           else ""
 
           Race("0", goal, Instant.ofEpochSecond(timestamp--), Platform.SRL,
-               mutableListOf(it))
+              mutableListOf(it))
         }
         .map {
           val spy = spy(it)

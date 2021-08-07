@@ -19,16 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @DataJpaTest
-internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepository: PlayerRepository,
-                                               @Autowired private val raceRepository: RaceRepository,
-                                               @Autowired private val raceResultRepository: RaceResultRepository) {
+internal class RacetimeImporterIntegrationTest(
+    @Autowired private val playerRepository: PlayerRepository,
+    @Autowired private val raceRepository: RaceRepository,
+    @Autowired private val raceResultRepository: RaceResultRepository,
+) {
 
   private val importer = RacetimeImporter(PlayerHelper(playerRepository, UsernameMapper("")),
-                                          raceRepository,
-                                          raceResultRepository)
+      raceRepository,
+      raceResultRepository)
 
   @Test
   internal fun importsSingleNewBingoRaceWithNewPlayers() {
@@ -109,7 +111,7 @@ internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepo
     }
 
     givenPlayersInDb(Player(racetimeId = user1.first, racetimeName = user1.second),
-                     Player(racetimeId = user2.first, racetimeName = user2.second))
+        Player(racetimeId = user2.first, racetimeName = user2.second))
 
     whenRaceIsImported(race)
 
@@ -266,20 +268,20 @@ internal class RacetimeImporterIntegrationTest(@Autowired private val playerRepo
 
   private infix fun Race?.hasFinishTimes(expectedTimes: List<Long?>) =
       assertThat(raceResultRepository
-                     .findAll()
-                     .filter { it.resultId.race == this }
-                     .toMutableList()
-                     .also { r -> r.sortBy { it.place } }
-                     .map { it.time }
+          .findAll()
+          .filter { it.resultId.race == this }
+          .toMutableList()
+          .also { r -> r.sortBy { it.place } }
+          .map { it.time }
       ).containsExactlyElementsOf(expectedTimes.map { it?.let { s -> Duration.ofSeconds(s) } })
 
   private infix fun Race?.hasResultTypes(expectedResultTypes: List<ResultType>) =
       assertThat(raceResultRepository
-                     .findAll()
-                     .filter { it.resultId.race == this }
-                     .toMutableList()
-                     .also { r -> r.sortBy { it.place } }
-                     .map { it.resultType }
+          .findAll()
+          .filter { it.resultId.race == this }
+          .toMutableList()
+          .also { r -> r.sortBy { it.place } }
+          .map { it.resultType }
       ).containsExactlyElementsOf(expectedResultTypes)
 
   private infix fun Race?.hasPlatform(expectedPlatform: Platform) =

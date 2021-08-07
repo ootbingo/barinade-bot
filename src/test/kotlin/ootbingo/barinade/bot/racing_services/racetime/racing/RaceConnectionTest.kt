@@ -5,12 +5,11 @@ import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.Dispatcher
 import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.IN_PROGRESS
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.OPEN
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource

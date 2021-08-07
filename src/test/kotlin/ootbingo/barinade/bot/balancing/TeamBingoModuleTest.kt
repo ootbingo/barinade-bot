@@ -10,7 +10,7 @@ import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

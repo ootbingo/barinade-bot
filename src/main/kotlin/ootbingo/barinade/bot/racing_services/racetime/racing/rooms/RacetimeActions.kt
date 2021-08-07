@@ -4,10 +4,11 @@ import java.util.*
 
 class RacetimeAction(
     val action: String,
-    val data: RacetimeActionPayload
+    val data: RacetimeActionPayload,
 )
 
 sealed class RacetimeActionPayload {
+
   abstract fun asAction(): RacetimeAction
 }
 

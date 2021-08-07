@@ -2,8 +2,7 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.oauth
 
 import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -12,8 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit.HOURS
-import java.time.temporal.ChronoUnit.MINUTES
+import java.time.temporal.ChronoUnit.*
 import java.time.temporal.TemporalAmount
 import java.time.temporal.TemporalUnit
 import java.util.*
@@ -109,7 +107,6 @@ internal class OAuthManagerTest {
             .takeIf { it.size == 1 }
             ?.last()?.second ?: fail("Form Parameter '$parameterName' missing")
 
-
     val formDataCaptor = argumentCaptor<HttpEntity<String>>()
 
     whenever(
@@ -155,6 +152,7 @@ internal class OAuthManagerTest {
   //<editor-fold desc="Helper">
 
   private class TokenManipulation {
+
     var payload: String = ""
       private set
     var expiryTime: TemporalAmount = Duration.ZERO

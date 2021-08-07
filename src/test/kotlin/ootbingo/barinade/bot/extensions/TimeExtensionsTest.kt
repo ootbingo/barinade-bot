@@ -10,8 +10,8 @@ class TimeExtensionsTest {
   internal fun convertsDurationToCorrectStandardFormat() {
 
     val durations = mapOf(Pair(Duration.ofDays(2).plusSeconds(5), "48:00:05"),
-                          Pair(Duration.ofHours(7).plusMinutes(77), "8:17:00"),
-                          Pair(Duration.ofSeconds(100), "0:01:40"))
+        Pair(Duration.ofHours(7).plusMinutes(77), "8:17:00"),
+        Pair(Duration.ofSeconds(100), "0:01:40"))
 
     val soft = SoftAssertions()
 

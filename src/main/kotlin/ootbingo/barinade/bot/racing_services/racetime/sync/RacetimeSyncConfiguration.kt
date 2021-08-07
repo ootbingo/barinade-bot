@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class RacetimeSyncConfiguration(private val playerHelper: PlayerHelper,
-                                private val raceRepository: RaceRepository,
-                                private val raceResultRepository: RaceResultRepository) {
+class RacetimeSyncConfiguration(
+    private val playerHelper: PlayerHelper,
+    private val raceRepository: RaceRepository,
+    private val raceResultRepository: RaceResultRepository,
+) {
 
   @Bean
   fun racetimeImporter(): () -> RacetimeImporter = {

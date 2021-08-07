@@ -25,7 +25,7 @@ internal class ArrayExtensionsTest {
 
     assertThat(output)
         .containsExactlyInAnyOrder(listOf(listOf(1), listOf(2)),
-                                   listOf(listOf(1, 2)))
+            listOf(listOf(1, 2)))
   }
 
   @Test
@@ -48,10 +48,10 @@ internal class ArrayExtensionsTest {
 
     assertThat(output)
         .containsExactlyInAnyOrder(listOf(listOf(1), listOf(2), listOf(3)),
-                                   listOf(listOf(1), listOf(2, 3)),
-                                   listOf(listOf(2), listOf(1, 3)),
-                                   listOf(listOf(1, 2), listOf(3)),
-                                   listOf(listOf(1, 2, 3)))
+            listOf(listOf(1), listOf(2, 3)),
+            listOf(listOf(2), listOf(1, 3)),
+            listOf(listOf(1, 2), listOf(3)),
+            listOf(listOf(1, 2, 3)))
   }
 
   @Test
@@ -63,9 +63,9 @@ internal class ArrayExtensionsTest {
 
     assertThat(output)
         .containsExactlyInAnyOrder(listOf(listOf(1), listOf(2), listOf(3)),
-                                   listOf(listOf(1), listOf(2, 3)),
-                                   listOf(listOf(2), listOf(1, 3)),
-                                   listOf(listOf(1, 2), listOf(3)))
+            listOf(listOf(1), listOf(2, 3)),
+            listOf(listOf(2), listOf(1, 3)),
+            listOf(listOf(1, 2), listOf(3)))
   }
 
   @Test

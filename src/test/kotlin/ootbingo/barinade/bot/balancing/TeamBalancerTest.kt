@@ -14,7 +14,7 @@ internal class TeamBalancerTest {
   internal fun balancesTwoTeamsCorrectly() {
 
     val actualTeams = balancer.findBestTeamBalance(listOf(partition(team(10), team(20)),
-                                                          partition(team(100), team(101))))
+        partition(team(100), team(101))))
 
     thenBalancedTeamsHaveExpectedTimes(actualTeams, 100, 101)
   }

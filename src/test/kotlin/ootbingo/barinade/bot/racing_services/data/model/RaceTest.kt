@@ -18,7 +18,7 @@ internal class RaceTest {
   internal fun isBingoWhenSrlUrl(prefix: String) {
 
     val race = race("http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal",
-                    date(2018, 1, 1))
+        date(2018, 1, 1))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -28,7 +28,7 @@ internal class RaceTest {
   internal fun noBingoWhenSrlUrlAfterSwitch(prefix: String) {
 
     val race = race("http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal",
-                    date(2019, 9, 21))
+        date(2019, 9, 21))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -38,7 +38,7 @@ internal class RaceTest {
   internal fun isBingoWhenSrlUrlWithVersion(prefix: String) {
 
     val race = race("http://${prefix}speedrunslive.com/tools/oot-bingo-v4/?seed=273307",
-                    date(2011, 10, 30))
+        date(2011, 10, 30))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -47,7 +47,7 @@ internal class RaceTest {
   internal fun isBingoWhenGithubIoUrl() {
 
     val race = race("https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -56,7 +56,7 @@ internal class RaceTest {
   internal fun isBingoWhenJpBetaUrl() {
 
     val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=424242&mode=normal",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -66,7 +66,7 @@ internal class RaceTest {
   internal fun noBingoWhenOtherBeta(beta: String) {
 
     val race = race("https://ootbingo.github.io/bingo/beta$beta/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -77,7 +77,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInSrlGoal1(word: String) {
 
     val race = race("http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal $word",
-                    date(2018, 1, 1))
+        date(2018, 1, 1))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -88,7 +88,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInSrlGoal2(word: String) {
 
     val race = race("$word http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal",
-                    date(2018, 1, 1))
+        date(2018, 1, 1))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -99,7 +99,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInSrlUrl(word: String) {
 
     val race = race("http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=$word",
-                    date(2018, 1, 1))
+        date(2018, 1, 1))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -110,7 +110,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInGithubIoGoal1(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal $word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -121,7 +121,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInGithubIoGoal2(word: String) {
 
     val race = race("$word https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -132,7 +132,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInGithubIoUrl(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=$word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -142,7 +142,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInGithubIoGoalCapitalization(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=$word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -153,7 +153,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInBetaGoal1(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal $word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -164,7 +164,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInBetaGoal2(word: String) {
 
     val race = race("$word https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -175,7 +175,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInBetaUrl(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -185,7 +185,7 @@ internal class RaceTest {
   internal fun noBingoWhenBlacklistedWordInBetaGoalCapitalization(word: String) {
 
     val race = race("https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word",
-                    date(2019, 10, 27))
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -197,8 +197,8 @@ internal class RaceTest {
     BingoRaceProperties.blacklist = listOf(raceId)
 
     val race = race(raceId,
-                    "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }
@@ -210,8 +210,8 @@ internal class RaceTest {
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
-                    "Definitely and totally not a bigno!!!",
-                    date(2019, 10, 27))
+        "Definitely and totally not a bigno!!!",
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -225,8 +225,8 @@ internal class RaceTest {
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
-                    "goal $word",
-                    date(2019, 10, 27))
+        "goal $word",
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isTrue()
   }
@@ -239,8 +239,8 @@ internal class RaceTest {
     BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
 
     val race = race(raceId,
-                    "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
-                    date(2019, 10, 27))
+        "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal",
+        date(2019, 10, 27))
 
     assertThat(race.isBingo()).isFalse()
   }

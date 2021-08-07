@@ -14,11 +14,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.model.Platform
-import ootbingo.barinade.bot.racing_services.data.model.Player
-import ootbingo.barinade.bot.racing_services.data.model.Race
-import ootbingo.barinade.bot.racing_services.data.model.RaceResult
-import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 internal class BingoHistoryModuleTest {
@@ -125,12 +121,12 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(42, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(2, ResultType.FINISH),
-                        BingoTime(-3, ResultType.FORFEIT),
-                        BingoTime(3, ResultType.FINISH),
-                        BingoTime(-99, ResultType.DQ))
+        BingoTime(42, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(2, ResultType.FINISH),
+        BingoTime(-3, ResultType.FORFEIT),
+        BingoTime(3, ResultType.FINISH),
+        BingoTime(-99, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!results"
 
@@ -260,10 +256,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(2, ResultType.FORFEIT),
-                        BingoTime(10, ResultType.FINISH),
-                        BingoTime(11, ResultType.FINISH),
-                        BingoTime(1, ResultType.DQ))
+        BingoTime(2, ResultType.FORFEIT),
+        BingoTime(10, ResultType.FINISH),
+        BingoTime(11, ResultType.FINISH),
+        BingoTime(1, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!best"
 
@@ -356,10 +352,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.DQ),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.DQ),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(username) sendsDiscordMessage "!racer"
 
@@ -372,10 +368,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.DQ),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.DQ),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(username) sendsIrcMessage "!racer"
 
@@ -388,11 +384,11 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FORFEIT))
     givenNonBingoTimesForPlayer(username, 1, 2, 3, 4)
 
     whenUser(username) sendsIrcMessage "!racer"
@@ -408,11 +404,11 @@ internal class BingoHistoryModuleTest {
 
     givenBingoTimesForPlayer(askingUser, 1)
     givenTimesForPlayer(playingUser, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(askingUser) sendsIrcMessage "!racer $playingUser"
 
@@ -465,7 +461,7 @@ internal class BingoHistoryModuleTest {
     times
         .map {
           RaceResult(RaceResult.ResultId(Race(), Player(srlName = username, racetimeName = username)),
-                     1, Duration.ofSeconds(it.time.toLong()), it.resultType)
+              1, Duration.ofSeconds(it.time.toLong()), it.resultType)
         }
         .map {
 

@@ -13,13 +13,15 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 @DataJpaTest
-internal class DbIntegrationTest(@Autowired val playerRepository: PlayerRepository,
-                                 @Autowired val raceRepository: RaceRepository,
-                                 @Autowired val raceResultRepository: RaceResultRepository) {
+internal class DbIntegrationTest(
+    @Autowired val playerRepository: PlayerRepository,
+    @Autowired val raceRepository: RaceRepository,
+    @Autowired val raceResultRepository: RaceResultRepository,
+) {
 
   @Test
   @DirtiesContext

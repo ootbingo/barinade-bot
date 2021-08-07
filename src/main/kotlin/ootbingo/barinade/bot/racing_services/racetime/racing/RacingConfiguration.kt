@@ -11,8 +11,10 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import java.net.URI
 
 @Configuration
-class RacingConfiguration(private val oauthManager: OAuthManager, private val gson: Gson,
-                          private val dispatcher: Dispatcher) {
+class RacingConfiguration(
+    private val oauthManager: OAuthManager, private val gson: Gson,
+    private val dispatcher: Dispatcher,
+) {
 
   @Bean
   fun raceConnectionFactory() = object : RaceConnectionFactory {
