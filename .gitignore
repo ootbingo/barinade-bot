@@ -53,3 +53,4 @@ build/
 h2db*db*
 /src/main/resources/version.properties
 gradle.properties
+bot.log
