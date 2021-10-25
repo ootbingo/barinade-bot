@@ -46,7 +46,7 @@ dependencies {
     // TODO Upgrade Lily
     exclude(module = "JDA")
   }
-  implementation("net.dv8tion:JDA:4.3.0_335") {
+  implementation("net.dv8tion:JDA:4.3.0_339") {
     exclude(module = "opus-java")
   }
   implementation("org.springframework.boot:spring-boot-starter-json")
