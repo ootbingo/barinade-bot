@@ -8,7 +8,7 @@ plugins {
   val kotlinVersion = "1.5.21"
 
   java
-  id("org.springframework.boot") version "2.5.6"
+  id("org.springframework.boot") version "2.5.7"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
