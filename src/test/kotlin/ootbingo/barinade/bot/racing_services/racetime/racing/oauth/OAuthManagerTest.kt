@@ -1,9 +1,9 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.oauth
 
-import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType

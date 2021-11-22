@@ -1,9 +1,5 @@
 package ootbingo.barinade.bot.statistics
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -20,6 +16,10 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.Duration
 import java.time.Instant
 import java.util.*

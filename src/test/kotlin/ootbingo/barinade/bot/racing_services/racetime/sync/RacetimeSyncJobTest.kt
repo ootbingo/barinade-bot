@@ -1,9 +1,9 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
-import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 
 internal class RacetimeSyncJobTest {
 

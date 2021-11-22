@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.statistics
 
-import com.nhaarman.mockitokotlin2.*
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -16,6 +15,7 @@ import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 import java.time.Duration
 import java.time.Instant
 import java.util.*

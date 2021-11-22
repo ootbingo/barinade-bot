@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.misc
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -11,6 +9,8 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.entities.UserImpl
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 internal class HelpModuleTest {
 

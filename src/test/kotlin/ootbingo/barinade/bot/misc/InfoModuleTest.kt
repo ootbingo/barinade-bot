@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.misc
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import de.scaramangado.lily.core.communication.Command
 import de.scaramangado.lily.core.communication.MessageInfo
 import de.scaramangado.lily.discord.connection.DiscordMessageInfo
@@ -12,6 +10,8 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 internal class InfoModuleTest {
 

@@ -1,8 +1,5 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.UsernameMapper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
@@ -18,6 +15,9 @@ import ootbingo.barinade.bot.racing_services.srl.api.model.SrlPlayer
 import ootbingo.barinade.bot.racing_services.srl.api.model.SrlResult
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext

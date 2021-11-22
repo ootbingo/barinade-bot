@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.misc
 
-import com.nhaarman.mockitokotlin2.mock
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -9,6 +8,7 @@ import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 
 internal class VersionModuleTest {
 

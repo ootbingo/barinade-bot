@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.model.Player
 import ootbingo.barinade.bot.racing_services.data.model.Race
@@ -15,6 +13,8 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import java.time.Duration
 import java.util.*
 

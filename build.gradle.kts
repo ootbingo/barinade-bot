@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileWriter
-import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.charset.StandardCharsets.*
 import java.util.*
 
 plugins {
@@ -79,7 +79,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.21.0")
-  testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
 tasks.withType<Jar> {

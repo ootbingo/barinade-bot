@@ -1,12 +1,12 @@
 package ootbingo.barinade.bot.racing_services.data
 
-import com.nhaarman.mockitokotlin2.*
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.model.Player
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 import java.util.*
 import kotlin.random.Random
 

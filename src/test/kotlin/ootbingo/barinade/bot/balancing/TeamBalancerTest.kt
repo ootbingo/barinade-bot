@@ -1,9 +1,9 @@
 package ootbingo.barinade.bot.balancing
 
-import com.nhaarman.mockitokotlin2.mock
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import org.mockito.kotlin.mock
 import java.time.Duration
 
 internal class TeamBalancerTest {
