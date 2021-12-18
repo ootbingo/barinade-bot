@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:alpine
+FROM eclipse-temurin:17
 
 COPY build/libs/barinade_bot.jar /usr/bin
 
