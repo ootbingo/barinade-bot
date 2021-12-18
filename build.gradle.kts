@@ -5,7 +5,7 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.5.21"
+  val kotlinVersion = "1.6.10"
 
   java
   id("org.springframework.boot") version "2.6.1"
@@ -21,8 +21,8 @@ group = "ootbingo.barinade"
 version = "2.1.0-SNAPSHOT"
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
@@ -150,14 +150,14 @@ fun executeCommand(command: String) =
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-  jvmTarget = "11"
+  jvmTarget = "17"
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-  jvmTarget = "11"
+  jvmTarget = "17"
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "7.1.1"
+  gradleVersion = "7.3.2"
 }
