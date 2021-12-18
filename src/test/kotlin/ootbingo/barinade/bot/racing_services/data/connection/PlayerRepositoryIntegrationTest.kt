@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 
@@ -36,7 +37,7 @@ internal class PlayerRepositoryIntegrationTest(
     val savedRaces = raceGoals.map {
       Race("${Random.nextLong()}",
           it,
-          Instant.now().plusSeconds(Random.nextLong(0, 10000)),
+          Instant.now().plusSeconds(Random.nextLong(0, 10000)).truncatedTo(ChronoUnit.MICROS),
           Platform.SRL,
           mutableListOf())
     }.map {
