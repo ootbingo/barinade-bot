@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
-import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties
 import java.time.Instant
@@ -9,7 +8,6 @@ import java.time.ZonedDateTime
 import javax.persistence.*
 
 @Entity
-@Open
 data class Race(
     @Id var raceId: String = "",
     var goal: String = "",

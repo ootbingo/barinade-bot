@@ -1,7 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import de.scaramangado.lily.core.communication.Dispatcher
-import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
@@ -10,7 +9,6 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.dispatch
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
-@Open
 class RaceConnection(
     raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
     private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit,

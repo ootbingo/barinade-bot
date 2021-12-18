@@ -2,12 +2,10 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
-import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.description
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
-@Open
 class RaceWebsocketHandler(
     private val delegate: RaceConnection, private val gson: Gson,
     private val handshake: (WebSocketHandler) -> Unit,

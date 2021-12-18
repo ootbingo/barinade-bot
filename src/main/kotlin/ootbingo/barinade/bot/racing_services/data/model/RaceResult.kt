@@ -1,12 +1,10 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
-import ootbingo.barinade.bot.compile.Open
 import java.io.Serializable
 import java.time.Duration
 import javax.persistence.*
 
 @Entity
-@Open
 data class RaceResult(
     @EmbeddedId var resultId: ResultId = ResultId(),
     var place: Long = 0,

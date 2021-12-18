@@ -1,11 +1,9 @@
 package ootbingo.barinade.bot.balancing
 
-import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.extensions.standardFormat
 import java.time.Duration
 import kotlin.math.roundToLong
 
-@Open
 class Team(val members: List<TeamMember>) {
 
   val predictedTime: Duration = members
@@ -19,7 +17,9 @@ class Team(val members: List<TeamMember>) {
 
   override fun toString(): String {
     return members
+        .onEach { println("member: $it") }
         .joinToString(", ") { it.name }
         .let { "$it (${predictedTime.standardFormat()})" }
+        .also { println(it) }
   }
 }

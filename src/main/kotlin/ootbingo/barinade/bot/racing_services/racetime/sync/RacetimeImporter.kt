@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
-import ootbingo.barinade.bot.compile.Open
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
@@ -9,7 +8,6 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.slf4j.LoggerFactory
 
-@Open
 class RacetimeImporter(
     private val playerHelper: PlayerHelper,
     private val raceRepository: RaceRepository,

@@ -12,7 +12,6 @@ plugins {
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  kotlin("plugin.allopen") version kotlinVersion
   id("org.sonarqube") version "3.3"
   jacoco
 }
@@ -135,10 +134,6 @@ sonarqube {
     property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
     property("sonar.exclusions", "**/*Configuration.kt")
   }
-}
-
-allOpen {
-  annotation("ootbingo.barinade.bot.compile.Open")
 }
 
 fun executeCommand(command: String) =

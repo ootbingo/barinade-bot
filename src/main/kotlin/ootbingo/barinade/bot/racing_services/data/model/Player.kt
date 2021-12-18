@@ -1,10 +1,8 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
-import ootbingo.barinade.bot.compile.Open
 import javax.persistence.*
 
 @Entity
-@Open
 data class Player(
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) var id: Long? = null,
     var srlId: Long? = 0,
