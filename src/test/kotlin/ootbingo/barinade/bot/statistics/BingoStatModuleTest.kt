@@ -2,15 +2,10 @@ package ootbingo.barinade.bot.statistics
 
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
-import de.scaramangado.lily.core.communication.Command
-import de.scaramangado.lily.core.communication.MessageInfo
-import de.scaramangado.lily.discord.connection.DiscordMessageInfo
-import de.scaramangado.lily.irc.connection.IrcMessageInfo
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
@@ -22,13 +17,13 @@ import java.util.*
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
-internal class BingoStatModuleTest {
+internal class BingoStatModuleTest : ModuleTest() {
 
   private val playerDaoMock = mock<PlayerHelper>()
   private val module = BingoStatModule(playerDaoMock)
   private val players = mutableMapOf<String, Player>()
 
-  private val commands by lazy {
+  override val commands by lazy {
     mapOf(Pair("average", module::average),
         Pair("median", module::median),
         Pair("forfeits", module::forfeitRatio))
@@ -587,42 +582,6 @@ internal class BingoStatModuleTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="When">
-
-  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo>? {
-
-    require(message.matches(Regex("!.*"))) { "Not a valid command" }
-
-    val parts = message.split(" ")
-    val command = parts[0].replace("!", "")
-
-    require(commands.containsKey(command)) { "Command not known" }
-
-    return commands.getValue(command).invoke(generateCommand(message, messageInfo))
-  }
-
-  private fun whenDiscordMessageIsSent(user: String, message: String): Answer<AnswerInfo>? {
-
-    val discordUser = UserImpl(0, mock())
-    discordUser.name = user
-
-    val discordMessageMock = mock<Message>()
-    whenever(discordMessageMock.author).thenReturn(discordUser)
-
-    return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
-  }
-
-  private fun whenIrcMessageIsSent(username: String, message: String): Answer<AnswerInfo>? {
-
-    val messageInfoMock = mock<IrcMessageInfo>()
-    whenever(messageInfoMock.nick).thenReturn(username)
-    whenever(messageInfoMock.channel).thenReturn("")
-
-    return whenMessageIsSent(message, messageInfoMock)
-  }
-
-  //</editor-fold>
-
   //<editor-fold desc="Then">
 
   private fun thenReportedTimeIsEqualTo(answer: Answer<AnswerInfo>?, time: String) {
@@ -677,33 +636,6 @@ internal class BingoStatModuleTest {
 
   private fun thenUserNotFoundIsReported(username: String, answer: Answer<AnswerInfo>?) =
       assertThat(answer?.text).matches("""^.*$username .*not found.*$""")
-
-  //</editor-fold>
-
-  //<editor-fold desc="Helper">
-
-  private fun generateCommand(message: String, messageInfo: MessageInfo): Command {
-
-    val parts = message.substring(1).split(" ")
-
-    return object : Command {
-      override fun getMessageInfo(): MessageInfo {
-        return messageInfo
-      }
-
-      override fun getArgument(n: Int): String {
-        return parts[n + 1]
-      }
-
-      override fun getName(): String {
-        return parts[0]
-      }
-
-      override fun getArgumentCount(): Int {
-        return parts.size - 1
-      }
-    }
-  }
 
   //</editor-fold>
 }
