@@ -6,6 +6,8 @@ import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
 import de.scaramangado.lily.discord.connection.DiscordMessageInfo
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.TextChannel
 import ootbingo.barinade.bot.discord.DiscordChannelService
 import java.util.*
 
@@ -18,12 +20,14 @@ class LockoutModule(
   @LilyCommand("lockout")
   fun lockout(command: Command): Answer<AnswerInfo>? =
       command.messageInfo.takeIf { it is DiscordMessageInfo }
-          ?.let { it as DiscordMessageInfo }
-          ?.run {
-            discordChannelService.createChannel {
-              name = "lockout-${UUID.randomUUID().toString().split("-")[0]}"
-              categoryId = properties.discordCategory
-              guild = message.guild
-            }?.also { it.sendMessage("Hello ${message.author.asMention}").queue() }
-          }?.let { Answer.ofText(it.asMention) }
+          ?.let { (it as DiscordMessageInfo).message }
+          ?.let { createLockoutChannel(it.guild) }
+          ?.let { Answer.ofText(it.asMention) }
+
+  private fun createLockoutChannel(server: Guild): TextChannel? =
+      discordChannelService.createChannel {
+        name = "lockout-${UUID.randomUUID().toString().split("-")[0]}"
+        categoryId = properties.discordCategory
+        guild = server
+      }
 }
