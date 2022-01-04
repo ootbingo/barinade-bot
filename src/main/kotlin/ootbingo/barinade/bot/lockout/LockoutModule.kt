@@ -32,7 +32,7 @@ class LockoutModule(
             ?.takeIf { it.id == properties.discordChannel }
             ?.castOrNull<TextChannel>()
             ?.let { createLockoutChannel(it.guild) }
-            ?.let { Answer.ofText(it.asMention) }
+            ?.let { Answer.ofText("New race: ${it.asMention}") }
       } catch (e: Exception) {
         logger.exception("Failed to create lockout channel", e)
         Answer.ofText("An error occurred when creating the race channel")
