@@ -7,6 +7,7 @@ import de.scaramangado.lily.core.communication.MessageInfo
 import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
@@ -19,13 +20,20 @@ abstract class ModuleTest {
   protected abstract val commands: Map<String, (Command) -> Answer<AnswerInfo>?>
   protected var answer: String? = null
 
-  protected fun whenDiscordMessageIsSent(user: String, message: String): Answer<AnswerInfo>? {
+  protected fun whenDiscordMessageIsSent(
+      user: String,
+      message: String,
+      channel: TextChannel? = null,
+  ): Answer<AnswerInfo>? {
 
     val discordUser = UserImpl(0, mock())
     discordUser.name = user
 
+    val defaultChannelMock = mock<TextChannel>().apply { whenever(this.id).thenReturn("") }
+
     val discordMessageMock = mock<Message>()
     whenever(discordMessageMock.author).thenReturn(discordUser)
+    whenever(discordMessageMock.channel).thenReturn(channel ?: defaultChannelMock)
 
     return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
   }
