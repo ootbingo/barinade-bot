@@ -7,7 +7,9 @@ import de.scaramangado.lily.core.communication.MessageInfo
 import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
@@ -21,6 +23,26 @@ abstract class ModuleTest {
   protected var answer: String? = null
 
   protected fun whenDiscordMessageIsSent(
+      user: User,
+      message: String,
+      channel: MessageChannel? = null,
+  ): Answer<AnswerInfo>? {
+
+    val defaultChannelMock = mock<MessageChannel>().apply { whenever(this.id).thenReturn("") }
+
+    val discordMessageMock = mock<Message>()
+    whenever(discordMessageMock.author).thenReturn(user)
+    whenever(discordMessageMock.channel).thenReturn(channel ?: defaultChannelMock)
+
+    when (channel) {
+      is TextChannel -> whenever(discordMessageMock.textChannel).thenReturn(channel)
+      else -> whenever(discordMessageMock.textChannel).thenThrow(IllegalStateException())
+    }
+
+    return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
+  }
+
+  protected fun whenDiscordMessageIsSent(
       user: String,
       message: String,
       channel: TextChannel? = null,
@@ -29,13 +51,7 @@ abstract class ModuleTest {
     val discordUser = UserImpl(0, mock())
     discordUser.name = user
 
-    val defaultChannelMock = mock<TextChannel>().apply { whenever(this.id).thenReturn("") }
-
-    val discordMessageMock = mock<Message>()
-    whenever(discordMessageMock.author).thenReturn(discordUser)
-    whenever(discordMessageMock.channel).thenReturn(channel ?: defaultChannelMock)
-
-    return whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
+    return whenDiscordMessageIsSent(discordUser, message, channel)
   }
 
   protected fun whenIrcMessageIsSent(username: String, message: String): Answer<AnswerInfo>? {
