@@ -28,7 +28,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
           "unenter" to module::unenter,
           "ready" to module::ready,
           "unready" to module::unready,
-          "start" to module::start,
+          "bingosync" to module::bingosync,
       )
 
   companion object {
@@ -39,7 +39,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
         "!unenter" to DiscordRaceRoom::unenter,
         "!ready" to DiscordRaceRoom::ready,
         "!unready" to DiscordRaceRoom::unready,
-        "!start" to DiscordRaceRoom::start,
+        "!bingosync" to DiscordRaceRoom::bingosync,
     ).asStream()
   }
 

@@ -1,8 +1,16 @@
 package ootbingo.barinade.bot.discord.racing
 
-class LockoutRaceRoom : DiscordRaceRoom() {
+import net.dv8tion.jda.api.entities.TextChannel
 
-  override fun start(entrant: DiscordEntrant): String? {
+class LockoutRaceRoom(
+    private val statusMock: DiscordRaceStatusHolder,
+    discordChannel: TextChannel,
+    raceStartExecutor: (() -> Unit) -> Unit,
+    wait: WaitWrapper,
+    countdownService: CountdownService,
+) : DiscordRaceRoom(statusMock, discordChannel, raceStartExecutor, wait, countdownService) {
+
+  override fun readyToStart(): Boolean {
     TODO("Not yet implemented")
   }
 }
