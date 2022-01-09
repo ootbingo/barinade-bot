@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.discord.racing
 
 import net.dv8tion.jda.api.entities.TextChannel
+import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.*
 import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.EntrantStatus.*
 import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.*
 import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.UNDEFINED
@@ -17,19 +18,19 @@ abstract class DiscordRaceRoom(
 ) {
 
   fun enter(entrant: DiscordEntrant): String? =
-      ifStatus(OPEN)
+      ifState(OPEN)
           ?.let { status.addEntrant(entrant) }
           ?.takeIf { it }
           ?.let { "${entrant.username} entered the race" }
 
   fun unenter(entrant: DiscordEntrant): String? =
-      ifStatus(OPEN)
+      ifState(OPEN)
           ?.let { status.removeEntrant(entrant) }
           ?.takeIf { it }
           ?.let { "${entrant.username} left the race" }
 
   fun ready(entrant: DiscordEntrant): String? =
-      ifStatus(OPEN)
+      ifState(OPEN)
           ?.let { status.setStatusForEntrant(entrant, READY) }
           ?.takeIf { it }
           ?.let { "${entrant.username} is ready".appendNotReadyCount() }
@@ -41,7 +42,7 @@ abstract class DiscordRaceRoom(
           }
 
   fun unready(entrant: DiscordEntrant): String? =
-      ifStatus(OPEN)
+      ifState(OPEN)
           ?.let { status.setStatusForEntrant(entrant, NOT_READY) }
           ?.takeIf { it }
           ?.let { "${entrant.username} is not ready" }
@@ -62,12 +63,13 @@ abstract class DiscordRaceRoom(
       countdownService.postCountdownInChannel(discordChannel)
       discordChannel.sendMessage("Filename: ${generateFilename()}").queue()
       status.state = UNDEFINED
+      status.setStatusForAll(EntrantStatus.UNDEFINED)
     }
   }
 
   protected abstract fun readyToStart(): Boolean
 
-  private fun ifStatus(vararg allowedStates: DiscordRaceStatusHolder.RaceState) =
+  private fun ifState(vararg allowedStates: RaceState) =
       status.state.takeIf { it in allowedStates }
 
   private fun String.appendNotReadyCount() =

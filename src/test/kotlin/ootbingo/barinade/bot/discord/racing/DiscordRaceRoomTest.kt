@@ -355,6 +355,14 @@ internal class DiscordRaceRoomTest {
     thenRaceStateIsChanged(UNDEFINED)
   }
 
+  @Test
+  internal fun setsStatusForAllEntrantsWhenRaceStarts() {
+
+    whenRaceStarts()
+
+    thenEntrantStatusIsChangedForEveryone(EntrantStatus.UNDEFINED)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Given">
@@ -363,7 +371,6 @@ internal class DiscordRaceRoomTest {
     whenever(statusMock.addEntrant(any())).thenReturn(returnValue)
     whenever(statusMock.removeEntrant(any())).thenReturn(returnValue)
     whenever(statusMock.setStatusForEntrant(any(), any())).thenReturn(returnValue)
-    whenever(statusMock.allReady()).thenReturn(returnValue)
   }
 
   private fun givenRaceState(raceState: RaceState) {
@@ -470,6 +477,10 @@ internal class DiscordRaceRoomTest {
         .also { verify(discordChannelMock).sendMessage(it.capture()) }
         .lastValue
         .run { assertThat(this).matches(Regex("""^Filename: [A-Z]{2}$""").toPattern()) }
+  }
+
+  private fun thenEntrantStatusIsChangedForEveryone(expectedStatus: EntrantStatus) {
+    verify(statusMock).setStatusForAll(expectedStatus)
   }
 
   //</editor-fold>
