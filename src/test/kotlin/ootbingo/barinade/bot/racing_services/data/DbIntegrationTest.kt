@@ -32,7 +32,7 @@ internal class DbIntegrationTest(
 
     playerRepository.save(Player(null, srlId, null, playerName, null, mutableListOf()))
 
-    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(playerName.toUpperCase())
+    val actualPlayer = playerRepository.findBySrlNameIgnoreCase(playerName.uppercase())
 
     assertThat(actualPlayer!!.srlName).isEqualTo(playerName)
     assertThat(actualPlayer.srlId).isEqualTo(srlId)

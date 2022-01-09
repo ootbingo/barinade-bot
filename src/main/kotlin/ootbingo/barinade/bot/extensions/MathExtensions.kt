@@ -1,7 +1,6 @@
 package ootbingo.barinade.bot.extensions
 
 import kotlin.math.floor
-import kotlin.streams.toList
 
 fun List<Long>.median(): Long {
 
@@ -16,3 +15,5 @@ fun List<Long>.median(): Long {
   else
     floor(0.5 * sorted[n / 2 - 1] + 0.5 * sorted[n / 2]).toLong()
 }
+
+fun Int.greaterThan(other: Int) = this > other

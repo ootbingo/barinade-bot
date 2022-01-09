@@ -166,7 +166,7 @@ internal class SrlSyncJobTest(
     val racetimeName = UUID.randomUUID().toString()
 
     val srlId = Random.nextLong()
-    val srlName = racetimeName.toUpperCase()
+    val srlName = racetimeName.uppercase()
 
     playerRepository.save(Player(racetimeId = racetimeId, racetimeName = racetimeName))
 

@@ -125,7 +125,7 @@ internal class PlayerHelperTest {
     val racetimeName = UUID.randomUUID().toString()
 
     val srlId = Random.nextLong()
-    val srlName = racetimeName.toUpperCase()
+    val srlName = racetimeName.uppercase()
 
     givenPlayersInDb(Player(srlId = srlId, srlName = srlName))
 

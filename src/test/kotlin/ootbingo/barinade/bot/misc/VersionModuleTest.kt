@@ -2,20 +2,16 @@ package ootbingo.barinade.bot.misc
 
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
-import de.scaramangado.lily.core.communication.Command
-import de.scaramangado.lily.core.communication.MessageInfo
-import de.scaramangado.lily.discord.connection.DiscordMessageInfo
-import net.dv8tion.jda.api.entities.Message
+import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
 
-internal class VersionModuleTest {
+internal class VersionModuleTest : ModuleTest() {
 
   private val properties = VersionProperties()
   private val module = VersionModule(properties)
 
-  private val commands by lazy {
+  override val commands by lazy {
     mapOf(Pair("version", module::buildInfo))
   }
 
@@ -50,43 +46,6 @@ internal class VersionModuleTest {
   }
 
   private fun String.sendAsDiscordMessage() {
-
-    val discordMessageMock = mock<Message>()
-    thenAnswer = whenMessageIsSent(this, DiscordMessageInfo.withMessage(discordMessageMock))!!
-  }
-
-  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo): Answer<AnswerInfo>? {
-
-    require(message.matches(Regex("!.*"))) { "Not a valid command" }
-
-    val parts = message.split(" ")
-    val command = parts[0].replace("!", "")
-
-    require(commands.containsKey(command)) { "Command not known" }
-
-    return commands.getValue(command).invoke(generateCommand(message, messageInfo))
-  }
-
-  private fun generateCommand(message: String, messageInfo: MessageInfo): Command {
-
-    val parts = message.substring(1).split(" ")
-
-    return object : Command {
-      override fun getMessageInfo(): MessageInfo {
-        return messageInfo
-      }
-
-      override fun getArgument(n: Int): String {
-        return parts[n + 1]
-      }
-
-      override fun getName(): String {
-        return parts[0]
-      }
-
-      override fun getArgumentCount(): Int {
-        return parts.size - 1
-      }
-    }
+    thenAnswer = whenDiscordMessageIsSent("", this)!!
   }
 }
