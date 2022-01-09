@@ -33,13 +33,16 @@ abstract class DiscordRaceRoom(
       ifState(OPEN)
           ?.let { status.setStatusForEntrant(entrant, READY) }
           ?.takeIf { it }
-          ?.let { "${entrant.username} is ready".appendNotReadyCount() }
-          ?.also {
+          ?.run {
             val counts = status.countPerStatus()
             if (counts[NOT_READY]?.equals(0) != false && counts[READY]?.greaterThan(1) == true) {
+              discordChannel.sendMessage("${entrant.username} is ready").complete()
               start()
+              return@run null
             }
+            return@run this
           }
+          ?.let { "${entrant.username} is ready".appendNotReadyCount() }
 
   fun unready(entrant: DiscordEntrant): String? =
       ifState(OPEN)

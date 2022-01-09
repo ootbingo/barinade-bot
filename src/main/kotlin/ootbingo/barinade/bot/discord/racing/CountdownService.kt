@@ -8,10 +8,13 @@ class CountdownService(private val wait: WaitWrapper) {
 
   fun postCountdownInChannel(channel: MessageChannel) {
     channel.sendMessageBlocking("The race is about to start...")
-    (10 downTo 1).forEach {
+    val message = channel.sendMessageBlocking("10")
+    (9 downTo 1).forEach {
       wait(1000)
-      channel.sendMessageBlocking(it.toString())
+      message.editMessage(it.toString()).complete()
     }
+    wait(1000)
+    message.editMessage("**GO!**").complete()
   }
 
   private fun MessageChannel.sendMessageBlocking(message: String) =

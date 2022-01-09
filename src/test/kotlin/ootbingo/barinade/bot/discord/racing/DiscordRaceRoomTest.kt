@@ -474,7 +474,7 @@ internal class DiscordRaceRoomTest {
 
   private fun thenFilenameIsPosted() {
     argumentCaptor<String>()
-        .also { verify(discordChannelMock).sendMessage(it.capture()) }
+        .also { verify(discordChannelMock, atLeastOnce()).sendMessage(it.capture()) }
         .lastValue
         .run { assertThat(this).matches(Regex("""^Filename: [A-Z]{2}$""").toPattern()) }
   }
