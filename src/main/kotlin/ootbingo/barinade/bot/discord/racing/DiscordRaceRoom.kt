@@ -12,7 +12,7 @@ import ootbingo.barinade.bot.misc.generateFilename
 abstract class DiscordRaceRoom(
     private val status: DiscordRaceStatusHolder,
     private val discordChannel: TextChannel,
-    private val raceStartExecutor: (() -> Unit) -> Unit,
+    private val raceStartExecutor: RaceStartExecutor,
     private val wait: WaitWrapper,
     private val countdownService: CountdownService,
 ) {

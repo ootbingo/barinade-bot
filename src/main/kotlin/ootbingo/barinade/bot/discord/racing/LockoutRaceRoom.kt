@@ -11,6 +11,7 @@ class LockoutRaceRoom(
 ) : DiscordRaceRoom(statusMock, discordChannel, raceStartExecutor, wait, countdownService) {
 
   override fun readyToStart(): Boolean {
-    TODO("Not yet implemented")
+    // TODO
+    return true
   }
 }

@@ -3,6 +3,10 @@ package ootbingo.barinade.bot.lockout
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 import ootbingo.barinade.bot.discord.DiscordChannelService
+import ootbingo.barinade.bot.discord.racing.DiscordRaceRoom
+import ootbingo.barinade.bot.discord.racing.DiscordRaceRoomFactory
+import ootbingo.barinade.bot.discord.racing.DiscordRaceRoomManager
+import ootbingo.barinade.bot.discord.racing.LockoutRaceRoom
 import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -19,8 +23,12 @@ internal class LockoutModuleTest : ModuleTest() {
 
   private val properties = LockoutProperties()
   private val discordChannelServiceMock = mock<DiscordChannelService>()
+  private val lockoutFactoryMock = mock<DiscordRaceRoomFactory<LockoutRaceRoom>>()
+  private val discordRaceRoomManagerMock = mock<DiscordRaceRoomManager>()
 
-  private val module = LockoutModule(properties, discordChannelServiceMock)
+  private val module = LockoutModule(
+      properties, discordChannelServiceMock, lockoutFactoryMock, discordRaceRoomManagerMock
+  )
 
   override val commands by lazy {
     mapOf(
@@ -49,14 +57,20 @@ internal class LockoutModuleTest : ModuleTest() {
 
     val channelId = UUID.randomUUID().toString()
     val categoryId = UUID.randomUUID().toString()
+    val raceChannelMock = mock<TextChannel>()
+    val raceRoomMock = mock<LockoutRaceRoom>()
 
     givenMockChannelId(channelId)
     givenLockoutChannelId(channelId)
     givenLockoutCategoryId(categoryId)
+    givenDiscordServiceReturnsChannel(raceChannelMock)
+    givenFactoryReturnsNewRoom(raceRoomMock)
 
     whenDiscordMessageIsSent("test", "!lockout", channelMock)
 
     thenChannelCreationIsRequested(categoryId, guildMock, Regex("""lockout-[0-9a-z]{8}"""))
+    thenRoomIsCreatedWithChannel(raceChannelMock)
+    thenNewRaceRoomIsRegistered(raceChannelMock, raceRoomMock)
   }
 
   @Test
@@ -113,6 +127,9 @@ internal class LockoutModuleTest : ModuleTest() {
   private fun givenChannelCreationFails() =
       whenever(discordChannelServiceMock.createChannel(any())).thenThrow(RuntimeException())
 
+  private fun givenFactoryReturnsNewRoom(room: LockoutRaceRoom) =
+      whenever(lockoutFactoryMock.createRaceRoom(any())).thenReturn(room)
+
   //</editor-fold>
 
   //<editor-fold desc="Then">
@@ -132,6 +149,14 @@ internal class LockoutModuleTest : ModuleTest() {
 
   private fun thenAnswerContains(expectedPart: String) {
     assertThat(answer).contains(expectedPart)
+  }
+
+  private fun thenRoomIsCreatedWithChannel(expectedChannel: TextChannel) {
+    verify(lockoutFactoryMock).createRaceRoom(expectedChannel)
+  }
+
+  private fun thenNewRaceRoomIsRegistered(expectedChannel: TextChannel, expectedRoom: DiscordRaceRoom) {
+    verify(discordRaceRoomManagerMock).addRaceRoom(expectedChannel, expectedRoom)
   }
 
   //</editor-fold>

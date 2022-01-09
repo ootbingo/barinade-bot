@@ -11,8 +11,6 @@ import ootbingo.barinade.bot.extensions.checkFirstForNull
 import ootbingo.barinade.bot.extensions.exception
 import org.slf4j.LoggerFactory
 
-internal typealias RaceRoomCommand = DiscordRaceRoom.(DiscordEntrant) -> String?
-
 @LilyModule
 class DiscordRacingModule(private val manager: DiscordRaceRoomManager) {
 

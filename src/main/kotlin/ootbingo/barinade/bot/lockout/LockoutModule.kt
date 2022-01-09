@@ -9,6 +9,9 @@ import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 import ootbingo.barinade.bot.discord.DiscordChannelService
+import ootbingo.barinade.bot.discord.racing.DiscordRaceRoomFactory
+import ootbingo.barinade.bot.discord.racing.DiscordRaceRoomManager
+import ootbingo.barinade.bot.discord.racing.LockoutRaceRoom
 import ootbingo.barinade.bot.extensions.castOrNull
 import ootbingo.barinade.bot.extensions.exception
 import org.slf4j.LoggerFactory
@@ -18,6 +21,8 @@ import java.util.*
 class LockoutModule(
     private val properties: LockoutProperties,
     private val discordChannelService: DiscordChannelService,
+    private val lockoutFactory: DiscordRaceRoomFactory<LockoutRaceRoom>,
+    private val raceRoomManager: DiscordRaceRoomManager,
 ) {
 
   private val logger = LoggerFactory.getLogger(LockoutModule::class.java)
@@ -32,6 +37,7 @@ class LockoutModule(
             ?.takeIf { it.id == properties.discordChannel }
             ?.castOrNull<TextChannel>()
             ?.let { createLockoutChannel(it.guild) }
+            ?.also { raceRoomManager.addRaceRoom(it, lockoutFactory.createRaceRoom(it)) }
             ?.let { Answer.ofText("New race: ${it.asMention}") }
       } catch (e: Exception) {
         logger.exception("Failed to create lockout channel", e)
