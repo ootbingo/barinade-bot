@@ -32,6 +32,8 @@ class HelpModule {
             !silvers : List Silver Rupee Rooms
             
             !shame   : Express your disapproval
+            
+            !lockout : Open a new lockout race room (only in #lockout-racing)
             ```
           """.trimIndent()
 

@@ -16,7 +16,7 @@ class DiscordRacingModule(private val manager: DiscordRaceRoomManager) {
 
   private val logger = LoggerFactory.getLogger(DiscordRacingModule::class.java)
 
-  @LilyCommand("enter")
+  @LilyCommand("enter", "join")
   fun enter(command: Command): Answer<AnswerInfo>? =
       forwardCommand(command, DiscordRaceRoom::enter)
 
