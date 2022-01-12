@@ -13,16 +13,23 @@ class GlobalConfiguration {
 
   @Bean
   fun shameMessages(): () -> List<String> = {
-    GlobalConfiguration::class.java.classLoader
-        .getResource("shame.txt")
-        ?.readText(Charsets.UTF_8)
-        ?.lines()
-        ?.filter { it.isNotBlank() }
-        ?: emptyList()
+    linesFromResourceFile("shame.txt")
+  }
+
+  fun themedWords(): () -> List<String> = {
+    linesFromResourceFile("themed_words.txt")
   }
 
   @Bean
   fun parallelTaskScheduling(): ThreadPoolTaskScheduler {
     return ThreadPoolTaskScheduler().apply { poolSize = 10 }
   }
+
+  private fun linesFromResourceFile(filename: String): List<String> =
+      GlobalConfiguration::class.java.classLoader
+          .getResource(filename)
+          ?.readText(Charsets.UTF_8)
+          ?.lines()
+          ?.filter { it.isNotBlank() }
+          ?: emptyList()
 }
