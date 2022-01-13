@@ -16,6 +16,7 @@ class GlobalConfiguration {
     linesFromResourceFile("shame.txt")
   }
 
+  @Bean
   fun themedWords(): () -> List<String> = {
     linesFromResourceFile("themed_words.txt")
   }

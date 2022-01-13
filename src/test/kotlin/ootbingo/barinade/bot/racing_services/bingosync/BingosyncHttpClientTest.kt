@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -134,7 +135,7 @@ internal class BingosyncHttpClientTest {
   }
 
   private fun givenLocationHeader(header: String) {
-    whenever(restTemplateMock.postForEntity(any<String>(), any<String>(), eq(String::class.java)))
+    whenever(restTemplateMock.postForEntity(any<String>(), any<HttpEntity<String>>(), eq(String::class.java)))
         .thenReturn(ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, header).build())
   }
 
@@ -171,11 +172,11 @@ internal class BingosyncHttpClientTest {
 
   private infix fun String.hasBody(expectedBody: String) {
 
-    val captor = argumentCaptor<String>()
+    val captor = argumentCaptor<HttpEntity<String>>()
 
     verify(restTemplateMock).postForEntity(eq(this), captor.capture(), eq(String::class.java))
 
-    assertThat(captor.lastValue).isEqualTo(expectedBody)
+    assertThat(captor.lastValue.body).isEqualTo(expectedBody)
   }
 
   private fun thenClientReturnsLocationHeader(expectedHeader: String?) {
