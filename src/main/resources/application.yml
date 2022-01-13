@@ -40,6 +40,9 @@ gg:
         client-id:
         client-secret:
 
+bingosync:
+  base-url: http://localhost
+
 logging:
   file:
     name: bot.log
