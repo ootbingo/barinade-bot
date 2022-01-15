@@ -37,7 +37,7 @@ internal class DiscordRaceRoomManagerTest {
   }
 
   private class TestRaceRoom(discordChannel: TextChannel) : DiscordRaceRoom(
-      DiscordRaceStatusHolder(),
+      mock(),
       discordChannel,
       {},
       {},

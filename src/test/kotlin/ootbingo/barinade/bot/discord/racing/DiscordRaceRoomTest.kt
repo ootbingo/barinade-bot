@@ -2,10 +2,11 @@ package ootbingo.barinade.bot.discord.racing
 
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.TextChannel
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.EntrantStatus.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.UNDEFINED
+import net.dv8tion.jda.api.entities.User
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceEntryState
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceEntryState.*
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceState
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceState.*
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,7 +50,7 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun addsToHolderOnEnter() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
 
@@ -61,14 +62,14 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun repliesIfAdded() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
     givenHolderReturns(true)
 
     whenEntrantEnters(entrant)
 
-    thenReplyMatches(Regex("^${entrant.username} entered the race\$"))
+    thenReplyMatches(Regex("^${entrant.name} entered the race\$"))
   }
 
   @Test
@@ -77,18 +78,18 @@ internal class DiscordRaceRoomTest {
     givenRaceState(OPEN)
     givenHolderReturns(false)
 
-    whenEntrantEnters(randomEntrant())
+    whenEntrantEnters(randomUser())
 
     thenNoReplyIsSent()
   }
 
   @ParameterizedTest
-  @EnumSource(RaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNothingWhenEnteringNonOpenRoom(raceState: RaceState) {
+  @EnumSource(DiscordRaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
+  internal fun doesNothingWhenEnteringNonOpenRoom(raceState: DiscordRaceState) {
 
     givenRaceState(raceState)
 
-    whenEntrantEnters(randomEntrant())
+    whenEntrantEnters(randomUser())
 
     thenNoActionIsTaken()
   }
@@ -100,7 +101,7 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun removesFromHolderOnUnenter() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
 
@@ -112,14 +113,14 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun repliesIfRemoved() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
     givenHolderReturns(true)
 
     whenEntrantUnenters(entrant)
 
-    thenReplyMatches(Regex("^${entrant.username} left the race\$"))
+    thenReplyMatches(Regex("^${entrant.name} left the race\$"))
   }
 
   @Test
@@ -128,18 +129,18 @@ internal class DiscordRaceRoomTest {
     givenRaceState(OPEN)
     givenHolderReturns(false)
 
-    whenEntrantUnenters(randomEntrant())
+    whenEntrantUnenters(randomUser())
 
     thenNoReplyIsSent()
   }
 
   @ParameterizedTest
-  @EnumSource(RaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNothingWhenLeavingNonOpenRoom(raceState: RaceState) {
+  @EnumSource(DiscordRaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
+  internal fun doesNothingWhenLeavingNonOpenRoom(raceState: DiscordRaceState) {
 
     givenRaceState(raceState)
 
-    whenEntrantUnenters(randomEntrant())
+    whenEntrantUnenters(randomUser())
 
     thenNoActionIsTaken()
   }
@@ -151,7 +152,7 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun setsStatusToReady() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
 
@@ -163,14 +164,14 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun repliesIfSetToReady() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
     givenHolderReturns(true)
 
     whenEntrantReadiesUp(entrant)
 
-    thenReplyMatches(Regex("""^${entrant.username} is ready( \(\d+ remaining\))?$"""))
+    thenReplyMatches(Regex("""^${entrant.name} is ready( \(\d+ remaining\))?$"""))
   }
 
   @Test
@@ -179,7 +180,7 @@ internal class DiscordRaceRoomTest {
     givenRaceState(OPEN)
     givenHolderReturns(false)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenNoReplyIsSent()
   }
@@ -193,7 +194,7 @@ internal class DiscordRaceRoomTest {
     givenHolderReturns(true)
     givenEntrantCounts(NOT_READY to notReadyCount)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenReplyMatches(Regex("""^[a-f0-9-@]* is ready \($notReadyCount remaining\)$"""))
   }
@@ -205,18 +206,18 @@ internal class DiscordRaceRoomTest {
     givenHolderReturns(true)
     givenEntrantCounts(NOT_READY to 0)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenReplyMatches(Regex("""[^()]*"""))
   }
 
   @ParameterizedTest
-  @EnumSource(RaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNothingWhenReadyingInNonOpenRoom(raceState: RaceState) {
+  @EnumSource(DiscordRaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
+  internal fun doesNothingWhenReadyingInNonOpenRoom(raceState: DiscordRaceState) {
 
     givenRaceState(raceState)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenNoActionIsTaken()
   }
@@ -228,7 +229,7 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun setsStatusToNotReady() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
 
@@ -240,7 +241,7 @@ internal class DiscordRaceRoomTest {
   @Test
   internal fun repliesIfSetToNotReady() {
 
-    val entrant = randomEntrant()
+    val entrant = randomUser()
 
     givenRaceState(OPEN)
     givenHolderReturns(true)
@@ -248,7 +249,7 @@ internal class DiscordRaceRoomTest {
 
     whenEntrantUnreadies(entrant)
 
-    thenReplyMatches(Regex("""^${entrant.username} is not ready$"""))
+    thenReplyMatches(Regex("""^${entrant.name} is not ready$"""))
   }
 
   @Test
@@ -257,18 +258,18 @@ internal class DiscordRaceRoomTest {
     givenRaceState(OPEN)
     givenHolderReturns(false)
 
-    whenEntrantUnreadies(randomEntrant())
+    whenEntrantUnreadies(randomUser())
 
     thenNoReplyIsSent()
   }
 
   @ParameterizedTest
-  @EnumSource(RaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNothingWhenUnreadyingInNonOpenRoom(raceState: RaceState) {
+  @EnumSource(DiscordRaceState::class, names = ["OPEN"], mode = EnumSource.Mode.EXCLUDE)
+  internal fun doesNothingWhenUnreadyingInNonOpenRoom(raceState: DiscordRaceState) {
 
     givenRaceState(raceState)
 
-    whenEntrantUnreadies(randomEntrant())
+    whenEntrantUnreadies(randomUser())
 
     thenNoActionIsTaken()
   }
@@ -284,7 +285,7 @@ internal class DiscordRaceRoomTest {
     givenEntrantCounts(NOT_READY to 0, READY to 2)
     givenHolderReturns(true)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenRaceStartIsInitiated()
   }
@@ -296,7 +297,7 @@ internal class DiscordRaceRoomTest {
     givenEntrantCounts(NOT_READY to 0, READY to 1)
     givenHolderReturns(true)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     thenRaceStartIsInitiated(false)
   }
@@ -352,7 +353,7 @@ internal class DiscordRaceRoomTest {
 
     whenRaceStarts()
 
-    thenRaceStateIsChanged(UNDEFINED)
+    thenRaceStateIsChanged(PROGRESS)
   }
 
   @Test
@@ -360,7 +361,7 @@ internal class DiscordRaceRoomTest {
 
     whenRaceStarts()
 
-    thenEntrantStatusIsChangedForEveryone(EntrantStatus.UNDEFINED)
+    thenEntrantStatusIsChangedForEveryone(PLAYING)
   }
 
   //</editor-fold>
@@ -373,12 +374,12 @@ internal class DiscordRaceRoomTest {
     whenever(statusMock.setStatusForEntrant(any(), any())).thenReturn(returnValue)
   }
 
-  private fun givenRaceState(raceState: RaceState) {
+  private fun givenRaceState(raceState: DiscordRaceState) {
     whenever(statusMock.state).thenReturn(raceState)
   }
 
-  private fun givenEntrantCounts(vararg counts: Pair<EntrantStatus, Int>) {
-    whenever(statusMock.countPerStatus()).thenReturn(
+  private fun givenEntrantCounts(vararg counts: Pair<DiscordRaceEntryState, Int>) {
+    whenever(statusMock.countPerEntrantState()).thenReturn(
         counts
             .filter { it.second > 0 }
             .toMap()
@@ -394,19 +395,19 @@ internal class DiscordRaceRoomTest {
 
   //<editor-fold desc="When">
 
-  private fun whenEntrantEnters(entrant: DiscordEntrant) {
+  private fun whenEntrantEnters(entrant: User) {
     reply = AtomicReference(room.enter(entrant))
   }
 
-  private fun whenEntrantUnenters(entrant: DiscordEntrant) {
+  private fun whenEntrantUnenters(entrant: User) {
     reply = AtomicReference(room.unenter(entrant))
   }
 
-  private fun whenEntrantReadiesUp(entrant: DiscordEntrant) {
+  private fun whenEntrantReadiesUp(entrant: User) {
     reply = AtomicReference(room.ready(entrant))
   }
 
-  private fun whenEntrantUnreadies(entrant: DiscordEntrant) {
+  private fun whenEntrantUnreadies(entrant: User) {
     reply = AtomicReference(room.unready(entrant))
   }
 
@@ -416,7 +417,7 @@ internal class DiscordRaceRoomTest {
     givenHolderReturns(true)
     givenEntrantCounts(NOT_READY to 0, READY to 42)
 
-    whenEntrantReadiesUp(randomEntrant())
+    whenEntrantReadiesUp(randomUser())
 
     val captor = argumentCaptor<() -> Unit>()
     verify(raceStartExecutorMock, atLeast(0)).invoke(captor.capture())
@@ -438,15 +439,15 @@ internal class DiscordRaceRoomTest {
     assertThat(reply).hasValue(null)
   }
 
-  private fun thenEntrantIsAdded(expectedEntrant: DiscordEntrant) {
+  private fun thenEntrantIsAdded(expectedEntrant: User) {
     verify(statusMock).addEntrant(expectedEntrant)
   }
 
-  private fun thenEntrantIsRemoved(expectedEntrant: DiscordEntrant) {
+  private fun thenEntrantIsRemoved(expectedEntrant: User) {
     verify(statusMock).removeEntrant(expectedEntrant)
   }
 
-  private fun thenEntrantStatusIsChanged(expectedEntrant: DiscordEntrant, expectedStatus: EntrantStatus) {
+  private fun thenEntrantStatusIsChanged(expectedEntrant: User, expectedStatus: DiscordRaceEntryState) {
     verify(statusMock).setStatusForEntrant(expectedEntrant, expectedStatus)
   }
 
@@ -460,7 +461,7 @@ internal class DiscordRaceRoomTest {
     else verifyNoInteractions(raceStartExecutorMock)
   }
 
-  private fun thenRaceStateIsChanged(expectedState: RaceState) {
+  private fun thenRaceStateIsChanged(expectedState: DiscordRaceState) {
     verify(statusMock).state = expectedState
   }
 
@@ -479,7 +480,7 @@ internal class DiscordRaceRoomTest {
         .run { assertThat(this).matches(Regex("""^Filename: [A-Z]{2}$""").toPattern()) }
   }
 
-  private fun thenEntrantStatusIsChangedForEveryone(expectedStatus: EntrantStatus) {
+  private fun thenEntrantStatusIsChangedForEveryone(expectedStatus: DiscordRaceEntryState) {
     verify(statusMock).setStatusForAll(expectedStatus)
   }
 
@@ -487,7 +488,13 @@ internal class DiscordRaceRoomTest {
 
   //<editor-fold desc="Helper">
 
-  private fun randomEntrant() = DiscordEntrant(Random.nextLong(), "@${UUID.randomUUID()}")
+  private fun randomUser() = mock<User>()
+      .apply {
+        val name = UUID.randomUUID().toString()
+        whenever(idLong).thenReturn(Random.nextLong())
+        whenever(asTag).thenReturn("@$name")
+        whenever(this.name).thenReturn(name)
+      }
 
   //</editor-fold>
 }

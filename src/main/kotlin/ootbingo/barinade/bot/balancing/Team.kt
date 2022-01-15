@@ -17,9 +17,7 @@ class Team(val members: List<TeamMember>) {
 
   override fun toString(): String {
     return members
-        .onEach { println("member: $it") }
         .joinToString(", ") { it.name }
         .let { "$it (${predictedTime.standardFormat()})" }
-        .also { println(it) }
   }
 }

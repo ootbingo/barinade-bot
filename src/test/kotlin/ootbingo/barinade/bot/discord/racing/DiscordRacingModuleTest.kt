@@ -52,17 +52,12 @@ internal class DiscordRacingModuleTest : ModuleTest() {
     val raceRoom = mock<DiscordRaceRoom>()
 
     val user = mock<User>()
-    val userId = Random.nextLong()
-    val userTag = UUID.randomUUID().toString()
-
-    whenever(user.idLong).thenReturn(userId)
-    whenever(user.asTag).thenReturn(userTag)
 
     givenManagerReturnsRaceRoom(raceRoom)
 
     whenDiscordMessageIsSent(user, commandMapping.first, mock<TextChannel>())
 
-    thenCommand(commandMapping.second) isInvokedIn raceRoom on DiscordEntrant(userId, userTag)
+    thenCommand(commandMapping.second) isInvokedIn raceRoom on user
   }
 
   @ParameterizedTest
@@ -124,7 +119,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
   private infix fun Pair<RaceRoomCommand, User>.inChannel(room: DiscordRaceRoom) = this to room
 
   private infix fun Pair<Pair<RaceRoomCommand, User>, DiscordRaceRoom>.returns(value: String) {
-    whenever(first.first.invoke(second, DiscordEntrant(first.second))).thenReturn(value)
+    whenever(first.first.invoke(second, first.second)).thenReturn(value)
   }
 
   //</editor-fold>
@@ -136,7 +131,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
   private infix fun RaceRoomCommand.isInvokedIn(raceRoom: DiscordRaceRoom) =
       this to raceRoom
 
-  private infix fun Pair<RaceRoomCommand, DiscordRaceRoom>.on(entrant: DiscordEntrant) {
+  private infix fun Pair<RaceRoomCommand, DiscordRaceRoom>.on(entrant: User) {
     verify(this.second).apply { this@on.first.invoke(this, entrant) }
   }
 

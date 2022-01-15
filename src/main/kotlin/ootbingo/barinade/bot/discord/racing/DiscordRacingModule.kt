@@ -20,7 +20,7 @@ class DiscordRacingModule(private val manager: DiscordRaceRoomManager) {
   fun enter(command: Command): Answer<AnswerInfo>? =
       forwardCommand(command, DiscordRaceRoom::enter)
 
-  @LilyCommand("unenter")
+  @LilyCommand("unenter", "leave")
   fun unenter(command: Command): Answer<AnswerInfo>? =
       forwardCommand(command, DiscordRaceRoom::unenter)
 
@@ -43,7 +43,7 @@ class DiscordRacingModule(private val manager: DiscordRaceRoomManager) {
           ?.message
           ?.let { it.raceRoom() to it }
           ?.checkFirstForNull()
-          ?.let { forward.invoke(it.first, DiscordEntrant(it.second.author)) }
+          ?.let { forward.invoke(it.first, it.second.author) }
           ?.let { Answer.ofText(it) }
 
   private fun Message.raceRoom() =

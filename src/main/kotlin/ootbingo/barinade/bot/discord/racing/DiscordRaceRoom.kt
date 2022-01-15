@@ -1,10 +1,10 @@
 package ootbingo.barinade.bot.discord.racing
 
 import net.dv8tion.jda.api.entities.TextChannel
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.EntrantStatus.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.*
-import ootbingo.barinade.bot.discord.racing.DiscordRaceStatusHolder.RaceState.UNDEFINED
+import net.dv8tion.jda.api.entities.User
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceEntryState.*
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceState
+import ootbingo.barinade.bot.discord.data.model.DiscordRaceState.*
 import ootbingo.barinade.bot.extensions.greaterThan
 import ootbingo.barinade.bot.extensions.ifFalse
 import ootbingo.barinade.bot.misc.generateFilename
@@ -17,40 +17,40 @@ abstract class DiscordRaceRoom(
     private val countdownService: CountdownService,
 ) {
 
-  fun enter(entrant: DiscordEntrant): String? =
+  fun enter(entrant: User): String? =
       ifState(OPEN)
           ?.let { status.addEntrant(entrant) }
           ?.takeIf { it }
-          ?.let { "${entrant.username} entered the race" }
+          ?.let { "${entrant.name} entered the race" }
 
-  fun unenter(entrant: DiscordEntrant): String? =
+  fun unenter(entrant: User): String? =
       ifState(OPEN)
           ?.let { status.removeEntrant(entrant) }
           ?.takeIf { it }
-          ?.let { "${entrant.username} left the race" }
+          ?.let { "${entrant.name} left the race" }
 
-  fun ready(entrant: DiscordEntrant): String? =
+  fun ready(entrant: User): String? =
       ifState(OPEN)
           ?.let { status.setStatusForEntrant(entrant, READY) }
           ?.takeIf { it }
           ?.run {
-            val counts = status.countPerStatus()
+            val counts = status.countPerEntrantState()
             if (counts[NOT_READY]?.equals(0) != false && counts[READY]?.greaterThan(1) == true) {
-              discordChannel.sendMessage("${entrant.username} is ready").complete()
+              discordChannel.sendMessage("${entrant.name} is ready").complete()
               start()
               return@run null
             }
             return@run this
           }
-          ?.let { "${entrant.username} is ready".appendNotReadyCount() }
+          ?.let { "${entrant.name} is ready".appendNotReadyCount() }
 
-  fun unready(entrant: DiscordEntrant): String? =
+  fun unready(entrant: User): String? =
       ifState(OPEN)
           ?.let { status.setStatusForEntrant(entrant, NOT_READY) }
           ?.takeIf { it }
-          ?.let { "${entrant.username} is not ready" }
+          ?.let { "${entrant.name} is not ready" }
 
-  open fun bingosync(entrant: DiscordEntrant): String? = null
+  open fun bingosync(entrant: User): String? = null
 
   protected fun start() {
 
@@ -65,18 +65,18 @@ abstract class DiscordRaceRoom(
       status.state = STARTING
       countdownService.postCountdownInChannel(discordChannel)
       discordChannel.sendMessage("Filename: ${generateFilename()}").queue()
-      status.state = UNDEFINED
-      status.setStatusForAll(EntrantStatus.UNDEFINED)
+      status.state = PROGRESS
+      status.setStatusForAll(PLAYING)
     }
   }
 
   protected abstract fun readyToStart(): Boolean
 
-  private fun ifState(vararg allowedStates: RaceState) =
+  private fun ifState(vararg allowedStates: DiscordRaceState) =
       status.state.takeIf { it in allowedStates }
 
   private fun String.appendNotReadyCount() =
-      status.countPerStatus()[NOT_READY]
+      status.countPerEntrantState()[NOT_READY]
           ?.takeIf { it > 0 }
           ?.let { "$this ($it remaining)" }
           ?: this

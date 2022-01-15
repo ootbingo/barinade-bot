@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.discord.racing
 
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.extensions.exception
 import ootbingo.barinade.bot.misc.ThemedWordService
 import ootbingo.barinade.bot.racing_services.bingosync.BingosyncRoomConfig.Variant.*
@@ -30,10 +31,10 @@ class LockoutRaceRoom(
 
   var roomCreated = false
 
-  override fun bingosync(entrant: DiscordEntrant): String? =
+  override fun bingosync(entrant: User): String? =
       bingosync()
 
-  fun bingosync(): String? {
+  private fun bingosync(): String? {
 
     if (roomCreated) {
       return null
@@ -59,7 +60,7 @@ class LockoutRaceRoom(
   override fun readyToStart(): Boolean {
 
     if (!roomCreated) {
-      bingosync()
+      bingosync()?.let { discordChannel.sendMessage(it).queue() }
     }
 
     return true
