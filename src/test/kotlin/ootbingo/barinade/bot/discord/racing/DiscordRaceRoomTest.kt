@@ -33,6 +33,7 @@ internal class DiscordRaceRoomTest {
       statusMock, discordChannelMock, raceStartExecutorMock, waitMock, countdownServiceMock
   ) {
     override fun readyToStart(): Boolean = readyToStartMock.invoke()
+    override fun done(entrant: User): String? = null
   }
 
   private lateinit var reply: AtomicReference<String?>
@@ -371,7 +372,7 @@ internal class DiscordRaceRoomTest {
   private fun givenHolderReturns(returnValue: Boolean) {
     whenever(statusMock.addEntrant(any())).thenReturn(returnValue)
     whenever(statusMock.removeEntrant(any())).thenReturn(returnValue)
-    whenever(statusMock.setStatusForEntrant(any(), any())).thenReturn(returnValue)
+    whenever(statusMock.setStatusForEntrant(any(), any(), anyOrNull())).thenReturn(returnValue)
   }
 
   private fun givenRaceState(raceState: DiscordRaceState) {

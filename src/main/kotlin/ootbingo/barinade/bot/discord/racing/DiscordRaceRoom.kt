@@ -50,6 +50,8 @@ abstract class DiscordRaceRoom(
           ?.takeIf { it }
           ?.let { "${entrant.name} is not ready" }
 
+  abstract fun done(entrant: User): String?
+
   open fun bingosync(entrant: User): String? = null
 
   protected fun start() {

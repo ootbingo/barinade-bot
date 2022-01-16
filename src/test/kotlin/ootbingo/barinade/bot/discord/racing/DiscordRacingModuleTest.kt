@@ -28,6 +28,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
           "unenter" to module::unenter,
           "ready" to module::ready,
           "unready" to module::unready,
+          "done" to module::done,
           "bingosync" to module::bingosync,
       )
 
@@ -39,6 +40,7 @@ internal class DiscordRacingModuleTest : ModuleTest() {
         "!unenter" to DiscordRaceRoom::unenter,
         "!ready" to DiscordRaceRoom::ready,
         "!unready" to DiscordRaceRoom::unready,
+        "!done" to DiscordRaceRoom::done,
         "!bingosync" to DiscordRaceRoom::bingosync,
     ).asStream()
   }

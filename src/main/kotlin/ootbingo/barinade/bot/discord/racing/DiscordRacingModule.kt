@@ -32,6 +32,10 @@ class DiscordRacingModule(private val manager: DiscordRaceRoomManager) {
   fun unready(command: Command): Answer<AnswerInfo>? =
       forwardCommand(command, DiscordRaceRoom::unready)
 
+  @LilyCommand("done")
+  fun done(command: Command): Answer<AnswerInfo>? =
+      forwardCommand(command, DiscordRaceRoom::done)
+
   @LilyCommand("bingosync")
   fun bingosync(command: Command): Answer<AnswerInfo>? =
       forwardCommand(command, DiscordRaceRoom::bingosync)

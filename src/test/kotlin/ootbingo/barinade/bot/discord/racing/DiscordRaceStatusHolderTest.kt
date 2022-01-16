@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.discord.racing
 
+import com.google.gson.Gson
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.connection.DiscordPlayerRepository
@@ -39,6 +40,7 @@ internal class DiscordRaceStatusHolderTest {
       playerRepositoryMock,
       raceRepositoryMock,
       mock(),
+      Gson(),
       mock<TextChannel>().apply {
         whenever(name).thenReturn("")
         whenever(idLong).thenReturn(0)

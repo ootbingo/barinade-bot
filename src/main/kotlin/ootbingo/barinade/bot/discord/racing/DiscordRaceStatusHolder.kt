@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.discord.racing
 
+import com.google.gson.Gson
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.connection.DiscordPlayerRepository
@@ -9,11 +10,14 @@ import ootbingo.barinade.bot.discord.data.model.*
 import ootbingo.barinade.bot.discord.data.model.DiscordRaceEntry.*
 import ootbingo.barinade.bot.extensions.exception
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
 
 class DiscordRaceStatusHolder(
     private val playerRepository: DiscordPlayerRepository,
     private val raceRepository: DiscordRaceRepository,
     private val entryRepository: DiscordRaceEntryRepository,
+    private val gson: Gson,
     discordChannel: TextChannel,
     initialType: DiscordRaceType,
 ) {
@@ -23,6 +27,7 @@ class DiscordRaceStatusHolder(
   var type: DiscordRaceType
   private val raceId: Long
   private val race get() = raceRepository.findById(raceId)!!
+  private val additionalInfo = mutableMapOf<String, String>()
 
   init {
     type = initialType
@@ -63,7 +68,11 @@ class DiscordRaceStatusHolder(
         }
   }
 
-  fun setStatusForEntrant(entrant: User, newState: DiscordRaceEntryState): Boolean {
+  fun setStatusForEntrant(entrant: User, newState: DiscordRaceEntryState, finalTime: Duration? = null): Boolean {
+
+    if (finalTime != null && newState != DiscordRaceEntryState.FINISHED) {
+      throw IllegalArgumentException()
+    }
 
     val entry = entryRepository.findByRaceIdAndPlayer(raceId, playerRepository.fromDiscordUser(entrant))
 
@@ -72,6 +81,10 @@ class DiscordRaceStatusHolder(
     }
 
     entry.state = newState
+    if (newState == DiscordRaceEntryState.FINISHED && finalTime != null) {
+      entry.place = 1
+      entry.time = finalTime
+    }
     entryRepository.save(entry)
     return true
   }
@@ -93,17 +106,33 @@ class DiscordRaceStatusHolder(
           .eachCount()
           .filter { it.value > 0 }
 
+  fun addAdditionalInfo(key: String, value: String) {
+    additionalInfo[key] = value
+    updateDbRace { it.additionalInfo = gson.toJson(additionalInfo) }
+  }
+
   var state: DiscordRaceState
     get() = race.state
     set(newState) {
-      val dbRace = race
-      if (dbRace.state == newState) return
-      dbRace.state = newState
-      save(dbRace)
+      updateDbRace {
+        if (it.state == newState) return@updateDbRace
+        it.state = newState
+        when (newState) {
+          DiscordRaceState.PROGRESS -> it.startTime = Instant.now().also { t -> startTime = t }
+          DiscordRaceState.FINISHED -> it.endTime = Instant.now()
+          else -> {}
+        }
+      }
     }
 
-  private fun save(race: DiscordRace): Boolean = try {
-    raceRepository.save(race)
+  var startTime: Instant? = null
+    private set
+
+  private fun updateDbRace(block: (DiscordRace) -> Unit): Boolean = try {
+
+    val dbRace = race
+    block(dbRace)
+    raceRepository.save(dbRace)
     true
   } catch (e: Throwable) {
 

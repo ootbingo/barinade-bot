@@ -25,5 +25,5 @@ class DiscordRaceEntry(
 }
 
 enum class DiscordRaceEntryState {
-  NOT_READY, READY, PLAYING, FINISHED, FORFEIT, DQ
+  NOT_READY, READY, PLAYING, FINISHED, FORFEIT, DQ, NOT_RANKED
 }
