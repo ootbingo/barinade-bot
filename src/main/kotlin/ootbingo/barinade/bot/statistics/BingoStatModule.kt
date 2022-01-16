@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Duration
-import java.util.Locale
+import java.util.*
 
 @LilyModule
 class BingoStatModule(private val playerHelper: PlayerHelper) {

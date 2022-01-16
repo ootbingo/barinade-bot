@@ -1,33 +1,31 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets.*
-import java.util.Properties
+import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.4.32"
+  val kotlinVersion = "1.6.10"
 
   java
-  id("org.springframework.boot") version "2.3.4.RELEASE"
-  id("io.spring.dependency-management") version "1.0.8.RELEASE"
+  id("org.springframework.boot") version "2.6.2"
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  kotlin("plugin.allopen") version kotlinVersion
-  id("org.sonarqube") version "2.7.1"
+  id("org.sonarqube") version "3.3"
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "2.0.3-RELEASE"
+version = "3.0.0-Beta1"
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
   mavenCentral()
-  jcenter()
   maven {
     url = uri("https://maven.pkg.github.com/scaramangado/lily")
     credentials {
@@ -35,11 +33,21 @@ repositories {
       password = project.properties["githubPackagesToken"]?.let { it as String } ?: ""
     }
   }
+  maven {
+    name = "m2-dv8tion"
+    url = uri("https://m2.dv8tion.net/releases")
+  }
 }
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.0")
+  implementation("de.scaramangado:lily:0.2.0") {
+    // TODO Upgrade Lily
+    exclude(module = "JDA")
+  }
+  implementation("net.dv8tion:JDA:4.4.0_352") {
+    exclude(module = "opus-java")
+  }
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -51,7 +59,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.15")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.18")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -69,8 +77,8 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.13.2")
-  testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+  testImplementation("org.assertj:assertj-core:3.22.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
 tasks.withType<Jar> {
@@ -109,7 +117,7 @@ tasks.withType<Test> {
 
 tasks.withType<JacocoReport> {
   reports {
-    xml.isEnabled = true
+    xml.required.set(true)
   }
 }
 
@@ -128,10 +136,6 @@ sonarqube {
   }
 }
 
-allOpen {
-  annotation("ootbingo.barinade.bot.compile.Open")
-}
-
 fun executeCommand(command: String) =
     try {
       Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
@@ -141,14 +145,15 @@ fun executeCommand(command: String) =
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-  jvmTarget = "1.8"
+  jvmTarget = "17"
+  freeCompilerArgs = listOf("-Xjvm-default=all")
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-  jvmTarget = "1.8"
+  jvmTarget = "17"
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "6.8.3"
+  gradleVersion = "7.3.2"
 }

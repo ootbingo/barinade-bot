@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.balancing
 
-import java.time.Duration
-
 internal const val setupTime = 30 * 60
 internal const val blackoutRatio = 3.3
 internal const val overlap = 5 * 60

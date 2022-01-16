@@ -1,8 +1,5 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.UsernameMapper
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
@@ -18,24 +15,29 @@ import ootbingo.barinade.bot.racing_services.srl.api.model.SrlPlayer
 import ootbingo.barinade.bot.racing_services.srl.api.model.SrlResult
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 @DataJpaTest
-internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRepository,
-                              @Autowired private val raceRepository: RaceRepository,
-                              @Autowired private val raceResultRepository: RaceResultRepository) {
+internal class SrlSyncJobTest(
+    @Autowired private val playerRepository: PlayerRepository,
+    @Autowired private val raceRepository: RaceRepository,
+    @Autowired private val raceResultRepository: RaceResultRepository,
+) {
 
   private val srlHttpClientMock = mock<SrlHttpClient>()
   private val job = SrlSyncJob(srlHttpClientMock,
-                               PlayerHelper(playerRepository, UsernameMapper("")),
-                               raceRepository,
-                               raceResultRepository)
+      PlayerHelper(playerRepository, UsernameMapper("")),
+      raceRepository,
+      raceResultRepository)
 
   @Test
   @DirtiesContext
@@ -164,7 +166,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
     val racetimeName = UUID.randomUUID().toString()
 
     val srlId = Random.nextLong()
-    val srlName= racetimeName.toUpperCase()
+    val srlName = racetimeName.uppercase()
 
     playerRepository.save(Player(racetimeId = racetimeId, racetimeName = racetimeName))
 
@@ -292,17 +294,19 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   private infix fun String.withId(id: Long): Player = Player(null, id, null, this)
   private fun result(playerName: String, raceId: String, time: Int) =
       RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!,
-                                     playerRepository.findBySrlNameIgnoreCase(playerName)!!),
-                 time = Duration.ofSeconds(time.toLong()))
+          playerRepository.findBySrlNameIgnoreCase(playerName)!!),
+          time = Duration.ofSeconds(time.toLong()))
 
   //<editor-fold desc="SRL Race Builder">
 
   private fun pastRace(builderParams: PastRaceBuilder.() -> Unit) =
       PastRaceBuilder().apply(builderParams).build()
 
-  class PastRaceBuilder(var id: Int = -1,
-                        var goal: String = "",
-                        var date: Instant = Instant.ofEpochSecond(0)) {
+  class PastRaceBuilder(
+      var id: Int = -1,
+      var goal: String = "",
+      var date: Instant = Instant.ofEpochSecond(0),
+  ) {
 
     private lateinit var results: List<SrlResult>
 
@@ -312,7 +316,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
 
     fun build(): SrlPastRace =
         SrlPastRace(id = id.toString(), goal = goal, date = date, numentrants = results.size.toLong(),
-                    results = results)
+            results = results)
   }
 
   class ResultsBuilder {
@@ -330,6 +334,7 @@ internal class SrlSyncJobTest(@Autowired private val playerRepository: PlayerRep
   }
 
   class ResultBuilder(var player: String = "", var time: Int = 0) {
+
     fun build() = SrlResult(player = player, time = Duration.ofSeconds(time.toLong()))
   }
 

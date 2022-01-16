@@ -29,8 +29,10 @@ class PlayerHelper(private val playerRepository: PlayerRepository, private val u
           ?: playerRepository.save(
               Player(srlId = srlId, srlName = srlName))
 
-  fun Player.updateWithData(racetimeId: String? = null, racetimeName: String? = null,
-                            srlId: Long? = null, srlName: String? = null): Player {
+  fun Player.updateWithData(
+      racetimeId: String? = null, racetimeName: String? = null,
+      srlId: Long? = null, srlName: String? = null,
+  ): Player {
 
     var changed = false
 

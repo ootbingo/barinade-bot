@@ -1,17 +1,13 @@
 package ootbingo.barinade.bot.racing_services.data
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.model.Player
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import org.mockito.kotlin.*
+import java.util.*
 import kotlin.random.Random
 
 internal class PlayerHelperTest {
@@ -60,7 +56,7 @@ internal class PlayerHelperTest {
     val playerId = Random.nextLong(0, 10000)
 
     givenPlayersInDb(Player(playerId, 0, "", "srlName", playerName),
-                     Player(-1, 0, "", playerName, "racetimeName"))
+        Player(-1, 0, "", playerName, "racetimeName"))
 
     val actualPlayer = helper.getPlayerByName(playerName)!!
 
@@ -129,7 +125,7 @@ internal class PlayerHelperTest {
     val racetimeName = UUID.randomUUID().toString()
 
     val srlId = Random.nextLong()
-    val srlName = racetimeName.toUpperCase()
+    val srlName = racetimeName.uppercase()
 
     givenPlayersInDb(Player(srlId = srlId, srlName = srlName))
 

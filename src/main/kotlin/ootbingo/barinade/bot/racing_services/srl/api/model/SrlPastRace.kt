@@ -6,8 +6,10 @@ import ootbingo.barinade.bot.racing_services.srl.api.client.deserialize.InstantD
 import java.time.Instant
 
 @JsonAutoDetect
-data class SrlPastRace(var id: String = "", var game: SrlGame = SrlGame(), var goal: String = "",
-                       @set:JsonDeserialize(using = InstantDeserializer::class)
-                       var date: Instant = Instant.now(),
-                       var numentrants: Long = 0,
-                       var results: List<SrlResult> = emptyList())
+data class SrlPastRace(
+    var id: String = "", var game: SrlGame = SrlGame(), var goal: String = "",
+    @set:JsonDeserialize(using = InstantDeserializer::class)
+    var date: Instant = Instant.now(),
+    var numentrants: Long = 0,
+    var results: List<SrlResult> = emptyList(),
+)

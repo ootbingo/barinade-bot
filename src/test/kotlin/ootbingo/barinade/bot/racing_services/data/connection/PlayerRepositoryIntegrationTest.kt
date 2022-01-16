@@ -12,12 +12,15 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.random.Random
 
 @DataJpaTest
-internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepository: PlayerRepository,
-                                               @Autowired private val raceRepository: RaceRepository) {
+internal class PlayerRepositoryIntegrationTest(
+    @Autowired private val playerRepository: PlayerRepository,
+    @Autowired private val raceRepository: RaceRepository,
+) {
 
   @Test
   @DirtiesContext
@@ -33,14 +36,14 @@ internal class PlayerRepositoryIntegrationTest(@Autowired private val playerRepo
 
     val savedRaces = raceGoals.map {
       Race("${Random.nextLong()}",
-           it,
-           Instant.now().plusSeconds(Random.nextLong(0, 10000)),
-           Platform.SRL,
-           mutableListOf())
+          it,
+          Instant.now().plusSeconds(Random.nextLong(0, 10000)).truncatedTo(ChronoUnit.MICROS),
+          Platform.SRL,
+          mutableListOf())
     }.map {
       val race = raceRepository.save(it)
       race.raceResults.add(RaceResult(RaceResult.ResultId(race, player), place = 1,
-                                      time = Duration.ofSeconds(Random.nextLong(0, 7000))))
+          time = Duration.ofSeconds(Random.nextLong(0, 7000))))
       raceRepository.save(race)
     }
 

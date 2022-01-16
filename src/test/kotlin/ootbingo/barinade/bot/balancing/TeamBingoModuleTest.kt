@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.balancing
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
@@ -10,24 +8,31 @@ import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.SoftAssertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.kotlin.*
 import java.time.Duration
 import java.util.*
 import kotlin.random.Random
 
 internal class TeamBingoModuleTest {
 
-  private val bingoStatModuleMock = mock(BingoStatModule::class.java)
-  private val teamBalancerMock = mock(TeamBalancer::class.java)
+  private val bingoStatModuleMock = mock<BingoStatModule>()
+  private val teamBalancerMock = mock<TeamBalancer>()
   private val partitionerMock = mock<(List<TeamMember>, Int) -> List<List<Team>>>()
   private val module = TeamBingoModule(bingoStatModuleMock, teamBalancerMock, partitionerMock)
 
   private val commands by lazy {
     mapOf(Pair("teamtime", module::teamTime),
         Pair("balance", module::balance))
+  }
+
+  @BeforeEach
+  internal fun setup() {
+    whenever(bingoStatModuleMock.median(any<String>())).thenReturn(null)
+    whenever(bingoStatModuleMock.forfeitRatio(any<String>())).thenReturn(null)
   }
 
   //<editor-fold desc="!teamtime">
@@ -132,24 +137,19 @@ internal class TeamBingoModuleTest {
     val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
 
     doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
-        .whenever(partitionerMock).invoke(anyList(), eq(3))
+        .whenever(partitionerMock).invoke(any(), eq(3))
 
     doAnswer {
-      val team1 = mock(Team::class.java)
-      val team2 = mock(Team::class.java)
 
-      whenever(team1.members).thenReturn(usernames.subList(0, 3).map { TeamMember(it, 0, 0.0) })
-      whenever(team2.members).thenReturn(usernames.subList(3, 6).map { TeamMember(it, 0, 0.0) })
+      val team1 = spy(Team(usernames.subList(0, 3).map { TeamMember(it, 0, 0.0) }))
+      val team2 = spy(Team(usernames.subList(3, 6).map { TeamMember(it, 0, 0.0) }))
 
-      whenever(team1.predictedTime).thenReturn(teamTimes[0])
-      whenever(team2.predictedTime).thenReturn(teamTimes[1])
-
-      whenever(team1.toString()).thenCallRealMethod()
-      whenever(team2.toString()).thenCallRealMethod()
+      doAnswer { teamTimes[0] }.whenever(team1).predictedTime
+      doAnswer { teamTimes[1] }.whenever(team2).predictedTime
 
       listOf(team1, team2)
     }
-        .whenever(teamBalancerMock).findBestTeamBalance(anyList())
+        .whenever(teamBalancerMock).findBestTeamBalance(any())
 
     val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
 
@@ -167,24 +167,19 @@ internal class TeamBingoModuleTest {
     val teamTimes = (1..2).map { Random.nextLong(0, 10000) }.map { Duration.ofSeconds(it) }
 
     doAnswer { listOf(listOf(Team(listOf(TeamMember(usernames[0], 0, 0.0))))) }
-        .whenever(partitionerMock).invoke(anyList(), eq(2))
+        .whenever(partitionerMock).invoke(any(), eq(2))
 
     doAnswer {
-      val team1 = mock(Team::class.java)
-      val team2 = mock(Team::class.java)
 
-      whenever(team1.members).thenReturn(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) })
-      whenever(team2.members).thenReturn(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) })
+      val team1 = spy(Team(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) }))
+      val team2 = spy(Team(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) }))
 
       whenever(team1.predictedTime).thenReturn(teamTimes[0])
       whenever(team2.predictedTime).thenReturn(teamTimes[1])
 
-      whenever(team1.toString()).thenCallRealMethod()
-      whenever(team2.toString()).thenCallRealMethod()
-
       listOf(team1, team2)
     }
-        .whenever(teamBalancerMock).findBestTeamBalance(anyList())
+        .whenever(teamBalancerMock).findBestTeamBalance(any())
 
     val answer = whenIrcMessageIsSent("!balance " + usernames.joinToString(" "))
 
@@ -231,7 +226,7 @@ internal class TeamBingoModuleTest {
 
   private fun whenIrcMessageIsSent(message: String): Answer<AnswerInfo>? {
 
-    val messageInfoMock = mock(IrcMessageInfo::class.java)
+    val messageInfoMock = mock<IrcMessageInfo>()
     whenever(messageInfoMock.nick).thenReturn("")
     whenever(messageInfoMock.channel).thenReturn("")
 
@@ -313,7 +308,7 @@ internal class TeamBingoModuleTest {
   private fun thenErrorMessageMentions(answer: Answer<AnswerInfo>?, vararg usernames: String) {
 
     requireNotNull(answer)
-    require(answer.text.matches(Regex("Error[^:]*:[^:]*")))
+    assertThat(answer.text).matches(Regex("Error[^:]*:[^:]*").toPattern())
 
     val errorUsers = answer.text
         .split(":")[1]

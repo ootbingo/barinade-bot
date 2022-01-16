@@ -1,18 +1,16 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
-import ootbingo.barinade.bot.racing_services.data.model.Platform
-import ootbingo.barinade.bot.racing_services.data.model.Player
-import ootbingo.barinade.bot.racing_services.data.model.Race
-import ootbingo.barinade.bot.racing_services.data.model.RaceResult
-import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.srl.api.client.SrlHttpClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class SrlImporter(private val srlHttpClient: SrlHttpClient,
-                  private val raceRepository: RaceRepository) {
+class SrlImporter(
+    private val srlHttpClient: SrlHttpClient,
+    private val raceRepository: RaceRepository,
+) {
 
   private val logger = LoggerFactory.getLogger(SrlImporter::class.java)
 

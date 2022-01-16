@@ -1,7 +1,5 @@
 package ootbingo.barinade.bot.racing_services.srl.sync
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.model.Player
 import ootbingo.barinade.bot.racing_services.data.model.Race
@@ -15,8 +13,10 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 
 internal class SrlImporterTest {
 
@@ -40,8 +40,8 @@ internal class SrlImporterTest {
 
     val playerName = UUID.randomUUID().toString()
     val races = listOf(SrlPastRace("1", oot),
-                       SrlPastRace("2", oot),
-                       SrlPastRace("3", ootbingo))
+        SrlPastRace("2", oot),
+        SrlPastRace("3", ootbingo))
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
@@ -55,8 +55,8 @@ internal class SrlImporterTest {
 
     val playerName = UUID.randomUUID().toString()
     val races = listOf(SrlPastRace("1", oot),
-                       SrlPastRace("2", otherGame),
-                       SrlPastRace("3", ootbingo))
+        SrlPastRace("2", otherGame),
+        SrlPastRace("3", ootbingo))
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
@@ -86,8 +86,8 @@ internal class SrlImporterTest {
     val playerName = UUID.randomUUID().toString()
 
     val races = listOf(SrlPastRace("1", oot, results = listOf(SrlResult(player = playerName, place = 42))),
-                       SrlPastRace("2", oot, results = listOf(SrlResult(player = playerName + "x", place = 43))),
-                       SrlPastRace("3", oot, results = listOf(SrlResult(player = playerName, place = 44))))
+        SrlPastRace("2", oot, results = listOf(SrlResult(player = playerName + "x", place = 43))),
+        SrlPastRace("3", oot, results = listOf(SrlResult(player = playerName, place = 44))))
 
     givenRacesForPlayer(playerName, *races.toTypedArray())
 
@@ -133,7 +133,7 @@ internal class SrlImporterTest {
     importer.importRacesForUser(Player(null, 0, null, name))
 
     thenResultTypesAre("1" to ResultType.FINISH, "2" to ResultType.FINISH,
-                       "3" to ResultType.FORFEIT, "4" to ResultType.DQ)
+        "3" to ResultType.FORFEIT, "4" to ResultType.DQ)
   }
 
   private fun thenResultTypesAre(vararg results: Pair<String, ResultType>) {
@@ -144,7 +144,7 @@ internal class SrlImporterTest {
     val races = raceCaptor.allValues
 
     results.forEach {
-      assertThat(races.last { r->r.raceId == it.first }.raceResults[0].resultType).isEqualTo(it.second)
+      assertThat(races.last { r -> r.raceId == it.first }.raceResults[0].resultType).isEqualTo(it.second)
     }
   }
 

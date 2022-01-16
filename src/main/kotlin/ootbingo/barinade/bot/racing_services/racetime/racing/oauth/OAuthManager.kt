@@ -43,16 +43,18 @@ class OAuthManager(
   internal data class TokenRequest(
       val clientId: String,
       val clientSecret: String,
-      val grantType: String = "client_credentials"
+      val grantType: String = "client_credentials",
   ) {
+
     fun toFormData() =
         "client_id=$clientId&client_secret=$clientSecret&grant_type=$grantType"
   }
 
   internal data class TokenResponse(
       val accessToken: String,
-      val expiresIn: Long
+      val expiresIn: Long,
   ) {
+
     fun toToken(now: Instant) = Token(accessToken, now.plusSeconds(expiresIn))
   }
 }

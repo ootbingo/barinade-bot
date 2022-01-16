@@ -1,10 +1,5 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
-import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
@@ -13,7 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import java.util.UUID
+import org.mockito.kotlin.*
+import java.util.*
 
 internal class RaceMonitorTest {
 
@@ -84,7 +80,7 @@ internal class RaceMonitorTest {
     val slug = UUID.randomUUID().toString()
 
     givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN,
-                  RacetimeRace.RacetimeRaceGoal("GSR", false))
+        RacetimeRace.RacetimeRaceGoal("GSR", false))
 
     whenScanningForRaces()
 
@@ -97,15 +93,17 @@ internal class RaceMonitorTest {
     val slug = UUID.randomUUID().toString()
 
     givenOpenRace(slug, RacetimeRace.RacetimeRaceStatus.OPEN,
-                  RacetimeRace.RacetimeRaceGoal("Bingo", true))
+        RacetimeRace.RacetimeRaceGoal("Bingo", true))
 
     whenScanningForRaces()
 
     thenConnectionsAreOpenedToRooms()
   }
 
-  private fun givenOpenRace(slug: String, status: RacetimeRace.RacetimeRaceStatus,
-                            goal: RacetimeRace.RacetimeRaceGoal) {
+  private fun givenOpenRace(
+      slug: String, status: RacetimeRace.RacetimeRaceStatus,
+      goal: RacetimeRace.RacetimeRaceGoal,
+  ) {
     openRaces.add(RacetimeRace("oot/$slug", status, goal))
   }
 
@@ -115,7 +113,7 @@ internal class RaceMonitorTest {
 
   private fun thenConnectionsAreOpenedToRooms(vararg slugs: String) {
     if (slugs.isEmpty()) {
-      verifyZeroInteractions(raceConnectionFactoryMock)
+      verifyNoInteractions(raceConnectionFactoryMock)
     } else {
       slugs.forEach {
         verify(raceConnectionFactoryMock, times(1)).openConnection("$websocketBase/ws/o/bot/$it")

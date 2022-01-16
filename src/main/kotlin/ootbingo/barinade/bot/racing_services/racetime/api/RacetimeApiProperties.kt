@@ -9,11 +9,11 @@ data class RacetimeApiProperties(
     var dataBaseUrl: String = "",
     var racingBaseUrl: String = "",
     var websocketBaseUrl: String = "",
-    var oauth: RacetimeOAuthProperties = RacetimeOAuthProperties()
+    var oauth: RacetimeOAuthProperties = RacetimeOAuthProperties(),
 ) {
 
   data class RacetimeOAuthProperties(
       var clientId: String = "",
-      var clientSecret: String = ""
+      var clientSecret: String = "",
   )
 }

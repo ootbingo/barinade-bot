@@ -11,8 +11,10 @@ import java.time.Instant
 
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.racetime-sync.enabled"], havingValue = "true")
-class RacetimeSyncJob(private val importerSupplier: () -> RacetimeImporter,
-                      private val racetimeHttpClient: RacetimeHttpClient) {
+class RacetimeSyncJob(
+    private val importerSupplier: () -> RacetimeImporter,
+    private val racetimeHttpClient: RacetimeHttpClient,
+) {
 
   private val logger = LoggerFactory.getLogger(RacetimeSyncJob::class.java)
 

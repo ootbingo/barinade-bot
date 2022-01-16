@@ -1,10 +1,5 @@
 package ootbingo.barinade.bot.racing_services.racetime.sync
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.connection.RaceRepository
 import ootbingo.barinade.bot.racing_services.data.connection.RaceResultRepository
@@ -13,8 +8,9 @@ import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.RaceResult
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 internal class RacetimeImporterTest {
 

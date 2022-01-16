@@ -1,19 +1,18 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing
 
-import com.nhaarman.mockitokotlin2.*
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.Dispatcher
 import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.IN_PROGRESS
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.OPEN
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.mockito.kotlin.*
 import java.util.*
 
 internal class RaceConnectionTest {
@@ -365,7 +364,7 @@ internal class RaceConnectionTest {
   }
 
   private fun Dispatcher.wasNotCalled() =
-      verifyZeroInteractions(this)
+      verifyNoInteractions(this)
 
   private fun thenWebsocketIsClosed(expected: Boolean = true) {
     assertThat(disconnectCommandSent).isEqualTo(expected)

@@ -1,18 +1,19 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import de.scaramangado.lily.core.communication.Dispatcher
-import ootbingo.barinade.bot.compile.Open
+import ootbingo.barinade.bot.misc.generateFilename
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RaceConnection.Mode.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.dispatch
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
-@Open
-class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
-                     private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit) {
+class RaceConnection(
+    raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
+    private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit,
+) {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
@@ -57,7 +58,7 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
     if (chatMessage.messagePlain in modes.keys) {
       mode = modes[chatMessage.messagePlain]!!
       logger.info("New mode for $slug: $mode")
-      websocket.sendMessage("Current mode: ${mode.name.toLowerCase()}")
+      websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
       return
     }
 
@@ -77,7 +78,7 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
 
       websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
       websocket.sendMessage("Change modes: !normal, !blackout, !short, !child, !nobingo")
-      websocket.sendMessage("Current mode: ${mode.name.toLowerCase()}")
+      websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
     }
 
     if (new == IN_PROGRESS && old != null && old !in listOf(FINISHED, CANCELLED)) {
@@ -88,7 +89,7 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
       }
 
       val goal = if (mode != CHILD) {
-        "https://ootbingo.github.io/bingo/v10.1/bingo.html?seed=${generateSeed()}&mode=${mode.name.toLowerCase()}"
+        "https://ootbingo.github.io/bingo/v10.1/bingo.html?seed=${generateSeed()}&mode=${mode.name.lowercase()}"
       } else {
         "https://doctorno124.github.io/childkek/bingo.html?seed=${generateSeed()}&mode=normal"
       }
@@ -106,16 +107,6 @@ class RaceConnection(raceEndpoint: String, connector: WebsocketConnector, privat
   }
 
   private fun generateSeed() = Random.nextInt(1, 1_000_000)
-
-  private fun generateFilename(): String {
-
-    val charPool: List<Char> = ('A'..'Z').toList()
-
-    return (1..2)
-        .map { Random.nextInt(0, charPool.size) }
-        .map(charPool::get)
-        .joinToString("")
-  }
 
   private enum class Mode {
     NORMAL, BLACKOUT, SHORT, CHILD, NO_BINGO

@@ -27,5 +27,5 @@ fun conditionalAnswer(command: Command, block: AnswerBuilder.() -> Unit): Answer
 
 class AnswerBuilder(
     var discordMessage: String = "",
-    var racetimeMessage: String = ""
+    var racetimeMessage: String = "",
 )

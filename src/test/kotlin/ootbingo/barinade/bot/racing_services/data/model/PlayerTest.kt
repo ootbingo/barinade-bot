@@ -2,7 +2,7 @@ package ootbingo.barinade.bot.racing_services.data.model
 
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 internal class PlayerTest {

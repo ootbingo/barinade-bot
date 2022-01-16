@@ -14,7 +14,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.*
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 @ExtendWith(SpringExtension::class)
@@ -279,7 +279,7 @@ internal class SrlHttpClientTest {
             .map { it[0] to it[1] }
 
     assertThat(abstractRaces).containsExactlyInAnyOrder((("Konrad" to 1L) to ("Ludwig" to 2L)),
-                                                        (("Ludwig" to 1L) to ("Gerhard" to 2L)),
-                                                        (("Willy" to 1L) to ("Helmut" to 2L)))
+        (("Ludwig" to 1L) to ("Gerhard" to 2L)),
+        (("Willy" to 1L) to ("Helmut" to 2L)))
   }
 }

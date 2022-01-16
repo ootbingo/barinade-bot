@@ -2,7 +2,7 @@ package ootbingo.barinade.bot.racing_services.data
 
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.util.*
 
 internal class UsernameMapperTest {
 

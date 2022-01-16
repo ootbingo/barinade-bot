@@ -26,7 +26,7 @@ class SrlHttpClient(private val properties: SrlApiProperties, private val srlRes
   fun getRacesByPlayerName(playerName: String): List<SrlPastRace> {
     val pastRaces =
         srlRestTemplate.getForObject(URI.create("${properties.baseUrl}/pastraces?player=$playerName&pageSize=2000"),
-                                     SrlPastRaces::class.java)
+            SrlPastRaces::class.java)
 
     return pastRaces?.pastraces ?: emptyList()
   }
@@ -48,7 +48,7 @@ class SrlHttpClient(private val properties: SrlApiProperties, private val srlRes
     fun getPage(page: Int) =
         srlRestTemplate
             .getForObject(URI.create("${properties.baseUrl}/pastraces?game=$gameAbbreviation&pageSize=2000&page=$page"),
-                          SrlPastRaces::class.java)
+                SrlPastRaces::class.java)
 
     return IntStream.iterate(1) { it + 1 }
         .mapToObj { getPage(it) }

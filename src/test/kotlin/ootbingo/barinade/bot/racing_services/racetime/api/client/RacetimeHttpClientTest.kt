@@ -9,7 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.*
 import org.springframework.test.web.client.response.MockRestResponseCreators.*
-import java.util.UUID
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 internal class RacetimeHttpClientTest {
@@ -92,7 +92,7 @@ internal class RacetimeHttpClientTest {
     server
         .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=2"))
         .andRespond(withSuccess(categoryRacesJson(random(), random(), random()),
-                                MediaType.APPLICATION_JSON))
+            MediaType.APPLICATION_JSON))
 
     server
         .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=3"))

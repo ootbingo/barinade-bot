@@ -18,4 +18,3 @@ Shame on those who haven't readied up yet!
 Magical FrankerZ, will <name> ever be ready ahead of time?
 This is the rando weekly, right?
 It would result in gratifying delight if we decided to proceed with the reason we've gathered here
-.forceready <name>

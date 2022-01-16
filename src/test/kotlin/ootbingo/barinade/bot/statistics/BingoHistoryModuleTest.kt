@@ -1,35 +1,27 @@
 package ootbingo.barinade.bot.statistics
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
-import de.scaramangado.lily.core.communication.Answer
-import de.scaramangado.lily.core.communication.AnswerInfo
-import de.scaramangado.lily.core.communication.Command
-import de.scaramangado.lily.core.communication.MessageInfo
-import de.scaramangado.lily.discord.connection.DiscordMessageInfo
 import de.scaramangado.lily.irc.connection.IrcMessageInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.model.Platform
-import ootbingo.barinade.bot.racing_services.data.model.Player
-import ootbingo.barinade.bot.racing_services.data.model.Race
-import ootbingo.barinade.bot.racing_services.data.model.RaceResult
-import ootbingo.barinade.bot.racing_services.data.model.ResultType
+import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
-internal class BingoHistoryModuleTest {
+internal class BingoHistoryModuleTest : ModuleTest() {
 
   //<editor-fold desc="Setup">
 
@@ -37,7 +29,7 @@ internal class BingoHistoryModuleTest {
   private val module = BingoHistoryModule(playerHelperMock)
   private val players = mutableMapOf<String, Player>()
 
-  private val commands by lazy {
+  override val commands by lazy {
     mapOf(
         "results" to module::results,
         "best" to module::best,
@@ -45,14 +37,14 @@ internal class BingoHistoryModuleTest {
     )
   }
 
-  private lateinit var thenAnswer: Answer<AnswerInfo>
+  private val thenAnswer: String get() = answer!!
 
   @BeforeEach
   internal fun setup() {
     doAnswer { players[it.getArgument(0)] }
         .whenever(playerHelperMock).getPlayerByName(Mockito.anyString())
 
-    doAnswer { players[it.getArgument<String>(0)] }.whenever(playerHelperMock).getPlayerByName(any())
+    doAnswer { players[it.getArgument(0)] }.whenever(playerHelperMock).getPlayerByName(any())
 
     doAnswer {
       it.getArgument<Player>(0)
@@ -125,12 +117,12 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(42, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(2, ResultType.FINISH),
-                        BingoTime(-3, ResultType.FORFEIT),
-                        BingoTime(3, ResultType.FINISH),
-                        BingoTime(-99, ResultType.DQ))
+        BingoTime(42, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(2, ResultType.FINISH),
+        BingoTime(-3, ResultType.FORFEIT),
+        BingoTime(3, ResultType.FINISH),
+        BingoTime(-99, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!results"
 
@@ -260,10 +252,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(2, ResultType.FORFEIT),
-                        BingoTime(10, ResultType.FINISH),
-                        BingoTime(11, ResultType.FINISH),
-                        BingoTime(1, ResultType.DQ))
+        BingoTime(2, ResultType.FORFEIT),
+        BingoTime(10, ResultType.FINISH),
+        BingoTime(11, ResultType.FINISH),
+        BingoTime(1, ResultType.DQ))
 
     whenUser(username) sendsIrcMessage "!best"
 
@@ -356,10 +348,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.DQ),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.DQ),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(username) sendsDiscordMessage "!racer"
 
@@ -372,10 +364,10 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.DQ),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.DQ),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(username) sendsIrcMessage "!racer"
 
@@ -388,11 +380,11 @@ internal class BingoHistoryModuleTest {
     val username = UUID.randomUUID().toString()
 
     givenTimesForPlayer(username, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FORFEIT))
     givenNonBingoTimesForPlayer(username, 1, 2, 3, 4)
 
     whenUser(username) sendsIrcMessage "!racer"
@@ -408,11 +400,11 @@ internal class BingoHistoryModuleTest {
 
     givenBingoTimesForPlayer(askingUser, 1)
     givenTimesForPlayer(playingUser, true,
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FINISH),
-                        BingoTime(1, ResultType.FORFEIT),
-                        BingoTime(1, ResultType.FORFEIT))
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FINISH),
+        BingoTime(1, ResultType.FORFEIT),
+        BingoTime(1, ResultType.FORFEIT))
 
     whenUser(askingUser) sendsIrcMessage "!racer $playingUser"
 
@@ -465,7 +457,7 @@ internal class BingoHistoryModuleTest {
     times
         .map {
           RaceResult(RaceResult.ResultId(Race(), Player(srlName = username, racetimeName = username)),
-                     1, Duration.ofSeconds(it.time.toLong()), it.resultType)
+              1, Duration.ofSeconds(it.time.toLong()), it.resultType)
         }
         .map {
 
@@ -497,18 +489,6 @@ internal class BingoHistoryModuleTest {
 
   //<editor-fold desc="When">
 
-  private fun whenMessageIsSent(message: String, messageInfo: MessageInfo) {
-
-    require(message.matches(Regex("!.*"))) { "Not a valid command" }
-
-    val parts = message.split(" ")
-    val command = parts[0].replace("!", "")
-
-    require(commands.containsKey(command)) { "Command not known" }
-
-    thenAnswer = commands.getValue(command).invoke(generateCommand(message, messageInfo))!!
-  }
-
   private fun whenUser(username: String) = username
 
   private infix fun String.sendsDiscordMessage(message: String) {
@@ -517,36 +497,36 @@ internal class BingoHistoryModuleTest {
     discordUser.name = this
 
     val discordMessageMock = Mockito.mock(Message::class.java)
-    Mockito.`when`(discordMessageMock.author).thenReturn(discordUser)
+    whenever(discordMessageMock.author).thenReturn(discordUser)
 
-    whenMessageIsSent(message, DiscordMessageInfo.withMessage(discordMessageMock))
+    whenDiscordMessageIsSent(this, message)
   }
 
   private infix fun String.sendsIrcMessage(message: String) {
 
     val messageInfoMock = Mockito.mock(IrcMessageInfo::class.java)
-    Mockito.`when`(messageInfoMock.nick).thenReturn(this)
-    Mockito.`when`(messageInfoMock.channel).thenReturn("")
+    whenever(messageInfoMock.nick).thenReturn(this)
+    whenever(messageInfoMock.channel).thenReturn("")
 
-    whenMessageIsSent(message, messageInfoMock)
+    whenIrcMessageIsSent(this, message)
   }
 
   //</editor-fold>
 
   //<editor-fold desc="Then">
 
-  private infix fun Answer<AnswerInfo>.mentionsPlayer(username: String): Answer<AnswerInfo> {
+  private infix fun String.mentionsPlayer(username: String): String {
 
-    assertThat(this.text).contains(username)
+    assertThat(this).contains(username)
     return this
   }
 
-  private infix fun Answer<AnswerInfo>.andListsResults(results: List<String>) = listsResults(results)
+  private infix fun String.andListsResults(results: List<String>) = listsResults(results)
 
-  private infix fun Answer<AnswerInfo>.hasCompleted(expectedCount: Int): Answer<AnswerInfo> {
+  private infix fun String.hasCompleted(expectedCount: Int): String {
 
     val actualCount = Regex("""[A-Za-z0-9-_.]+ has finished (?<count>\d+) bingos and forfeited \d+""")
-        .find(this.text)!!
+        .find(this)!!
         .groups["count"]!!
         .value
         .toInt()
@@ -556,10 +536,10 @@ internal class BingoHistoryModuleTest {
     return this
   }
 
-  private infix fun Answer<AnswerInfo>.andHasForfeited(expectedCount: Int): Answer<AnswerInfo> {
+  private infix fun String.andHasForfeited(expectedCount: Int): String {
 
     val actualCount = Regex("""[A-Za-z0-9-_.]+ has finished \d+ bingos and forfeited (?<count>\d+)""")
-        .find(this.text)!!
+        .find(this)!!
         .groups["count"]!!
         .value
         .toInt()
@@ -569,10 +549,10 @@ internal class BingoHistoryModuleTest {
     return this
   }
 
-  private infix fun Answer<AnswerInfo>.listsResults(expectedResults: List<String>) {
+  private infix fun String.listsResults(expectedResults: List<String>) {
 
     val actualResults = Regex("""^.*:(( ?\d{1,2}:\d{1,2}:\d{1,2},?)+).*$""")
-        .find(this.text)!!
+        .find(this)!!
         .groupValues[1]
         .split(",")
         .map { it.trim() }
@@ -582,38 +562,11 @@ internal class BingoHistoryModuleTest {
   }
 
   private fun thenNoBingosFinishedIsReported() {
-    assertThat(thenAnswer.text!!).endsWith("has not finished any bingos")
+    assertThat(thenAnswer).endsWith("has not finished any bingos")
   }
 
   private fun thenUnknownPlayerIsReported() {
-    assertThat(thenAnswer.text!!).contains("not found")
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Helper">
-
-  private fun generateCommand(message: String, messageInfo: MessageInfo): Command {
-
-    val parts = message.substring(1).split(" ")
-
-    return object : Command {
-      override fun getMessageInfo(): MessageInfo {
-        return messageInfo
-      }
-
-      override fun getArgument(n: Int): String {
-        return parts[n + 1]
-      }
-
-      override fun getName(): String {
-        return parts[0]
-      }
-
-      override fun getArgumentCount(): Int {
-        return parts.size - 1
-      }
-    }
+    assertThat(thenAnswer).contains("not found")
   }
 
   //</editor-fold>
