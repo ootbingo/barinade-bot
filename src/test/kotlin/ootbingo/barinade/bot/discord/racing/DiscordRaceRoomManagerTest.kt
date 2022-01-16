@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.discord.racing
 
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -37,7 +38,7 @@ internal class DiscordRaceRoomManagerTest {
   }
 
   private class TestRaceRoom(discordChannel: TextChannel) : DiscordRaceRoom(
-      DiscordRaceStatusHolder(),
+      mock(),
       discordChannel,
       {},
       {},
@@ -45,5 +46,6 @@ internal class DiscordRaceRoomManagerTest {
   ) {
 
     override fun readyToStart() = true
+    override fun done(entrant: User): String? = null
   }
 }
