@@ -3,9 +3,9 @@
 echo "$2" | docker login docker.pkg.github.com -u $1 --password-stdin
 
 case $(git branch --show-current) in
-	master) TAG=prod ;;
+	main) TAG=prod ;;
 	develop) TAG=int ;;
-	*) echo "Building images is only available on master and develop" && exit 1 ;;
+	*) echo "Building images is only available on main and develop" && exit 1 ;;
 esac
 
 IMAGE_NAME=bot
