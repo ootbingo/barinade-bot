@@ -20,7 +20,6 @@ class DiscordRace(
     var state: DiscordRaceState = DiscordRaceState.OPEN,
     @OneToMany(cascade = [], mappedBy = "entryId.race", fetch = FetchType.LAZY)
     var entrants: List<DiscordRaceEntry> = mutableListOf(),
-    @Lob
     @Column(columnDefinition = "TEXT")
     @Basic(fetch = FetchType.LAZY)
     var additionalInfo: String = "",
