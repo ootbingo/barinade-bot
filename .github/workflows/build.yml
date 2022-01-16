@@ -32,6 +32,7 @@ jobs:
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: SonarQube
+        if: ${{ false }}
         uses: burrunan/gradle-cache-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
