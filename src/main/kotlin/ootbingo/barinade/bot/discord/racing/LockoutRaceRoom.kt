@@ -48,6 +48,8 @@ class LockoutRaceRoom(
       return null
     }
 
+    status.getStatusForEntrant(entrant) ?: return null
+
     val time = Duration.between(status.startTime, Instant.now())
     status.state = DiscordRaceState.FINISHED
     status.setStatusForAll(DiscordRaceEntryState.NOT_RANKED)
