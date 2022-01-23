@@ -68,6 +68,9 @@ class DiscordRaceStatusHolder(
         }
   }
 
+  fun getStatusForEntrant(entrant: User): DiscordRaceEntryState? =
+      entryRepository.findByRaceIdAndPlayer(raceId, playerRepository.fromDiscordUser(entrant))?.state
+
   fun setStatusForEntrant(entrant: User, newState: DiscordRaceEntryState, finalTime: Duration? = null): Boolean {
 
     if (finalTime != null && newState != DiscordRaceEntryState.FINISHED) {
