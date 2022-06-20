@@ -59,7 +59,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.18")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.19")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
