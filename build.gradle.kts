@@ -5,7 +5,7 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.6.10"
+  val kotlinVersion = "1.7.20"
 
   java
   id("org.springframework.boot") version "2.7.4"
