@@ -9,7 +9,7 @@ plugins {
 
   java
   id("org.springframework.boot") version "2.7.4"
-  id("io.spring.dependency-management") version "1.0.14.RELEASE"
+  id("io.spring.dependency-management") version "1.1.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   id("org.sonarqube") version "3.4.0.2513"
