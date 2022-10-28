@@ -12,7 +12,7 @@ plugins {
   id("io.spring.dependency-management") version "1.1.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  id("org.sonarqube") version "3.4.0.2513"
+  id("org.sonarqube") version "3.5.0.2730"
   jacoco
 }
 
