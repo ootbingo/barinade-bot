@@ -78,7 +78,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.23.1")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
 
 tasks.withType<Jar> {
