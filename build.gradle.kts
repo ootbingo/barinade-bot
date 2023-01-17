@@ -77,7 +77,7 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.23.1")
+  testImplementation("org.assertj:assertj-core:3.24.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
 
