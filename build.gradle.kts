@@ -9,7 +9,7 @@ plugins {
 
   java
   id("org.springframework.boot") version "2.7.14"
-  id("io.spring.dependency-management") version "1.1.0"
+  id("io.spring.dependency-management") version "1.1.2"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   id("org.sonarqube") version "4.3.0.3225"
@@ -78,7 +78,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.24.2")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
 }
 
 tasks.withType<Jar> {
