@@ -5,7 +5,6 @@ import de.scaramangado.lily.core.annotations.LilyModule
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
-import ootbingo.barinade.bot.extensions.allTeamPartitions
 import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
@@ -13,7 +12,7 @@ import ootbingo.barinade.bot.statistics.BingoStatModule
 @LilyModule
 class TeamBingoModule(
     private val bingoStatModule: BingoStatModule, private val teamBalancer: TeamBalancer,
-    private val partitioner: (List<TeamMember>, Int) -> List<List<Team>> = List<TeamMember>::allTeamPartitions,
+    private val partitioner: (List<TeamMember>, Int) -> List<List<Team>>,
 ) {
 
   @LilyCommand("teamtime")
@@ -81,6 +80,7 @@ class TeamBingoModule(
                       .map { it.toLong() }
                       .let { it[2] + 60 * it[1] + 3600 * it[0] }
                       .let { TeamMember(arg, it, 0.0) }
+
                 else -> bingoStatModule.median(arg)
                     ?.let { TeamMember(arg, it.toSeconds(), bingoStatModule.forfeitRatio(arg)!!) }
                     ?: TeamMember(arg, null, null)

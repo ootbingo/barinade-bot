@@ -95,7 +95,7 @@ internal class RaceConnectionTest {
 
     whenNewRaceUpdateIsReceived(IN_PROGRESS)
 
-    thenNewRaceGoalMatches("https://ootbingo.github.io/bingo/.*/bingo.html?.*")
+    thenNewRaceGoalMatches("https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
   }
 
   @ParameterizedTest
@@ -118,7 +118,7 @@ internal class RaceConnectionTest {
     whenNewRaceUpdateIsReceived(IN_PROGRESS)
 
     thenChatMessageMatches("Filename: [A-Z]{2}")
-    thenChatMessageMatches("Goal: https://ootbingo.github.io/bingo/.*/bingo.html?.*")
+    thenChatMessageMatches("Goal: https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
   }
 
   @ParameterizedTest
