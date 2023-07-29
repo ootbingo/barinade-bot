@@ -5,19 +5,19 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.6.10"
+  val kotlinVersion = "1.9.0"
 
   java
-  id("org.springframework.boot") version "2.6.2"
-  id("io.spring.dependency-management") version "1.0.11.RELEASE"
+  id("org.springframework.boot") version "2.7.9"
+  id("io.spring.dependency-management") version "1.1.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  id("org.sonarqube") version "3.3"
+  id("org.sonarqube") version "4.0.0.2929"
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "3.0.0-Beta3"
+version = "3.0.0-Beta4"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -45,7 +45,7 @@ dependencies {
     // TODO Upgrade Lily
     exclude(module = "JDA")
   }
-  implementation("net.dv8tion:JDA:4.4.0_352") {
+  implementation("net.dv8tion:JDA:4.4.1_353") {
     exclude(module = "opus-java")
   }
   implementation("org.springframework.boot:spring-boot-starter-json")
@@ -59,7 +59,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.18")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.20")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -77,8 +77,8 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.22.0")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+  testImplementation("org.assertj:assertj-core:3.24.2")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
 
 tasks.withType<Jar> {
