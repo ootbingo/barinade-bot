@@ -5,19 +5,19 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.7.22"
+  val kotlinVersion = "1.9.0"
 
   java
-  id("org.springframework.boot") version "2.7.6"
+  id("org.springframework.boot") version "2.7.9"
   id("io.spring.dependency-management") version "1.1.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  id("org.sonarqube") version "3.5.0.2730"
+  id("org.sonarqube") version "4.0.0.2929"
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "3.0.0-Beta3"
+version = "3.0.0-Beta4"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -45,7 +45,7 @@ dependencies {
     // TODO Upgrade Lily
     exclude(module = "JDA")
   }
-  implementation("net.dv8tion:JDA:4.4.0_352") {
+  implementation("net.dv8tion:JDA:4.4.1_353") {
     exclude(module = "opus-java")
   }
   implementation("org.springframework.boot:spring-boot-starter-json")
@@ -77,7 +77,7 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.23.1")
+  testImplementation("org.assertj:assertj-core:3.24.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
 
