@@ -5,6 +5,7 @@ import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
 import de.scaramangado.lily.core.communication.MessageInfo
 import de.scaramangado.lily.irc.connection.IrcMessageInfo
+import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import ootbingo.barinade.bot.statistics.BingoStatModule
@@ -147,6 +148,21 @@ internal class TeamBingoModuleTest {
       doAnswer { teamTimes[0] }.whenever(team1).predictedTime
       doAnswer { teamTimes[1] }.whenever(team2).predictedTime
 
+      val team1Members = team1.members
+      val team2Members = team2.members
+
+
+      whenever(team1.toString()).thenReturn(
+          team1Members
+              .joinToString(", ") { it.name }
+              .let { "$it (${teamTimes[0].standardFormat()})" }
+      )
+      whenever(team2.toString()).thenReturn(
+          team2Members
+              .joinToString(", ") { it.name }
+              .let { "$it (${teamTimes[1].standardFormat()})" }
+      )
+
       listOf(team1, team2)
     }
         .whenever(teamBalancerMock).findBestTeamBalance(any())
@@ -173,9 +189,21 @@ internal class TeamBingoModuleTest {
 
       val team1 = spy(Team(usernames.subList(0, 2).map { TeamMember(it, 0, 0.0) }))
       val team2 = spy(Team(usernames.subList(2, 4).map { TeamMember(it, 0, 0.0) }))
+      val team1Members = team1.members
+      val team2Members = team2.members
 
       whenever(team1.predictedTime).thenReturn(teamTimes[0])
       whenever(team2.predictedTime).thenReturn(teamTimes[1])
+      whenever(team1.toString()).thenReturn(
+          team1Members
+              .joinToString(", ") { it.name }
+              .let { "$it (${teamTimes[0].standardFormat()})" }
+      )
+      whenever(team2.toString()).thenReturn(
+          team2Members
+              .joinToString(", ") { it.name }
+              .let { "$it (${teamTimes[1].standardFormat()})" }
+      )
 
       listOf(team1, team2)
     }
