@@ -121,7 +121,7 @@ tasks.withType<JacocoReport> {
   }
 }
 
-sonarqube {
+sonar {
 
   val sonarUsername: String by project
   val sonarPassword: String by project
@@ -130,9 +130,9 @@ sonarqube {
     property("sonar.projectKey", "ootbingo_barinade-bot")
     property("sonar.organization", sonarUsername)
     property("sonar.host.url", "https://sonarcloud.io")
-    property("sonar.login", sonarPassword)
+    property("sonar.token", sonarPassword)
     property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
-    property("sonar.exclusions", "**/*Configuration.kt")
+    property("sonar.exclusions", "**/*Configuration.kt, build.gradle.kts")
   }
 }
 
