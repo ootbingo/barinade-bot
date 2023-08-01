@@ -59,18 +59,16 @@ jobs:
         run: |
           ssh -oStrictHostKeyChecking=no barinade@scaramangado.de /barinade/barinade-infrastructure/deploy.sh ${{ secrets.PACKAGE_USER }} ${{ secrets.PACKAGE_PWD}} ${GITHUB_REF#refs/heads/}
       - name: Notify (Success)
-        uses: appleboy/discord-action@master
+        uses: tsickert/discord-webhook@v5.3.0
         if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: Build of ${{ steps.branch.outputs.BRANCH }} successful
-          color: "#00ff00"
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: Build of ${{ steps.branch.outputs.BRANCH }} successful
+          embed-color: "#00ff00"
       - name: Notify (Fail)
-        uses: appleboy/discord-action@master
+        uses: tsickert/discord-webhook@v5.3.0
         if: ${{ failure() }}
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: Build of ${{ steps.branch.outputs.BRANCH }} failed
-          color: "#ff0000"
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: Build of ${{ steps.branch.outputs.BRANCH }} failed
+          embed-color: "#ff0000"
