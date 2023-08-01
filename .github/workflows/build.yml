@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup SSH
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: ${{ secrets.BARINADE_SSH_KEY }}
@@ -32,12 +32,11 @@ jobs:
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: SonarQube
-        if: ${{ false }}
         uses: burrunan/gradle-cache-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          arguments: sonarqube -x test
+          arguments: sonar -x test
           gradle-version: wrapper
           properties: |
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
@@ -56,7 +55,7 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
         run: ./push-container.sh ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           ssh -oStrictHostKeyChecking=no barinade@scaramangado.de /barinade/barinade-infrastructure/deploy.sh ${{ secrets.PACKAGE_USER }} ${{ secrets.PACKAGE_PWD}} ${GITHUB_REF#refs/heads/}
       - name: Notify (Success)
