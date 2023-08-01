@@ -132,7 +132,7 @@ sonar {
     property("sonar.host.url", "https://sonarcloud.io")
     property("sonar.token", sonarPassword)
     property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
-    property("sonar.exclusions", "**/*Configuration.kt")
+    property("sonar.exclusions", "**/*Configuration.kt, build.gradle.kts")
   }
 }
 
