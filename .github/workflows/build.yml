@@ -64,11 +64,11 @@ jobs:
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: Build of ${{ steps.branch.outputs.BRANCH }} successful
-          embed-color: "#00ff00"
+          embed-color: 65280
       - name: Notify (Fail)
         uses: tsickert/discord-webhook@v5.3.0
         if: ${{ failure() }}
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: Build of ${{ steps.branch.outputs.BRANCH }} failed
-          embed-color: "#ff0000"
+          embed-color: 16711680
