@@ -36,7 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          arguments: sonarqube -x test
+          arguments: sonar -x test
           gradle-version: wrapper
           properties: |
             githubPackagesUser=${{ secrets.PACKAGE_USER }}

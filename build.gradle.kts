@@ -121,7 +121,7 @@ tasks.withType<JacocoReport> {
   }
 }
 
-sonarqube {
+sonar {
 
   val sonarUsername: String by project
   val sonarPassword: String by project
