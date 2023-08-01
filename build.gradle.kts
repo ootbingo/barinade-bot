@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.0.0-Beta4"
+version = "3.0.1-SNAPSHOT"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -155,5 +155,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "7.3.2"
+  gradleVersion = "8.2.1"
 }
