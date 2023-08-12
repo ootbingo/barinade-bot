@@ -32,17 +32,10 @@ jobs:
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
       - name: SonarQube
-        uses: burrunan/gradle-cache-action@v1
+        uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          arguments: sonar -x test
-          gradle-version: wrapper
-          properties: |
-            githubPackagesUser=${{ secrets.PACKAGE_USER }}
-            githubPackagesToken=${{ secrets.PACKAGE_PWD }}
-            sonarUsername=${{ secrets.SONAR_USER }}
-            sonarPassword=${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Build
         uses: burrunan/gradle-cache-action@v1
         with:
