@@ -12,7 +12,6 @@ plugins {
   id("io.spring.dependency-management") version "1.1.3"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  id("org.sonarqube") version "4.3.0.3225"
   jacoco
 }
 
@@ -118,21 +117,6 @@ tasks.withType<Test> {
 tasks.withType<JacocoReport> {
   reports {
     xml.required.set(true)
-  }
-}
-
-sonar {
-
-  val sonarUsername: String by project
-  val sonarPassword: String by project
-
-  properties {
-    property("sonar.projectKey", "ootbingo_barinade-bot")
-    property("sonar.organization", sonarUsername)
-    property("sonar.host.url", "https://sonarcloud.io")
-    property("sonar.token", sonarPassword)
-    property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
-    property("sonar.exclusions", "**/*Configuration.kt, build.gradle.kts")
   }
 }
 
