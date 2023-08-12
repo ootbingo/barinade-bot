@@ -55,13 +55,15 @@ class RaceConnection(
       return
     }
 
-    if (chatMessage.messagePlain in modes.keys) {
-      mode = modes[chatMessage.messagePlain]!!
+    // Handle bingo mode change
+    modes[chatMessage.messagePlain]?.run {
+      mode = this
       logger.info("New mode for $slug: $mode")
       websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
       return
     }
 
+    // Dispatch as Lily command
     dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
   }
 
