@@ -40,13 +40,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.0") {
-    // TODO Upgrade Lily
-    exclude(module = "JDA")
-  }
-  implementation("net.dv8tion:JDA:4.4.1_353") {
-    exclude(module = "opus-java")
-  }
+  implementation("de.scaramangado:lily:0.2.2")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
