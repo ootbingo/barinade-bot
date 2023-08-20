@@ -1,252 +1,276 @@
 package ootbingo.barinade.bot.statistics.validation
 
-import ootbingo.barinade.bot.properties.BingoRaceProperties
-import ootbingo.barinade.bot.properties.model.WhitelistBingo
+import ootbingo.barinade.bot.statistics.validation.IdBlacklistRaceGoalValidator.IdType.*
+import ootbingo.barinade.bot.statistics.validation.UrlRaceGoalValidator.*
+import ootbingo.barinade.bot.statistics.validation.UrlRaceGoalValidator.GoalType.*
 import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.EnumSource.Mode.*
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
 
 class RaceGoalValidatorTest {
 
-  private val validator = RaceGoalValidator()
+  //<editor-fold desc="Setup">
 
-  @ParameterizedTest
-  @ValueSource(strings = ["", "www."])
-  internal fun isBingoWhenSrlUrl(prefix: String) {
+  private val urlValidatorMock = mock<UrlRaceGoalValidator>()
+  private val dateValidatorMock = mock<DateRaceGoalValidator>()
+  private val goalBlacklistValidatorMock = mock<GoalBlacklistRaceGoalValidator>()
+  private val idBlacklistValidatorMock = mock<IdBlacklistRaceGoalValidator>()
 
-    assertRace {
-      goal = "http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal"
-      date = date(2018, 1, 1)
-    }.isBingo()
+  private val validator = RaceGoalValidator(
+      urlValidatorMock,
+      dateValidatorMock,
+      goalBlacklistValidatorMock,
+      idBlacklistValidatorMock,
+  )
+
+  private lateinit var thenRace: AtomicBoolean
+
+  @BeforeEach
+  internal fun setup() {
+    givenUrlIs(GITHUB_IO_BINGO)
+    givenValidDate()
+    givenNoBlacklistedWords()
+    givenNeutralId()
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: URL">
+
+  @Test
+  internal fun validatesCorrectUrl() {
+
+    val goal = UUID.randomUUID().toString()
+
+    whenValidationRequested(goal = goal)
+
+    thenUrlForValidationIsEqualTo(goal)
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["", "www."])
-  internal fun noBingoWhenSrlUrlAfterSwitch(prefix: String) {
+  @EnumSource(GoalType::class, names = ["NO_BINGO"], mode = EXCLUDE)
+  internal fun bingoIfAnyValidType(goalType: GoalType) {
 
-    assertRace {
-      goal = "http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal"
-      date = date(2019, 9, 21)
-    }.isBingo(false)
-  }
+    givenUrlIs(goalType)
+    givenValidDate()
+    givenNoBlacklistedWords()
+    givenNeutralId()
 
-  @ParameterizedTest
-  @ValueSource(strings = ["", "www."])
-  internal fun isBingoWhenSrlUrlWithVersion(prefix: String) {
+    whenValidationRequested()
 
-    assertRace {
-      goal = "http://${prefix}speedrunslive.com/tools/oot-bingo-v4/?seed=273307"
-      date = date(2011, 10, 30)
-    }.isBingo()
+    thenRace.isValidBingo()
   }
 
   @Test
-  internal fun isBingoWhenGithubIoUrl() {
+  internal fun noBingoIfNoValidUrl() {
 
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo()
+    givenInvalidUrl()
+    givenValidDate()
+    givenNoBlacklistedWords()
+    givenNeutralId()
+
+    whenValidationRequested()
+
+    thenRace.isValidBingo(false)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: Date">
+
+  @Test
+  internal fun validatesCorrectDateForSrlRace() {
+
+    val date = Instant.now().minusSeconds(Random.nextLong(-10000, 10000))
+
+    givenUrlIs(SRL_BINGO)
+
+    whenValidationRequested(date = date)
+
+    thenDateForSrlValidationIsEqualTo(date)
   }
 
   @Test
-  internal fun isBingoWhenJpBetaUrl() {
+  internal fun bingoWhenDateIsValidForSrlRace() {
 
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=424242&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo()
-  }
+    givenValidDate()
+    givenUrlIs(SRL_BINGO)
+    givenNoBlacklistedWords()
+    givenNeutralId()
 
-  @ParameterizedTest
-  @ValueSource(strings = ["0.9.6.2", "0.9.5.0-j", "0.9.7.0-j"])
-  internal fun noBingoWhenOtherBeta(beta: String) {
+    whenValidationRequested()
 
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/beta$beta/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInSrlGoal1(word: String) {
-
-    assertRace {
-      goal = "http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal $word"
-      date = date(2018, 1, 1)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInSrlGoal2(word: String) {
-
-    assertRace {
-      goal = "$word http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal"
-      date = date(2018, 1, 1)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInSrlUrl(word: String) {
-
-    assertRace {
-      goal = "http://speedrunslive.com/tools/oot-bingo/?seed=257318&mode=$word"
-      date = date(2018, 1, 1)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInGithubIoGoal1(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal $word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInGithubIoGoal2(word: String) {
-
-    assertRace {
-      goal = "$word https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInGithubIoUrl(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=$word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["SHORT", "loNG", "BLACKout", "Japanese", "bInGo-J"])
-  internal fun noBingoWhenBlacklistedWordInGithubIoGoalCapitalization(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=$word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInBetaGoal1(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal $word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInBetaGoal2(word: String) {
-
-    assertRace {
-      goal = "$word https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun noBingoWhenBlacklistedWordInBetaUrl(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["SHORT", "loNG", "BLACKout", "Japanese", "bInGo-J"])
-  internal fun noBingoWhenBlacklistedWordInBetaGoalCapitalization(word: String) {
-
-    assertRace {
-      goal = "https://ootbingo.github.io/bingo/beta0.9.6.2-j/bingo.html?seed=860838&mode=$word"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
+    thenRace.isValidBingo()
   }
 
   @Test
-  internal fun noBingoWhenRaceIdBlacklisted() {
+  internal fun noBingoWhenDateIsInvalidForSrlRace() {
 
-    val raceId = Random.nextInt(0, 999999).toString()
-    BingoRaceProperties.blacklist = listOf(raceId)
+    givenInvalidDate()
+    givenUrlIs(SRL_BINGO)
+    givenNoBlacklistedWords()
+    givenNeutralId()
 
-    assertRace {
-      id = raceId
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
+    whenValidationRequested()
+
+    thenRace.isValidBingo(false)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: Word Blacklist">
+
+  @Test
+  internal fun checkCorrectGoalForBlacklistedWords() {
+
+    val goal = UUID.randomUUID().toString()
+
+    whenValidationRequested(goal = goal)
+
+    thenGoalForWordBlacklistCheckIsEqualTo(goal)
+  }
+
+  @ParameterizedTest
+  @EnumSource(GoalType::class, names = ["NO_BINGO"], mode = EXCLUDE)
+  internal fun noBingoWhenBlacklistedWord(goalType: GoalType) {
+
+    givenBlacklistedWords()
+    givenUrlIs(goalType)
+    givenValidDate()
+    givenNeutralId()
+
+    whenValidationRequested()
+
+    thenRace.isValidBingo(false)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: ID Blacklist">
+
+  @Test
+  internal fun checkCorrectIdForBlacklistedRaces() {
+
+    val id = UUID.randomUUID().toString()
+
+    whenValidationRequested(id = id)
+
+    thenIdForIdBlacklistCheckIsEqualTo(id)
+  }
+
+  @ParameterizedTest
+  @EnumSource(GoalType::class, names = ["NO_BINGO"], mode = EXCLUDE)
+  internal fun noBingoWhenRaceIdBlacklisted(goalType: GoalType) {
+
+    givenBlacklistedId()
+    givenUrlIs(goalType)
+    givenValidDate()
+    givenNoBlacklistedWords()
+
+    whenValidationRequested()
+
+    thenRace.isValidBingo(false)
   }
 
   @Test
   internal fun isBingoWhenRaceIdWhitelisted() {
 
-    val raceId = Random.nextInt(0, 999999).toString()
-    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
+    givenWhitelistedId()
+    givenInvalidUrl()
+    givenInvalidDate()
+    givenBlacklistedWords()
 
-    assertRace {
-      id = raceId
-      goal = "Definitely and totally not a bigno!!!"
-      date = date(2019, 10, 27)
-    }.isBingo()
+    whenValidationRequested()
+
+    thenRace.isValidBingo()
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = ["short", "long", "blackout", "black out", "3x3",
-    "anti", "double", "bufferless", "child", "jp", "japanese", "bingo-j"])
-  internal fun isBingoWhenRaceIdWhitelistedAndGoalContainsBlacklistedWords(word: String) {
+  //</editor-fold>
 
-    val raceId = Random.nextInt(0, 999999).toString()
-    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
+  //<editor-fold desc="Given">
 
-    assertRace {
-      id = raceId
-      goal = "goal $word"
-      date = date(2019, 10, 27)
-    }.isBingo()
+  private fun givenUrlIs(goalType: GoalType) {
+    whenever(urlValidatorMock.validateGoal(any())).thenReturn(goalType)
   }
 
-  @Test
-  internal fun noBingoWhenRaceIdBlacklistedAndWhitelisted() {
-
-    val raceId = Random.nextInt(0, 999999).toString()
-    BingoRaceProperties.blacklist = listOf(raceId)
-    BingoRaceProperties.whitelist = listOf(WhitelistBingo(raceId, null))
-
-    assertRace {
-      id = raceId
-      goal = "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal"
-      date = date(2019, 10, 27)
-    }.isBingo(false)
+  private fun givenInvalidUrl() {
+    whenever(urlValidatorMock.validateGoal(any())).thenReturn(NO_BINGO)
   }
+
+  private fun givenValidDate() {
+    whenever(dateValidatorMock.validateSrlBingoDate(any())).thenReturn(true)
+  }
+
+  private fun givenInvalidDate() {
+    whenever(dateValidatorMock.validateSrlBingoDate(any())).thenReturn(false)
+  }
+
+  private fun givenNoBlacklistedWords() {
+    whenever(goalBlacklistValidatorMock.validateGoal(any())).thenReturn(true)
+  }
+
+  private fun givenBlacklistedWords() {
+    whenever(goalBlacklistValidatorMock.validateGoal(any())).thenReturn(false)
+  }
+
+  private fun givenBlacklistedId() {
+    whenever(idBlacklistValidatorMock.validateRaceId(any())).thenReturn(BLACKLISTED)
+  }
+
+  private fun givenWhitelistedId() {
+    whenever(idBlacklistValidatorMock.validateRaceId(any())).thenReturn(WHITELISTED)
+  }
+
+  private fun givenNeutralId() {
+    whenever(idBlacklistValidatorMock.validateRaceId(any())).thenReturn(NEUTRAL)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="When">
+
+  private fun whenValidationRequested(id: String = "0", goal: String = "0", date: Instant = Instant.now()) {
+    thenRace = AtomicBoolean(validator.isBingo(id, goal, date))
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Then">
+
+  private fun thenUrlForValidationIsEqualTo(expectedGoal: String) {
+    verify(urlValidatorMock).validateGoal(expectedGoal)
+  }
+
+  private fun thenDateForSrlValidationIsEqualTo(expectedDate: Instant) {
+    verify(dateValidatorMock).validateSrlBingoDate(expectedDate)
+  }
+
+  private fun thenGoalForWordBlacklistCheckIsEqualTo(expectedGoal: String) {
+    verify(goalBlacklistValidatorMock).validateGoal(expectedGoal)
+  }
+
+  private fun thenIdForIdBlacklistCheckIsEqualTo(expectedId: String) {
+    verify(idBlacklistValidatorMock).validateRaceId(expectedId)
+  }
+
+  private fun AtomicBoolean.isValidBingo(bingo: Boolean = true) {
+    assertThat(this.get()).isEqualTo(bingo)
+  }
+
+  //</editor-fold>
 
   //<editor-fold desc="Helper">
 
