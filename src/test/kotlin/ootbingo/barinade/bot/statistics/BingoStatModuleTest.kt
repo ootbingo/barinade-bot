@@ -10,7 +10,10 @@ import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -19,8 +22,9 @@ import kotlin.random.Random
 
 internal class BingoStatModuleTest : ModuleTest() {
 
-  private val playerDaoMock = mock<PlayerHelper>()
-  private val module = BingoStatModule(playerDaoMock)
+  private val playerHelperMock = mock<PlayerHelper>()
+  private val raceGoalValidatorMock = mock<RaceGoalValidator>()
+  private val module = BingoStatModule { QueryService(playerHelperMock, raceGoalValidatorMock) }
   private val players = mutableMapOf<String, Player>()
 
   override val commands by lazy {
@@ -32,7 +36,7 @@ internal class BingoStatModuleTest : ModuleTest() {
   @BeforeEach
   internal fun setup() {
     doAnswer { players[it.getArgument(0)] }
-        .whenever(playerDaoMock).getPlayerByName(any())
+        .whenever(playerHelperMock).getPlayerByName(any())
 
     doAnswer {
       val test = players[it.getArgument<Player>(0).srlName!!]
@@ -44,7 +48,9 @@ internal class BingoStatModuleTest : ModuleTest() {
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
       test
-    }.whenever(playerDaoMock).findResultsForPlayer(any())
+    }.whenever(playerHelperMock).findResultsForPlayer(any())
+
+    whenever(raceGoalValidatorMock.isBingo(any(), any(), any())).thenReturn(false)
   }
 
   //<editor-fold desc="Average">
@@ -562,12 +568,10 @@ internal class BingoStatModuleTest : ModuleTest() {
           Race("0", goal, Instant.ofEpochSecond(timestamp--), Platform.SRL,
               mutableListOf(it))
         }
-        .map {
-          val spy = spy(it)
-          whenever(spy.isBingo()).thenReturn(bingo)
-          spy
+        .forEach {
+          whenever(raceGoalValidatorMock.isBingo(it.raceId, it.goal, it.datetime)).thenReturn(bingo)
+          races.add(it)
         }
-        .forEach { races.add(it) }
 
     races.forEach {
       it.raceResults.forEach { result -> result.resultId.race = it }

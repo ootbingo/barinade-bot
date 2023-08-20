@@ -6,15 +6,16 @@ import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.standardFormat
-import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
 
 @LilyModule
-class BingoHistoryModule(private val playerHelper: PlayerHelper) {
+class BingoHistoryModule(queryServiceFactory: QueryServiceFactory) {
+
+  private val queryService = queryServiceFactory.newQueryService()
 
   @LilyCommand("results")
   fun results(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -30,7 +31,7 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("best")
   fun best(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -49,7 +50,7 @@ class BingoHistoryModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("racer")
   fun racer(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 

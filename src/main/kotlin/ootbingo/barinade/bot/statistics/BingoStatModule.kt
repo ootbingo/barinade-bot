@@ -8,7 +8,6 @@ import de.scaramangado.lily.core.communication.Command
 import ootbingo.barinade.bot.extensions.exception
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
-import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
@@ -20,13 +19,14 @@ import java.time.Duration
 import java.util.*
 
 @LilyModule
-class BingoStatModule(private val playerHelper: PlayerHelper) {
+class BingoStatModule(queryServiceFactory: QueryServiceFactory) {
 
+  private val queryService = queryServiceFactory.newQueryService()
   private val logger = LoggerFactory.getLogger(BingoStatModule::class.java)
 
   @LilyCommand("average")
   fun average(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -58,7 +58,7 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("median")
   fun median(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -90,7 +90,7 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("forfeits")
   fun forfeitRatio(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
