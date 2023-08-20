@@ -6,7 +6,10 @@ import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
 import org.springframework.stereotype.Component
 
 @Component
-class PlayerHelper(private val playerRepository: PlayerRepository, private val usernameMapper: UsernameMapper) {
+class PlayerHelper(
+    private val playerRepository: PlayerRepository,
+    private val usernameMapper: UsernameMapper,
+) {
 
   fun getPlayerByName(name: String): Player? =
       playerRepository.findByRacetimeNameIgnoreCase(name)

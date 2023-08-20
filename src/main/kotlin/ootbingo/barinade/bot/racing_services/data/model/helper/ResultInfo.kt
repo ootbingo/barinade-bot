@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.racing_services.data.model.helper
 
-import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import java.time.Duration
 import java.time.Instant
@@ -11,7 +10,4 @@ data class ResultInfo(
     val raceId: String,
     val datetime: Instant,
     val resultType: ResultType,
-) {
-
-  fun isBingo() = Race("", goal, datetime).isBingo()
-}
+)

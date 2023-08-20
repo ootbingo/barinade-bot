@@ -5,13 +5,13 @@ import de.scaramangado.lily.core.annotations.LilyModule
 import de.scaramangado.lily.core.communication.Answer
 import de.scaramangado.lily.core.communication.AnswerInfo
 import de.scaramangado.lily.core.communication.Command
+import ootbingo.barinade.bot.extensions.exception
 import ootbingo.barinade.bot.extensions.median
 import ootbingo.barinade.bot.extensions.standardFormat
-import ootbingo.barinade.bot.racing_services.data.PlayerHelper
-import ootbingo.barinade.bot.racing_services.data.model.Player
-import ootbingo.barinade.bot.racing_services.data.model.Race
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
-import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.slf4j.LoggerFactory
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -19,13 +19,14 @@ import java.time.Duration
 import java.util.*
 
 @LilyModule
-class BingoStatModule(private val playerHelper: PlayerHelper) {
+class BingoStatModule(queryServiceFactory: QueryServiceFactory) {
 
+  private val queryService = queryServiceFactory.newQueryService()
   private val logger = LoggerFactory.getLogger(BingoStatModule::class.java)
 
   @LilyCommand("average")
   fun average(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -57,7 +58,7 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("median")
   fun median(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -89,7 +90,7 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
 
   @LilyCommand("forfeits")
   fun forfeitRatio(chatCommand: Command): Answer<AnswerInfo>? =
-      playerHelper.query {
+      queryService.query {
 
         command = chatCommand
 
@@ -98,7 +99,7 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
         aggregator = {
 
           val total = it.count().toDouble()
-          val forfeits = it.filter { r -> r.resultType == ResultType.FORFEIT }.count().toDouble()
+          val forfeits = it.count { r -> r.resultType == ResultType.FORFEIT }.toDouble()
 
           (100 * forfeits / total)
               .let { fr -> DecimalFormat("##0.00", DecimalFormatSymbols(Locale.ENGLISH)).format(fr) }
@@ -106,69 +107,56 @@ class BingoStatModule(private val playerHelper: PlayerHelper) {
         }
       }
 
-  private fun allRacesForComputation(queryInfo: QueryInfo): ComputationRaces {
-
-    var forfeitsSkipped = 0
-
-    val allBingos = queryInfo.player
-        .let { playerHelper.findResultsForPlayer(it) }
-        .asSequence()
-        .filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
-        .toMutableList()
-
-    val toAverage = mutableListOf<ResultInfo>()
-
-    while (toAverage.size < queryInfo.raceCount && allBingos.isNotEmpty()) {
-
-      val bingo = allBingos.removeAt(0)
-
-      if (bingo.resultType != ResultType.FINISH) {
-        forfeitsSkipped++
-      } else {
-        toAverage.add(bingo)
-      }
-    }
-
-    return ComputationRaces(toAverage)
-  }
-
   fun median(username: String): Duration? {
 
-    val player = playerHelper.getPlayerByName(username)
-    return player
-        ?.let { allRacesForComputation(QueryInfo(it, 15)) }
-        ?.races
-        ?.map {
-          it.time?.seconds ?: logMissingResultTime(it.raceId)
-        }
-        ?.let { if (it.isEmpty()) return null else it }
-        ?.median()
-        ?.let { Duration.ofSeconds(it) }
+    return rawDataQuery(
+        username,
+        "!median",
+        BingoStatModule::median,
+        Regex("""The median of \S*'s last \d+ bingos is: (\d+):(\d\d):(\d\d) \(Forfeits: \d+\)"""),
+    ) {
+      val (hours, minutes, seconds) = (1..3).map { i -> checkNotNull(it[i]?.value?.toLong()) }
+      Duration.ofSeconds(3600 * hours + 60 * minutes + seconds)
+    }
   }
 
   fun forfeitRatio(username: String): Double? {
 
-    val player = playerHelper.getPlayerByName(username)
+    return rawDataQuery(
+        username,
+        "!forfeits",
+        BingoStatModule::forfeitRatio,
+        Regex("""The forfeit ratio of \S* is: (\d{1,3}\.\d\d)%"""),
+    ) {
+      checkNotNull(it[1]?.value?.toDouble()) / 100.0
+    }
+  }
 
-    val allBingos = player?.let { playerHelper.findResultsForPlayer(it) }
-        ?.filter { Race(it.raceId, it.goal, it.datetime).isBingo() }
+  private fun <T> rawDataQuery(
+      username: String,
+      message: String,
+      command: BingoStatModule.(Command) -> Answer<AnswerInfo>?,
+      responseRegex: Regex,
+      parser: (MatchGroupCollection) -> T,
+  ): T? {
+    val chatResponse = command(
+        ChatMessage(user = RacetimeUser(name = username), message = message)
+            .let { Command.withMessageInfo(it.messagePlain, RacetimeMessageInfo(it)) }
+    )?.text
 
-    if (allBingos.isNullOrEmpty()) {
+    if (
+        chatResponse == null ||
+        chatResponse.contains("not found") ||
+        chatResponse.contains("has not finished any bingos")
+    ) {
       return null
     }
 
-    return allBingos
-        .filter { it.resultType != ResultType.FINISH }
-        .count()
-        .toDouble()
-        .let { it / allBingos.count() }
+    return try {
+      responseRegex.matchEntire(chatResponse)?.groups?.let(parser)
+    } catch (e: Exception) {
+      logger.exception("Failed to calculate raw !$message result for '$username'.\nChat response: $chatResponse", e)
+      null
+    }
   }
-
-  private fun logMissingResultTime(raceId: String): Long {
-    logger.error("Finished race without time: {}", raceId)
-    return -1L
-  }
-
-  private inner class QueryInfo(val player: Player, val raceCount: Int)
-  private inner class ComputationRaces(val races: List<ResultInfo>)
 }
