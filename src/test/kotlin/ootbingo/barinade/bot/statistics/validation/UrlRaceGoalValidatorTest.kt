@@ -10,18 +10,11 @@ class UrlRaceGoalValidatorTest {
 
   private val validator = UrlRaceGoalValidator()
 
-  //<editor-fold desc="Test: SRL">
+  //<editor-fold desc="Test: github.io">
 
-  @ParameterizedTest
-  @ValueSource(strings = ["", "www."])
-  internal fun isBingoWhenSrlUrl(prefix: String) {
-    "http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal" isGoalType SRL_BINGO
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = ["", "www."])
-  internal fun isBingoWhenSrlUrlWithVersion(prefix: String) {
-    "http://${prefix}speedrunslive.com/tools/oot-bingo-v4/?seed=273307" isGoalType SRL_BINGO
+  @Test
+  internal fun isBingoWhenGithubIoUrl() {
+    "https://ootbingo.github.io/bingo/bingo.html?version=10.3.1&seed=860838&mode=normal" isGoalType GITHUB_IO_BINGO
   }
 
   //</editor-fold>
@@ -29,7 +22,7 @@ class UrlRaceGoalValidatorTest {
   //<editor-fold desc="Test: github.io Legacy">
 
   @Test
-  internal fun isBingoWhenGithubIoUrl() {
+  internal fun isBingoWhenGithubIoLegacyUrl() {
     "https://ootbingo.github.io/bingo/v9.4/bingo.html?seed=860838&mode=normal" isGoalType GITHUB_IO_LEGACY_BINGO
   }
 
@@ -42,6 +35,22 @@ class UrlRaceGoalValidatorTest {
   @ValueSource(strings = ["0.9.6.2", "0.9.5.0-j", "0.9.7.0-j"])
   internal fun noBingoWhenOtherBeta(beta: String) {
     "https://ootbingo.github.io/bingo/beta$beta/bingo.html?seed=860838&mode=normal" isGoalType NO_BINGO
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: SRL">
+
+  @ParameterizedTest
+  @ValueSource(strings = ["", "www."])
+  internal fun isBingoWhenSrlUrl(prefix: String) {
+    "http://${prefix}speedrunslive.com/tools/oot-bingo/?seed=257318&mode=normal" isGoalType SRL_BINGO
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["", "www."])
+  internal fun isBingoWhenSrlUrlWithVersion(prefix: String) {
+    "http://${prefix}speedrunslive.com/tools/oot-bingo-v4/?seed=273307" isGoalType SRL_BINGO
   }
 
   //</editor-fold>

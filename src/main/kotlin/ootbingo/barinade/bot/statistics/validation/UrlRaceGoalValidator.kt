@@ -14,6 +14,7 @@ class UrlRaceGoalValidator {
 
         matches(Regex("https?://ootbingo\\.github\\.io/bingo/v\\d+\\.\\d/bingo\\.html.*")) -> GITHUB_IO_LEGACY_BINGO
         matches(Regex("https?://ootbingo\\.github\\.io/bingo/beta0\\.9\\.6\\.\\d-j/bingo\\.html.*")) -> GITHUB_IO_LEGACY_BINGO
+        matches(Regex("https://ootbingo\\.github\\.io/bingo/bingo.html\\?\\S*version=[0-9.]+(\\s|&|$).*")) -> GITHUB_IO_BINGO
 
         else -> NO_BINGO
       }
