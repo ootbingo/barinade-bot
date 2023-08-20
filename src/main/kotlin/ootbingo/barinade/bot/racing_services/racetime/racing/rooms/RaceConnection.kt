@@ -55,13 +55,15 @@ class RaceConnection(
       return
     }
 
-    if (chatMessage.messagePlain in modes.keys) {
-      mode = modes[chatMessage.messagePlain]!!
+    // Handle bingo mode change
+    modes[chatMessage.messagePlain]?.run {
+      mode = this
       logger.info("New mode for $slug: $mode")
       websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
       return
     }
 
+    // Dispatch as Lily command
     dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
   }
 
@@ -89,7 +91,7 @@ class RaceConnection(
       }
 
       val goal = if (mode != CHILD) {
-        "https://ootbingo.github.io/bingo/bingo.html?version=10.3.1&seed=${generateSeed()}&mode=${mode.name.lowercase()}"
+        "https://ootbingo.github.io/bingo/bingo.html?version=10.3.2&seed=${generateSeed()}&mode=${mode.name.lowercase()}"
       } else {
         "https://doctorno124.github.io/childkek/bingo.html?seed=${generateSeed()}&mode=normal"
       }

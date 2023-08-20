@@ -7,6 +7,7 @@ import net.dv8tion.jda.internal.entities.UserImpl
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.statistics.validation.RaceGoalValidator
 import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +27,8 @@ internal class BingoHistoryModuleTest : ModuleTest() {
   //<editor-fold desc="Setup">
 
   private val playerHelperMock = mock<PlayerHelper>()
-  private val module = BingoHistoryModule(playerHelperMock)
+  private val raceGoalValidatorMock = mock<RaceGoalValidator>()
+  private val module = BingoHistoryModule { QueryService(playerHelperMock, raceGoalValidatorMock) }
   private val players = mutableMapOf<String, Player>()
 
   override val commands by lazy {
@@ -56,6 +58,8 @@ internal class BingoHistoryModuleTest : ModuleTest() {
             ResultInfo(result!!.time, r.goal, r.raceId, r.datetime, result.resultType)
           }
     }.whenever(playerHelperMock).findResultsForPlayer(any())
+
+    whenever(raceGoalValidatorMock.isBingo(any(), any(), any())).thenReturn(false)
   }
 
   //</editor-fold>
@@ -466,12 +470,10 @@ internal class BingoHistoryModuleTest : ModuleTest() {
 
           Race("0", goal, Instant.ofEpochSecond(timestamp--), Platform.SRL, mutableListOf(it))
         }
-        .map {
-          val spy = Mockito.spy(it)
-          Mockito.`when`(spy.isBingo()).thenReturn(bingo)
-          spy
+        .forEach {
+          whenever(raceGoalValidatorMock.isBingo(it.raceId, it.goal, it.datetime)).thenReturn(bingo)
+          races.add(it)
         }
-        .forEach { races.add(it) }
 
     races.forEach {
       it.raceResults.forEach { result -> result.resultId.race = it }

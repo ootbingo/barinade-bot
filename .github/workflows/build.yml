@@ -31,18 +31,17 @@ jobs:
           properties: |
             githubPackagesUser=${{ secrets.PACKAGE_USER }}
             githubPackagesToken=${{ secrets.PACKAGE_PWD }}
-      - name: SonarQube
-        uses: burrunan/gradle-cache-action@v1
+      - name: SonarQube Scan
+        uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          arguments: sonar -x test
-          gradle-version: wrapper
-          properties: |
-            githubPackagesUser=${{ secrets.PACKAGE_USER }}
-            githubPackagesToken=${{ secrets.PACKAGE_PWD }}
-            sonarUsername=${{ secrets.SONAR_USER }}
-            sonarPassword=${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarQube Quality Gate
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 10
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Build
         uses: burrunan/gradle-cache-action@v1
         with:
@@ -59,18 +58,16 @@ jobs:
         run: |
           ssh -oStrictHostKeyChecking=no barinade@scaramangado.de /barinade/barinade-infrastructure/deploy.sh ${{ secrets.PACKAGE_USER }} ${{ secrets.PACKAGE_PWD}} ${GITHUB_REF#refs/heads/}
       - name: Notify (Success)
-        uses: appleboy/discord-action@master
+        uses: tsickert/discord-webhook@v5.3.0
         if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: Build of ${{ steps.branch.outputs.BRANCH }} successful
-          color: "#00ff00"
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: Build of ${{ steps.branch.outputs.BRANCH }} successful
+          embed-color: 65280
       - name: Notify (Fail)
-        uses: appleboy/discord-action@master
+        uses: tsickert/discord-webhook@v5.3.0
         if: ${{ failure() }}
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: Build of ${{ steps.branch.outputs.BRANCH }} failed
-          color: "#ff0000"
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: Build of ${{ steps.branch.outputs.BRANCH }} failed
+          embed-color: 16711680

@@ -9,15 +9,14 @@ plugins {
 
   java
   id("org.springframework.boot") version "2.7.14"
-  id("io.spring.dependency-management") version "1.1.2"
+  id("io.spring.dependency-management") version "1.1.3"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
-  id("org.sonarqube") version "4.3.0.3225"
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "3.0.1"
+version = "3.1.0"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -41,13 +40,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.0") {
-    // TODO Upgrade Lily
-    exclude(module = "JDA")
-  }
-  implementation("net.dv8tion:JDA:4.4.1_353") {
-    exclude(module = "opus-java")
-  }
+  implementation("de.scaramangado:lily:0.2.2")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -78,7 +71,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.24.2")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
 }
 
 tasks.withType<Jar> {
@@ -121,21 +114,6 @@ tasks.withType<JacocoReport> {
   }
 }
 
-sonar {
-
-  val sonarUsername: String by project
-  val sonarPassword: String by project
-
-  properties {
-    property("sonar.projectKey", "ootbingo_barinade-bot")
-    property("sonar.organization", sonarUsername)
-    property("sonar.host.url", "https://sonarcloud.io")
-    property("sonar.token", sonarPassword)
-    property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml")
-    property("sonar.exclusions", "**/*Configuration.kt, build.gradle.kts")
-  }
-}
-
 fun executeCommand(command: String) =
     try {
       Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
@@ -155,5 +133,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Wrapper> {
-  gradleVersion = "7.3.2"
+  gradleVersion = "8.2.1"
 }
