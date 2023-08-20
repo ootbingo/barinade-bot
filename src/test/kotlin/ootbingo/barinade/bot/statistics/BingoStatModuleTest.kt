@@ -377,10 +377,11 @@ internal class BingoStatModuleTest : ModuleTest() {
 
     val username = UUID.randomUUID().toString()
 
-    givenBingoTimesForPlayer(username, 1, 2, 3)
+    givenBingoTimesForPlayer(username, 3721, 3722, 3723)
     givenNonBingoTimesForPlayer(username, 25)
 
-    assertThat(module.median(username)).isEqualTo(Duration.ofSeconds(2))
+    assertThat(module.median(username))
+        .isEqualTo(Duration.ofSeconds(2).plusMinutes(2).plusHours(1))
   }
 
   //</editor-fold>

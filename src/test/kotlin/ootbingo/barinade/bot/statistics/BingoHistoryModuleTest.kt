@@ -468,7 +468,7 @@ internal class BingoHistoryModuleTest : ModuleTest() {
         }
         .map {
           val spy = Mockito.spy(it)
-          Mockito.`when`(spy.isBingo()).thenReturn(bingo)
+          whenever(spy.isBingo()).thenReturn(bingo)
           spy
         }
         .forEach { races.add(it) }
