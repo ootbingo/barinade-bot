@@ -5,6 +5,7 @@ import de.scaramangado.lily.core.communication.AnswerInfo
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.statistics.validation.RaceGoalValidator
 import ootbingo.barinade.bot.testutils.ModuleTest
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Percentage

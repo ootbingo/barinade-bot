@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.statistics
+package ootbingo.barinade.bot.statistics.validation
 
 import ootbingo.barinade.bot.extensions.containsAny
 import ootbingo.barinade.bot.properties.BingoRaceProperties

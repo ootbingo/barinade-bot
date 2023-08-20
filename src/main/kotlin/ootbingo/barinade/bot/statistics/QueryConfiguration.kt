@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.statistics
 
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
+import ootbingo.barinade.bot.statistics.validation.RaceGoalValidator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

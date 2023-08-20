@@ -7,6 +7,7 @@ import ootbingo.barinade.bot.extensions.getUsername
 import ootbingo.barinade.bot.racing_services.data.PlayerHelper
 import ootbingo.barinade.bot.racing_services.data.model.ResultType
 import ootbingo.barinade.bot.racing_services.data.model.helper.ResultInfo
+import ootbingo.barinade.bot.statistics.validation.RaceGoalValidator
 
 class QueryService(
     private val playerHelper: PlayerHelper,
