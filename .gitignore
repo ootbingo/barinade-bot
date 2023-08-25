@@ -3,10 +3,8 @@
 
 ### Intellij ###
 out/
-.idea/
 *.iml
 *.ipr
-!.idea/codeStyles
 
 ### Java ###
 hs_err_pid*
