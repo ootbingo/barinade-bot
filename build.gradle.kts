@@ -8,7 +8,7 @@ plugins {
   val kotlinVersion = "1.9.10"
 
   java
-  id("org.springframework.boot") version "2.7.14"
+  id("org.springframework.boot") version "3.1.3"
   id("io.spring.dependency-management") version "1.1.3"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -40,7 +40,7 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.2")
+  implementation("de.scaramangado:lily:0.3.0")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -52,7 +52,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.20")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.3")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 

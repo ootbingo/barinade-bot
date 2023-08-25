@@ -1,7 +1,7 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
+import jakarta.persistence.*
 import java.time.Instant
-import javax.persistence.*
 
 @Entity
 data class Race(

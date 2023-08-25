@@ -1,6 +1,6 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
-import javax.persistence.*
+import jakarta.persistence.*
 
 @Entity
 data class Player(

@@ -1,8 +1,8 @@
 package ootbingo.barinade.bot.racing_services.data.model
 
+import jakarta.persistence.*
 import java.io.Serializable
 import java.time.Duration
-import javax.persistence.*
 
 @Entity
 data class RaceResult(

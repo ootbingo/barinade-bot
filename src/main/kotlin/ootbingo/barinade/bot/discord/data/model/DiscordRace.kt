@@ -1,9 +1,9 @@
 package ootbingo.barinade.bot.discord.data.model
 
+import jakarta.persistence.*
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.model.DiscordRaceType.*
 import java.time.Instant
-import javax.persistence.*
 
 @Entity
 class DiscordRace(
