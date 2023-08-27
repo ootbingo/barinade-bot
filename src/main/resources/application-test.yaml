@@ -4,14 +4,11 @@ lily:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: password
-    database-platform: org.hibernate.dialect.H2Dialect
+    url: jdbc:tc:postgresql:15-alpine:///barinade
   main:
-      banner-mode: "off"
+    banner-mode: "off"
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     hibernate:
       ddl-auto: create

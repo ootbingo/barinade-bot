@@ -72,6 +72,8 @@ dependencies {
 
   testImplementation("org.assertj:assertj-core:3.24.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+  implementation("org.testcontainers:postgresql")
+  implementation("org.testcontainers:junit-jupiter")
 }
 
 tasks.withType<Jar> {
