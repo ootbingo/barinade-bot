@@ -47,8 +47,9 @@ build/
 ### Project specific ###
 
 /devetc/
-**/application-dev.yml
+**/application-local.yml
 h2db*db*
 /src/main/resources/version.properties
 gradle.properties
 bot.log
+/db-volume/
