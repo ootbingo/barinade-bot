@@ -46,7 +46,14 @@ bingosync:
 logging:
   file:
     name: bot.log
-    max-history: 15
+  logback:
+    rollingpolicy:
+      max-history: 15
+      file-name-pattern: bot-%d{yyyy-MM-dd}.%i.log
+      clean-history-on-start: true
+  pattern:
+    file: '%d{ISO8601} - %5p --- [%18.18t] %-40.40logger{39}:%-4.4L : %m%n'
+    console: '%clr(%d{ISO8601}){faint} %clr(- %5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%18.18t]){faint} %clr(%-40.40logger{39}:%-4.4L){cyan} %m%n'
 
 spring:
   datasource:

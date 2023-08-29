@@ -5,3 +5,11 @@ spring:
     password: postgres
   flyway:
     baseline-on-migrate: false
+
+logging:
+  file:
+    name:
+
+gg:
+  racetime:
+    enable-racing: false
