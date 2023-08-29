@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  barinade-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    volumes:
+      - ./db-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: BARINADE
+      POSTGRES_USER: barinade
+      POSTGRES_PASSWORD: postgres
