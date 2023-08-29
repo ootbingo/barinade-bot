@@ -8,7 +8,7 @@ create table player (
 );
 
 create sequence player_seq
-  increment by 50
+  increment by 1
   minvalue 1
   maxvalue 9223372036854775807
   start 1

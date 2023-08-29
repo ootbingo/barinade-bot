@@ -4,4 +4,4 @@ spring:
     username: barinade
     password: postgres
   flyway:
-    baseline-on-migrate: false
+    baseline-on-migrate: true
