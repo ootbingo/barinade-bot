@@ -47,3 +47,7 @@ logging:
   file:
     name: bot.log
     max-history: 15
+
+spring:
+  flyway:
+    enabled: false
