@@ -25,15 +25,4 @@ bingosync:
 spring:
   datasource:
     url: jdbc:postgresql://scaramangado.de:10010/BARINADE
-    driverClassName: org.postgresql.Driver
     username: scaramanga
-  jpa:
-    show-sql: false
-    hibernate:
-      dialect: org.hibernate.dialect.PostgreSQL95Dialect
-      ddl-auto: update
-    properties:
-      hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true

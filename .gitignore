@@ -53,3 +53,4 @@ h2db*db*
 gradle.properties
 bot.log
 /db-volume/
+/db-volume-backup/
