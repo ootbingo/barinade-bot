@@ -44,7 +44,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  runtimeOnly("com.h2database:h2")
   runtimeOnly("org.postgresql:postgresql")
 
   implementation(kotlin("stdlib-jdk8"))
@@ -72,8 +71,8 @@ dependencies {
 
   testImplementation("org.assertj:assertj-core:3.24.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-  implementation("org.testcontainers:postgresql")
-  implementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:postgresql")
+  testImplementation("org.testcontainers:junit-jupiter")
 }
 
 tasks.withType<Jar> {
