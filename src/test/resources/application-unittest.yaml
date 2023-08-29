@@ -5,6 +5,7 @@ lily:
 spring:
   datasource:
     url: jdbc:tc:postgresql:15-alpine:///barinade
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   main:
     banner-mode: "off"
   jpa:
