@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.2.0"
+version = "3.2.1"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -40,7 +40,12 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.3.0")
+  implementation("de.scaramangado:lily:0.3.0") {
+    exclude(module = "reflections")
+  }
+
+  implementation("org.reflections:reflections:0.9.11")
+
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
