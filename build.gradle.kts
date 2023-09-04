@@ -44,7 +44,7 @@ dependencies {
     exclude(module = "reflections")
   }
 
-  implementation("org.reflections:reflections:0.9.11")
+  implementation("org.reflections:reflections:0.10.2")
 
   implementation("org.springframework.boot:spring-boot-starter-json")
 
