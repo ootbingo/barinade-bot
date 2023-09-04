@@ -18,6 +18,30 @@ class RaceConnection(
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
 
+  private val raceModeActions = mapOf(
+      "Change Mode" to RacetimeActionButton(
+          message = "!\${mode}",
+          submit = "Send",
+          survey = listOf(
+              RacetimeSurvey(
+                  name = "mode",
+                  label = "New Mode: ",
+                  type = RacetimeSurveyType.select,
+                  default = "normal",
+                  options = mapOf(
+                      "normal" to "Normal",
+                      "blackout" to "Blackout",
+                      "short" to "Short",
+                      "child" to "Child only",
+                  ),
+              ),
+          ),
+      ),
+      "Don't Generate" to RacetimeActionButton(
+          message = "!nobingo",
+      ),
+  )
+
   private var mode: Mode = NORMAL
   private val modes = mapOf(
       "!normal" to NORMAL,
@@ -59,7 +83,10 @@ class RaceConnection(
     modes[chatMessage.messagePlain]?.run {
       mode = this
       logger.info("New mode for $slug: $mode")
-      websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
+      websocket.sendMessage(
+          "Current mode: ${mode.name.lowercase()}",
+          actions = raceModeActions,
+      )
       return
     }
 
@@ -79,8 +106,10 @@ class RaceConnection(
       }
 
       websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
-      websocket.sendMessage("Change modes: !normal, !blackout, !short, !child, !nobingo")
-      websocket.sendMessage("Current mode: ${mode.name.lowercase()}")
+      websocket.sendMessage(
+          "Current mode: ${mode.name.lowercase()}",
+          actions = raceModeActions,
+      )
     }
 
     if (new == IN_PROGRESS && old != null && old !in listOf(FINISHED, CANCELLED)) {

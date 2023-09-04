@@ -23,11 +23,11 @@ class RaceWebsocketHandler(
     handshake(this)
   }
 
-  fun sendMessage(message: String) {
+  fun sendMessage(message: String, pinned: Boolean = false, actions: Map<String, RacetimeActionButton>? = null) {
     logger.debug("Sending chat message to $slug")
     logger.trace("'$message'")
 
-    sendAction(SendMessage(message))
+    sendAction(SendMessage(message, pinned, actions))
   }
 
   fun setGoal(goal: String) {

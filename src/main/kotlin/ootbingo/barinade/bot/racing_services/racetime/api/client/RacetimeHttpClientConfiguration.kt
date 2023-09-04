@@ -69,7 +69,7 @@ class RacetimeHttpClientConfiguration {
     val data = json.asJsonObject["data"].asJsonObject
 
     val payload = when (action) {
-      "message" -> SendMessage(data["message"].asString, data["guid"].asString)
+      "message" -> SendMessage(data["message"].asString, guid = data["guid"].asString)
       "setinfo" -> SetGoal(data["info"].asString)
       else -> throw JsonParseException("Cannot parse ${json.asString}")
     }

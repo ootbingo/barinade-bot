@@ -377,7 +377,7 @@ internal class RaceConnectionTest {
   private val messagesSent: List<String>
     get() =
       argumentCaptor<String>()
-          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture()) }
+          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull()) }
           .allValues
 
   private val goal: String
