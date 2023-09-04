@@ -127,7 +127,8 @@ class RaceConnection(
 
       websocket.setGoal(goal)
       websocket.sendMessage("Filename: ${generateFilename()}")
-      websocket.sendMessage("Goal: $goal")
+      websocket.sendMessage("Goal: $goal", pinned = false)
+      websocket.sendMessage("Goal: $goal", pinned = true)
     }
 
     if (new in listOf(FINISHED, CANCELLED)) {
