@@ -26,7 +26,7 @@ class RaceConnection(
               RacetimeSurvey(
                   name = "mode",
                   label = "New Mode: ",
-                  type = RacetimeSurveyType.select,
+                  type = RacetimeSurveyType.SELECT,
                   default = "normal",
                   options = mapOf(
                       "normal" to "Normal",

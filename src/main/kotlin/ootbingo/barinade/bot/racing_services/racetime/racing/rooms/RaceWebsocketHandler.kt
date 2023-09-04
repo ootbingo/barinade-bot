@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
 class RaceWebsocketHandler(
-    private val delegate: RaceConnection, private val gson: Gson,
+    private val delegate: RaceConnection,
+    private val gson: Gson,
     private val handshake: (WebSocketHandler) -> Unit,
 ) : WebSocketHandler {
 
