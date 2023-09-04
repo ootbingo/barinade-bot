@@ -12,7 +12,12 @@ sealed class RacetimeActionPayload {
   abstract fun asAction(): RacetimeAction
 }
 
-class SendMessage(val message: String, val guid: String = "${UUID.randomUUID()}") : RacetimeActionPayload() {
+class SendMessage(
+    val message: String,
+    val pinned: Boolean = false,
+    val actions: Map<String, RacetimeActionButton>? = null,
+    val guid: String = "${UUID.randomUUID()}",
+) : RacetimeActionPayload() {
 
   override fun asAction() = RacetimeAction("message", this)
 }

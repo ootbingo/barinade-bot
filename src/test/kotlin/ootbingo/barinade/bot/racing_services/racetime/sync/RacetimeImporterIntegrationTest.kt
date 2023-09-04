@@ -16,12 +16,14 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 internal class RacetimeImporterIntegrationTest(
     @Autowired private val playerRepository: PlayerRepository,
     @Autowired private val raceRepository: RaceRepository,

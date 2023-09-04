@@ -5,10 +5,10 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.9.0"
+  val kotlinVersion = "1.9.10"
 
   java
-  id("org.springframework.boot") version "2.7.14"
+  id("org.springframework.boot") version "3.1.3"
   id("io.spring.dependency-management") version "1.1.3"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.1.0"
+version = "3.2.0"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -40,11 +40,11 @@ repositories {
 
 dependencies {
 
-  implementation("de.scaramangado:lily:0.2.2")
+  implementation("de.scaramangado:lily:0.3.0")
   implementation("org.springframework.boot:spring-boot-starter-json")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  runtimeOnly("com.h2database:h2")
+  implementation("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql")
 
   implementation(kotlin("stdlib-jdk8"))
@@ -52,7 +52,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:1.20")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.3")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -72,6 +72,8 @@ dependencies {
 
   testImplementation("org.assertj:assertj-core:3.24.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+  testImplementation("org.testcontainers:postgresql")
+  testImplementation("org.testcontainers:junit-jupiter")
 }
 
 tasks.withType<Jar> {
@@ -99,7 +101,7 @@ tasks.withType<Test> {
 
   useJUnitPlatform()
 
-  systemProperties(Pair("spring.profiles.active", "test"))
+  systemProperties(Pair("spring.profiles.active", "unittest"))
 
   testLogging {
     events("passed", "skipped", "failed")

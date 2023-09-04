@@ -33,7 +33,7 @@ gg:
   racetime:
     enable-racing: true
     api:
-      data-base-url: http://localhost:8000
+      data-base-url: https://racetime.gg
       racing-base-url: http://localhost:8000
       websocket-base-url: ws://localhost:8000
       oauth:
@@ -46,4 +46,24 @@ bingosync:
 logging:
   file:
     name: bot.log
-    max-history: 15
+  logback:
+    rollingpolicy:
+      max-history: 15
+      file-name-pattern: bot-%d{yyyy-MM-dd}.%i.log
+      clean-history-on-start: true
+  pattern:
+    file: '%d{ISO8601} - %5p --- [%18.18t] %-40.40logger{39}:%-4.4L : %m%n'
+    console: '%clr(%d{ISO8601}){faint} %clr(- %5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%18.18t]){faint} %clr(%-40.40logger{39}:%-4.4L){cyan} %m%n'
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:flyway/prod
