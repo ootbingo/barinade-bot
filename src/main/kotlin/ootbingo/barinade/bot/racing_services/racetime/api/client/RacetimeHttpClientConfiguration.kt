@@ -55,13 +55,13 @@ class RacetimeHttpClientConfiguration {
 
   private val entrantStatusDeserializer = JsonDeserializer { json, _, _ ->
     RacetimeEntrant.RacetimeEntrantStatus
-        .values()
+        .entries
         .find { it.name.equals(json.asJsonObject.get("value").asString, true) }
   }
 
   private val raceStatusDeserializer = JsonDeserializer { json, _, _ ->
     RacetimeRace.RacetimeRaceStatus
-        .values()
+        .entries
         .find { it.name.equals(json.asJsonObject.get("value").asString, true) }
   }
 

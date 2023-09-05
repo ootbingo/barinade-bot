@@ -24,7 +24,7 @@ class DiscordRaceStatusHolder(
 
   private val logger = LoggerFactory.getLogger(DiscordRaceStatusHolder::class.java)
 
-  var type: DiscordRaceType
+  private var type: DiscordRaceType
   private val raceId: Long
   private val race get() = raceRepository.findById(raceId)!!
   private val additionalInfo = mutableMapOf<String, String>()

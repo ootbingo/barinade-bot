@@ -40,7 +40,7 @@ class LockoutRaceRoom(
     }
   }
 
-  var roomCreated = false
+  private var roomCreated = false
 
   override fun done(entrant: User): String? {
 

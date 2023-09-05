@@ -39,8 +39,9 @@ abstract class DiscordRaceRoom(
               discordChannel.sendMessage("${entrant.name} is ready").complete()
               start()
               return@run null
+            } else {
+              true
             }
-            return@run this
           }
           ?.let { "${entrant.name} is ready".appendNotReadyCount() }
 

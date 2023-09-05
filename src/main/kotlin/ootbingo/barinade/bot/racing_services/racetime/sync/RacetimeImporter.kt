@@ -20,8 +20,7 @@ class RacetimeImporter(
       playerHelper
           .also { logger.info("Loading Racetime players from DB...") }
           .getAllRacetimePlayers()
-          .map { it.racetimeId!! to it }
-          .toMap()
+          .associateBy { it.racetimeId!! }
           .toMutableMap()
           .also { logger.info("{} Racetime players found.", it.size) }
 
