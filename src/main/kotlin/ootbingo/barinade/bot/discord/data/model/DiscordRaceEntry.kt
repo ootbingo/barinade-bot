@@ -1,9 +1,9 @@
 package ootbingo.barinade.bot.discord.data.model
 
+import jakarta.persistence.*
 import ootbingo.barinade.bot.discord.data.model.DiscordRaceEntryState.*
 import java.io.Serializable
 import java.time.Duration
-import javax.persistence.*
 
 @Entity
 class DiscordRaceEntry(

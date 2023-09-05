@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/BARINADE
+    username: barinade
+    password: postgres
+  flyway:
+    baseline-on-migrate: false
+
+logging:
+  file:
+    name:
+
+gg:
+  racetime:
+    enable-racing: false

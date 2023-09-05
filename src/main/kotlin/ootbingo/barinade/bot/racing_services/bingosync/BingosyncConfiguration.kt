@@ -12,17 +12,17 @@ import java.net.HttpURLConnection
 @Configuration
 class BingosyncConfiguration {
 
+  private val redirectRequestFactory: SimpleClientHttpRequestFactory = object : SimpleClientHttpRequestFactory() {
+    override fun prepareConnection(connection: HttpURLConnection, httpMethod: String) {
+      super.prepareConnection(connection, httpMethod)
+      connection.instanceFollowRedirects = false
+    }
+  }
+
   @Bean
   fun bingosyncRestTemplate(): RestTemplate =
       RestTemplateBuilder()
-          .requestFactory {
-            object : SimpleClientHttpRequestFactory() {
-              override fun prepareConnection(connection: HttpURLConnection, httpMethod: String) {
-                super.prepareConnection(connection, httpMethod)
-                connection.instanceFollowRedirects = false
-              }
-            }
-          }
+          .requestFactory { -> redirectRequestFactory }
           .errorHandler(object : ResponseErrorHandler {
             override fun hasError(response: ClientHttpResponse): Boolean = false
             override fun handleError(response: ClientHttpResponse) {}
