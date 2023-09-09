@@ -7,6 +7,7 @@ import ootbingo.barinade.bot.racing_services.data.model.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.slf4j.LoggerFactory
+import kotlin.time.toJavaDuration
 
 class RacetimeImporter(
     private val playerHelper: PlayerHelper,
@@ -58,7 +59,7 @@ class RacetimeImporter(
         RaceResult(
             RaceResult.ResultId(race, player),
             entrant.place?.toLong() ?: -1,
-            entrant.finishTime,
+            entrant.finishTime?.toJavaDuration(),
             when (entrant.status) {
               RacetimeEntrant.RacetimeEntrantStatus.DONE -> ResultType.FINISH
               RacetimeEntrant.RacetimeEntrantStatus.DNF -> ResultType.FORFEIT
