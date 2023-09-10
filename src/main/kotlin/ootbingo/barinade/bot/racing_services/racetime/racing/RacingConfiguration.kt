@@ -30,9 +30,11 @@ class RacingConfiguration(
     override fun connect(url: String, delegate: RaceConnection): RaceWebsocketHandler =
         RaceWebsocketHandler(delegate, json) {
           StandardWebSocketClient()
-              .doHandshake(it,
+              .execute(
+                  it,
                   WebSocketHttpHeaders().also { h -> h.add("Authorization", "Bearer ${oauthManager.getToken()}") },
-                  URI.create(url))
+                  URI.create(url),
+              )
         }
   }
 }
