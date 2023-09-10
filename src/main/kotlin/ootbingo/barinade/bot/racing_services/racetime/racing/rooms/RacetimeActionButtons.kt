@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import kotlinx.serialization.Serializable
+import ootbingo.barinade.bot.configuration.RacetimeSurveyTypeSerializer
 
 @Serializable
 class RacetimeActionButton(
@@ -22,7 +23,7 @@ class RacetimeSurvey(
     val options: Map<String, String>? = null,
 )
 
-@Serializable
+@Serializable(RacetimeSurveyTypeSerializer::class)
 enum class RacetimeSurveyType {
 
   INPUT, BOOL, RADIO, SELECT

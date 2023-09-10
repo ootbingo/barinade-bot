@@ -6,6 +6,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeSurveyType
 import java.time.Instant
 import kotlin.reflect.KClass
 
@@ -59,3 +60,15 @@ abstract class RacetimeEnumSerializer<T : Enum<T>>(
 
 class EntrantStatusSerializer : RacetimeEnumSerializer<RacetimeEntrantStatus>(RacetimeEntrantStatus::class)
 class RaceStatusSerializer : RacetimeEnumSerializer<RacetimeRaceStatus>(RacetimeRaceStatus::class)
+
+class RacetimeSurveyTypeSerializer : KSerializer<RacetimeSurveyType> {
+
+  override val descriptor: SerialDescriptor =
+      PrimitiveSerialDescriptor("RacetimeSurveyTypeSerializer", PrimitiveKind.STRING)
+
+  override fun deserialize(decoder: Decoder): RacetimeSurveyType =
+      RacetimeSurveyType.valueOf(decoder.decodeString().uppercase())
+
+  override fun serialize(encoder: Encoder, value: RacetimeSurveyType) =
+      encoder.encodeString(value.name.lowercase())
+}
