@@ -13,22 +13,20 @@ import java.net.URI
 @Configuration
 class RacingConfiguration(
     private val oauthManager: OAuthManager,
-    private val json: Json,
     private val dispatcher: Dispatcher,
 ) {
 
   @Bean
-  fun raceConnectionFactory() = object : RaceConnectionFactory {
+  fun raceConnectionFactory(racetimeJson: Json) = object : RaceConnectionFactory {
     override fun openConnection(raceEndpoint: String) {
-      RaceConnection(raceEndpoint, websocketConnector(), RaceStatusHolder(), dispatcher) {
+      RaceConnection(raceEndpoint, websocketConnector(racetimeJson), RaceStatusHolder(), dispatcher) {
         Thread.sleep(5000)
         closeWebsocket()
       }
     }
   }
 
-  @Bean
-  fun websocketConnector() = object : WebsocketConnector {
+  private fun websocketConnector(json: Json) = object : WebsocketConnector {
     override fun connect(url: String, delegate: RaceConnection): RaceWebsocketHandler =
         RaceWebsocketHandler(delegate, json) {
           StandardWebSocketClient()

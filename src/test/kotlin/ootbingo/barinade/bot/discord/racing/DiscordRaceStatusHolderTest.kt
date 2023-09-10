@@ -1,6 +1,6 @@
 package ootbingo.barinade.bot.discord.racing
 
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.connection.DiscordPlayerRepository
@@ -30,7 +30,7 @@ internal class DiscordRaceStatusHolderTest(
       playerRepository,
       raceRepository,
       entryRepository,
-      Gson(),
+      Json,
       mock<TextChannel> {
         whenever(it.name).thenReturn("")
         whenever(it.idLong).thenReturn(Random.nextLong(0, Long.MAX_VALUE))
@@ -94,6 +94,26 @@ internal class DiscordRaceStatusHolderTest(
 
     holder.setStatusForAll(FORFEIT)
     assertThat(holder.countPerEntrantState()).containsExactlyInAnyOrderEntriesOf(mapOf(FORFEIT to 2))
+  }
+
+  @Test
+  internal fun addAdditionalInfo() {
+
+    val key1 = UUID.randomUUID().toString()
+    val value1 = UUID.randomUUID().toString()
+    val key2 = UUID.randomUUID().toString()
+    val value2 = UUID.randomUUID().toString()
+
+    holder.addAdditionalInfo(key1, value1)
+    holder.addAdditionalInfo(key2, value2)
+
+    Json.decodeFromString<Map<String, String>>(
+        checkNotNull(raceRepository.findById(holder.raceId)?.additionalInfo)
+    ).run {
+      assertThat(this[key1]).isEqualTo(value1)
+      assertThat(this[key2]).isEqualTo(value2)
+      assertThat(this.size).isEqualTo(2)
+    }
   }
 
   private fun randomUser() = mock<User>()
