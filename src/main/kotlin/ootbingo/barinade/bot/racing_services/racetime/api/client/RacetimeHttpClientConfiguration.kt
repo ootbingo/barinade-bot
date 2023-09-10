@@ -37,37 +37,9 @@ class RacetimeHttpClientConfiguration {
   @OptIn(ExperimentalSerializationApi::class)
   fun racetimeJson() = Json {
     namingStrategy = JsonNamingStrategy.SnakeCase
+    decodeEnumsCaseInsensitive = true
     ignoreUnknownKeys = true
     encodeDefaults = true
-  }
-
-  @Bean
-  fun racetimeGson(): Gson = GsonBuilder()
-      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-      .registerTypeAdapter(Duration::class.java, durationDeserializer)
-      .registerTypeAdapter(Instant::class.java, instantDeserializer)
-      .registerTypeAdapter(Instant::class.java, instantSerializer)
-      .registerTypeAdapter(RacetimeSurveyType::class.java, surveyTypeSerializer)
-      .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
-      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusDeserializer)
-      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusSerializer)
-      .registerTypeAdapter(RacetimeAction::class.java, actionDeserializer)
-      .create()
-
-  private val durationDeserializer = JsonDeserializer { json, _, _ ->
-    Duration.parse(json.asString)
-  }
-
-  private val instantDeserializer = JsonDeserializer { json, _, _ ->
-    Instant.parse(json.asString)
-  }
-
-  private val instantSerializer = JsonSerializer<Instant> { instant, _, _ ->
-    JsonPrimitive(instant.toString())
-  }
-
-  private val surveyTypeSerializer = JsonSerializer<RacetimeSurveyType> { type, _, _ ->
-    JsonPrimitive(type.name.lowercase())
   }
 
   abstract class RacetimeEnumSerializer<T : Enum<T>>(
@@ -107,6 +79,33 @@ class RacetimeHttpClientConfiguration {
   class EntrantStatusSerializer : RacetimeEnumSerializer<RacetimeEntrant.RacetimeEntrantStatus>(RacetimeEntrant.RacetimeEntrantStatus::class)
   class RaceStatusSerializer : RacetimeEnumSerializer<RacetimeRace.RacetimeRaceStatus>(RacetimeRace.RacetimeRaceStatus::class)
 
+  //<editor-fold desc="GSON converted">
+
+  @Bean
+  fun racetimeGson(): Gson = GsonBuilder()
+      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+      .registerTypeAdapter(Duration::class.java, durationDeserializer)
+      .registerTypeAdapter(Instant::class.java, instantDeserializer)
+      .registerTypeAdapter(Instant::class.java, instantSerializer)
+      .registerTypeAdapter(RacetimeSurveyType::class.java, surveyTypeSerializer)
+      .registerTypeAdapter(RacetimeEntrant.RacetimeEntrantStatus::class.java, entrantStatusDeserializer)
+      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusDeserializer)
+      .registerTypeAdapter(RacetimeRace.RacetimeRaceStatus::class.java, raceStatusSerializer)
+      .registerTypeAdapter(RacetimeAction::class.java, actionDeserializer)
+      .create()
+
+  private val durationDeserializer = JsonDeserializer { json, _, _ ->
+    Duration.parse(json.asString)
+  }
+
+  private val instantDeserializer = JsonDeserializer { json, _, _ ->
+    Instant.parse(json.asString)
+  }
+
+  private val instantSerializer = JsonSerializer<Instant> { instant, _, _ ->
+    JsonPrimitive(instant.toString())
+  }
+
   private val entrantStatusDeserializer = JsonDeserializer { json, _, _ ->
     RacetimeEntrant.RacetimeEntrantStatus
         .entries
@@ -123,6 +122,10 @@ class RacetimeHttpClientConfiguration {
     JsonObject().apply { addProperty("value", status.name) }
   }
 
+  private val surveyTypeSerializer = JsonSerializer<RacetimeSurveyType> { type, _, _ ->
+    JsonPrimitive(type.name.lowercase())
+  }
+
   private val actionDeserializer: JsonDeserializer<RacetimeAction> = JsonDeserializer { json, _, _ ->
 
     val action = json.asJsonObject["action"].asString
@@ -136,4 +139,6 @@ class RacetimeHttpClientConfiguration {
 
     RacetimeAction(action, payload)
   }
+
+  //</editor-fold>
 }

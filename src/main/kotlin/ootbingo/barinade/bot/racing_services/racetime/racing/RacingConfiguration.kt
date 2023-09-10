@@ -1,7 +1,7 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing
 
-import com.google.gson.Gson
 import de.scaramangado.lily.core.communication.Dispatcher
+import kotlinx.serialization.json.Json
 import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import org.springframework.context.annotation.Bean
@@ -12,7 +12,8 @@ import java.net.URI
 
 @Configuration
 class RacingConfiguration(
-    private val oauthManager: OAuthManager, private val gson: Gson,
+    private val oauthManager: OAuthManager,
+    private val json: Json,
     private val dispatcher: Dispatcher,
 ) {
 
@@ -29,7 +30,7 @@ class RacingConfiguration(
   @Bean
   fun websocketConnector() = object : WebsocketConnector {
     override fun connect(url: String, delegate: RaceConnection): RaceWebsocketHandler =
-        RaceWebsocketHandler(delegate, gson) {
+        RaceWebsocketHandler(delegate, json) {
           StandardWebSocketClient()
               .doHandshake(it,
                   WebSocketHttpHeaders().also { h -> h.add("Authorization", "Bearer ${oauthManager.getToken()}") },

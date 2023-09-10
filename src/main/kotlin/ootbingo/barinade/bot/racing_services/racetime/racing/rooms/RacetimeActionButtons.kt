@@ -1,5 +1,8 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class RacetimeActionButton(
     val message: String? = null,
     val url: String? = null,
@@ -8,6 +11,7 @@ class RacetimeActionButton(
     val submit: String? = null,
 )
 
+@Serializable
 class RacetimeSurvey(
     val name: String,
     val label: String,
@@ -18,6 +22,8 @@ class RacetimeSurvey(
     val options: Map<String, String>? = null,
 )
 
+@Serializable
 enum class RacetimeSurveyType {
+
   INPUT, BOOL, RADIO, SELECT
 }

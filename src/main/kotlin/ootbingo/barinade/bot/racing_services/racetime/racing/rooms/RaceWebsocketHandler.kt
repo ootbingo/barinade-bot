@@ -1,14 +1,15 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
-import com.google.gson.Gson
-import com.google.gson.JsonParser
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import ootbingo.barinade.bot.extensions.description
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
 class RaceWebsocketHandler(
     private val delegate: RaceConnection,
-    private val gson: Gson,
+    private val racetimeJson: Json,
     private val handshake: (WebSocketHandler) -> Unit,
 ) : WebSocketHandler {
 
@@ -39,7 +40,7 @@ class RaceWebsocketHandler(
   }
 
   private fun sendAction(payload: RacetimeActionPayload) {
-    val json = gson.toJson(payload.asAction())
+    val json = racetimeJson.encodeToString(payload.asAction())
     logger.trace(json)
     session.sendMessage(TextMessage(json))
   }
@@ -64,11 +65,10 @@ class RaceWebsocketHandler(
     logger.debug("Received message in $slug")
     logger.trace(message.payload.toString())
 
-    val json = JsonParser.parseString(message.payload as String).asJsonObject
-
-    val forwarding = when (json["type"].asString) {
-      "chat.message" -> gson.fromJson(json["message"].toString(), ChatMessage::class.java)
-      "race.data" -> gson.fromJson(json.toString(), RaceUpdate::class.java)
+    val action = racetimeJson.decodeFromString<Map<String, JsonElement>>(message.payload as String)
+    val forwarding = when (action["type"].toString().replace("\"", "")) {
+      "chat.message" -> racetimeJson.decodeFromString<ChatMessage>(action["message"].toString())
+      "race.data" -> racetimeJson.decodeFromString<RaceUpdate>(message.payload as String)
       else -> null
     }
 
