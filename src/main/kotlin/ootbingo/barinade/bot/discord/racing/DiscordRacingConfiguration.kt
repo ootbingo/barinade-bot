@@ -1,6 +1,6 @@
 package ootbingo.barinade.bot.discord.racing
 
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.connection.DiscordPlayerRepository
 import ootbingo.barinade.bot.discord.data.connection.DiscordRaceEntryRepository
@@ -25,13 +25,18 @@ class DiscordRacingConfiguration(
     private val playerRepository: DiscordPlayerRepository,
     private val raceRepository: DiscordRaceRepository,
     private val entryRepository: DiscordRaceEntryRepository,
-    private val gson: Gson,
 ) {
 
   @Bean
-  fun lockoutRoomFactory() = DiscordRaceRoomFactory {
+  fun discordJson() = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+  }
+
+  @Bean
+  fun lockoutRoomFactory(discordJson: Json) = DiscordRaceRoomFactory {
     LockoutRaceRoom(
-        DiscordRaceStatusHolder(playerRepository, raceRepository, entryRepository, gson, it, DiscordRaceType.LOCKOUT),
+        DiscordRaceStatusHolder(playerRepository, raceRepository, entryRepository, discordJson, it, DiscordRaceType.LOCKOUT),
         it,
         raceStartExecutor,
         waitWrapper,

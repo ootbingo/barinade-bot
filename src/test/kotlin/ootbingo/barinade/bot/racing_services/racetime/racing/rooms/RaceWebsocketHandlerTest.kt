@@ -1,5 +1,9 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.put
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import org.assertj.core.api.Assertions.*
@@ -18,11 +22,11 @@ internal class RaceWebsocketHandlerTest {
 
   private val raceConnectionMock = mock<RaceConnection>()
   private val sessionMock = mock<WebSocketSession>()
-  private val gson = RacetimeHttpClientConfiguration().racetimeGson()
+  private val json = RacetimeHttpClientConfiguration().racetimeJson()
 
   private var handshakeCounter = 0
 
-  private val handler = RaceWebsocketHandler(raceConnectionMock, gson) { handshakeCounter++ }
+  private val handler = RaceWebsocketHandler(raceConnectionMock, json) { handshakeCounter++ }
 
   @BeforeEach
   internal fun setup() {
@@ -30,7 +34,7 @@ internal class RaceWebsocketHandlerTest {
     handler.afterConnectionEstablished(sessionMock)
 
     doAnswer {
-      thenAction = gson.fromJson(it.getArgument<TextMessage>(0).payload, RacetimeAction::class.java)
+      thenAction = json.decodeFromString<RacetimeAction>(it.getArgument<TextMessage>(0).payload)
     }.whenever(sessionMock).sendMessage(any())
   }
 
@@ -194,10 +198,16 @@ internal class RaceWebsocketHandlerTest {
   //<editor-fold desc="Helper">
 
   private fun chatMessage(message: String) =
-      gson.toJson(mapOf("type" to "chat.message", "message" to ChatMessage(message = message)))
+      buildJsonObject {
+        put("type", "chat.message")
+        put("message", json.encodeToJsonElement(ChatMessage(message = message)))
+      }.let { json.encodeToString(it) }
 
   private fun raceUpdate(version: Int) =
-      gson.toJson(mapOf("type" to "race.data", "race" to RacetimeRace(version = version)))
+      buildJsonObject {
+        put("type", "race.data")
+        put("race", json.encodeToJsonElement(RacetimeRace(version = version)))
+      }.let { json.encodeToString(it) }
 
   //</editor-fold>
 }
