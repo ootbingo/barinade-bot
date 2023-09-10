@@ -1,8 +1,8 @@
 package ootbingo.barinade.bot.racing_services.racetime.api.model
 
 import kotlinx.serialization.Serializable
+import ootbingo.barinade.bot.configuration.RaceStatusSerializer
 import ootbingo.barinade.bot.configuration.SerializableInstant
-import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
 
 @Serializable
 data class RacetimeRace(
@@ -23,7 +23,7 @@ data class RacetimeRace(
       var custom: Boolean = true,
   )
 
-  @Serializable(RacetimeHttpClientConfiguration.RaceStatusSerializer::class)
+  @Serializable(RaceStatusSerializer::class)
   enum class RacetimeRaceStatus {
 
     OPEN, INVITATIONAL, PENDING, IN_PROGRESS, FINISHED, CANCELLED
