@@ -52,7 +52,6 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("com.google.code.gson:gson")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.3")
