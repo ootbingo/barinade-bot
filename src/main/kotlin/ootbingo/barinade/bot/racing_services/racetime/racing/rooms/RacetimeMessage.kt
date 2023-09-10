@@ -15,7 +15,8 @@ class ChatMessage(
     var messagePlain: String = "",
     var highlight: Boolean = false,
     var isBot: Boolean = false,
-    var isSystem: Boolean = false,
+    var isSystem: Boolean? = false,
+    var isMonitor: Boolean? = false,
 ) : RacetimeMessage()
 
 @Serializable
