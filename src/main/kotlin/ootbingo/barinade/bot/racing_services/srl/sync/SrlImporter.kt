@@ -45,7 +45,7 @@ class SrlImporter(
         val srlResult = srlRaces
             .findLast { srlRace -> srlRace.id == it.raceId }
             ?.results
-            ?.findLast { srlResult -> srlResult.player.toLowerCase() == player.srlName!!.toLowerCase() }
+            ?.findLast { srlResult -> srlResult.player.equals(player.srlName, ignoreCase = true) }
             ?: run {
               logger.error("No result for player ${player.srlName} found in race with ID ${storedRace.raceId}")
               return@forEach

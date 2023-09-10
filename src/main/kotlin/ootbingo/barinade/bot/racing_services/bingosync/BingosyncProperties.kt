@@ -5,6 +5,6 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConfigurationProperties("bingosync")
-class BingosyncProperties(
-    var baseUrl: String,
+data class BingosyncProperties(
+    var baseUrl: String = "",
 )

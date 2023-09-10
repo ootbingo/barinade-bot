@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.oauth
 
+import kotlinx.serialization.Serializable
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -40,6 +41,7 @@ class OAuthManager(
         ?: throw IllegalStateException("Empty token payload returned")
   }
 
+  @Serializable
   internal data class TokenRequest(
       val clientId: String,
       val clientSecret: String,
@@ -50,6 +52,7 @@ class OAuthManager(
         "client_id=$clientId&client_secret=$clientSecret&grant_type=$grantType"
   }
 
+  @Serializable
   internal data class TokenResponse(
       val accessToken: String,
       val expiresIn: Long,

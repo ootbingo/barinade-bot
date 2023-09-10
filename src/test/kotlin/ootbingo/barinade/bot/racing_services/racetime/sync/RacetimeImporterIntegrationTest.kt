@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import kotlin.time.Duration.Companion.hours
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -53,7 +54,7 @@ internal class RacetimeImporterIntegrationTest(
       entrants = listOf(
           RacetimeEntrant().apply {
             user = RacetimeUser(user1.first, user1.second)
-            finishTime = Duration.ofHours(1)
+            finishTime = 1.hours
             place = 1
             status = DONE
           },
@@ -99,7 +100,7 @@ internal class RacetimeImporterIntegrationTest(
       entrants = listOf(
           RacetimeEntrant().apply {
             user = RacetimeUser(user1.first, user1.second)
-            finishTime = Duration.ofHours(1)
+            finishTime = 1.hours
             place = 1
             status = DONE
           },
@@ -173,7 +174,7 @@ internal class RacetimeImporterIntegrationTest(
             entrants = listOf(
                 RacetimeEntrant().apply {
                   user = RacetimeUser(user1.first, user1.second)
-                  finishTime = Duration.ofHours(1)
+                  finishTime = 1.hours
                   place = 1
                   status = DONE
                 },
@@ -222,7 +223,7 @@ internal class RacetimeImporterIntegrationTest(
       entrants = listOf(
           RacetimeEntrant().apply {
             user = RacetimeUser("user1.first", "user1.second")
-            finishTime = Duration.ofHours(1)
+            finishTime = 1.hours
             place = 1
             status = DONE
           }
@@ -313,7 +314,7 @@ internal class RacetimeImporterIntegrationTest(
       entrants = listOf(
           RacetimeEntrant().apply {
             user = RacetimeUser(user1.first, user1.second)
-            finishTime = Duration.ofHours(1)
+            finishTime = 1.hours
             place = 1
             status = DONE
           },

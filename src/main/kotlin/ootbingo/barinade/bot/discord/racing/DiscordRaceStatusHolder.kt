@@ -1,6 +1,7 @@
 package ootbingo.barinade.bot.discord.racing
 
-import com.google.gson.Gson
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import ootbingo.barinade.bot.discord.data.connection.DiscordPlayerRepository
@@ -17,15 +18,15 @@ class DiscordRaceStatusHolder(
     private val playerRepository: DiscordPlayerRepository,
     private val raceRepository: DiscordRaceRepository,
     private val entryRepository: DiscordRaceEntryRepository,
-    private val gson: Gson,
+    private val discordJson: Json,
     discordChannel: TextChannel,
     initialType: DiscordRaceType,
 ) {
 
   private val logger = LoggerFactory.getLogger(DiscordRaceStatusHolder::class.java)
 
-  var type: DiscordRaceType
-  private val raceId: Long
+  private var type: DiscordRaceType
+  internal val raceId: Long
   private val race get() = raceRepository.findById(raceId)!!
   private val additionalInfo = mutableMapOf<String, String>()
 
@@ -111,7 +112,7 @@ class DiscordRaceStatusHolder(
 
   fun addAdditionalInfo(key: String, value: String) {
     additionalInfo[key] = value
-    updateDbRace { it.additionalInfo = gson.toJson(additionalInfo) }
+    updateDbRace { it.additionalInfo = discordJson.encodeToString(additionalInfo) }
   }
 
   var state: DiscordRaceState

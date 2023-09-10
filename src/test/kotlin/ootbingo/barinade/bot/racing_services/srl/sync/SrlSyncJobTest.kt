@@ -260,7 +260,7 @@ internal class SrlSyncJobTest(
       ).isEqualTo(it.second.toLong())
     }
 
-    assertThat(raceResultRepository.findAll().filter { res -> res.resultId.race == this }.count())
+    assertThat(raceResultRepository.findAll().count { res -> res.resultId.race == this })
         .isEqualTo(results.size)
   }
 

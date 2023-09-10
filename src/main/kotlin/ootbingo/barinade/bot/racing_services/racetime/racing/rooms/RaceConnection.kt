@@ -75,7 +75,7 @@ class RaceConnection(
 
   private fun onChatMessage(chatMessage: ChatMessage) {
 
-    if (chatMessage.isBot || chatMessage.isSystem) {
+    if (chatMessage.isBot || chatMessage.isSystem == true) {
       return
     }
 

@@ -12,11 +12,12 @@ plugins {
   id("io.spring.dependency-management") version "1.1.3"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
+  kotlin("plugin.serialization") version kotlinVersion
   jacoco
 }
 
 group = "ootbingo.barinade"
-version = "3.2.2"
+version = "3.2.3"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_17
@@ -51,7 +52,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("com.google.code.gson:gson")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.3")
   implementation("org.springframework:spring-websocket")
