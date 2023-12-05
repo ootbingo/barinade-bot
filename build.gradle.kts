@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.2.4-SNAPSHOT"
+version = "3.2.4"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
@@ -118,9 +118,9 @@ tasks.withType<JacocoReport> {
   }
 }
 
-fun executeCommand(command: String) =
+fun executeCommand(command: String): String =
     try {
-      Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
+      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
     } catch (e: Exception) {
       ""
     }

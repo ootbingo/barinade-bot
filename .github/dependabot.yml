@@ -3,13 +3,10 @@ updates:
   - package-ecosystem: gradle
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     assignees:
       - scaramangado
     target-branch: develop
-    ignore:
-      - dependency-name: org.glassfish.tyrus.bundles:tyrus-standalone-client
-        versions: [ "2.x" ]
   - package-ecosystem: docker
     directory: /
     schedule:
