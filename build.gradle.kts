@@ -20,8 +20,8 @@ group = "ootbingo.barinade"
 version = "3.2.4-SNAPSHOT"
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -127,15 +127,11 @@ fun executeCommand(command: String) =
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-  jvmTarget = "17"
+  jvmTarget = "21"
   freeCompilerArgs = listOf("-Xjvm-default=all")
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-  jvmTarget = "17"
-}
-
-tasks.withType<Wrapper> {
-  gradleVersion = "8.2.1"
+  jvmTarget = "21"
 }

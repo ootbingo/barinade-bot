@@ -67,3 +67,6 @@ spring:
     baseline-on-migrate: true
     baseline-version: 1
     locations: classpath:flyway/prod
+  threads:
+    virtual:
+      enabled: true

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17
+FROM eclipse-temurin:21
 
 COPY build/libs/barinade_bot.jar /usr/bin
 
