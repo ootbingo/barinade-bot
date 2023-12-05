@@ -118,9 +118,9 @@ tasks.withType<JacocoReport> {
   }
 }
 
-fun executeCommand(command: String) =
+fun executeCommand(command: String): String =
     try {
-      Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
+      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
     } catch (e: Exception) {
       ""
     }
