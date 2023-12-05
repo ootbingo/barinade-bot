@@ -5,11 +5,11 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.9.10"
+  val kotlinVersion = "1.9.21"
 
   java
-  id("org.springframework.boot") version "3.1.3"
-  id("io.spring.dependency-management") version "1.1.3"
+  id("org.springframework.boot") version "3.2.0"
+  id("io.spring.dependency-management") version "1.1.4"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   kotlin("plugin.serialization") version kotlinVersion
@@ -17,11 +17,11 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.2.3"
+version = "3.2.4"
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -52,9 +52,9 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.3")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.4")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -73,7 +73,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.24.2")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
 }
@@ -118,24 +118,20 @@ tasks.withType<JacocoReport> {
   }
 }
 
-fun executeCommand(command: String) =
+fun executeCommand(command: String): String =
     try {
-      Runtime.getRuntime().exec(command).inputStream.bufferedReader().readLine()
+      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
     } catch (e: Exception) {
       ""
     }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-  jvmTarget = "17"
+  jvmTarget = "21"
   freeCompilerArgs = listOf("-Xjvm-default=all")
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-  jvmTarget = "17"
-}
-
-tasks.withType<Wrapper> {
-  gradleVersion = "8.2.1"
+  jvmTarget = "21"
 }
