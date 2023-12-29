@@ -15,29 +15,29 @@ class HelpModule {
       conditionalAnswer(command) {
 
         discordMessage = """
-            The following commands are available:
-            ```
-            !average : Average time of your most recent bingos
-            !median  : Median time of your most recent bingos
-            !forfeits: Forfeit-ratio of your bingos
-            
-            !results : Most recent bingo times
-            !best    : Best bingo times
-            !racer   : Finished and forfeited bingos
-            
-            !balance : Balance up to 12 players into bingo teams
-            !teamtime: Projected blackout time for a team
-            
-            !golds   : List Golden Rupee Chests
-            !silvers : List Silver Rupee Rooms
-            
-            !shame   : Express your disapproval
-            
-            !lockout : Open a new lockout race room (only in #lockout-racing)
-            ```
-          """.trimIndent()
+          # BingoBot Commands
+          ## Statistics
+          **!average** Average time of your most recent bingos
+          **!median** Median time of your most recent bingos
+          **!forfeits** Forfeit-ratio of your bingos
+          **!results** Most recent bingo times
+          **!best** Best bingo times
+          **!racer** Finished and forfeited bingos
+          ## Team Balancing
+          **!balance** Balance up to 12 players into bingo teams
+          **!teamtime** Projected blackout time for a team
+          ## Game Info
+          **!golds** List Golden Rupee Chests
+          **!silvers** List Silver Rupee Rooms
+          **!stalfos** List Stalfos locations
+          ## Misc
+          **!shame** Express your disapproval
+          ## Racing
+          **!lockout** Open a new lockout race room (only in #lockout-racing)
+        """.trimIndent()
 
         racetimeMessage =
-            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !shame, !pick"
+            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, " +
+                "!shame, !pick"
       }
 }
