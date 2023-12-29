@@ -5,10 +5,10 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.9.21"
+  val kotlinVersion = "1.9.22"
 
   java
-  id("org.springframework.boot") version "3.2.0"
+  id("org.springframework.boot") version "3.2.1"
   id("io.spring.dependency-management") version "1.1.4"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.2.4"
+version = "3.2.5"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
