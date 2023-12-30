@@ -2,6 +2,7 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import de.scaramangado.lily.core.communication.Dispatcher
 import ootbingo.barinade.bot.misc.generateFilename
+import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
@@ -11,9 +12,13 @@ import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
 class RaceConnection(
-    raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
-    private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit,
-) {
+    private val raceEndpoint: String,
+    private val connector: WebsocketConnector,
+    private val status: RaceStatusHolder,
+    private val dispatcher: Dispatcher,
+    private val racetimeHttpClient: RacetimeHttpClient,
+    private val disconnect: RaceWebsocketDelegate.() -> Unit,
+) : RaceWebsocketDelegate {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
@@ -51,9 +56,9 @@ class RaceConnection(
       "!nobingo" to NO_BINGO
   )
 
-  val slug: String = raceEndpoint.split("/").last()
+  override val slug: String = raceEndpoint.split("/").last()
 
-  fun onMessage(message: RacetimeMessage) {
+  override fun onMessage(message: RacetimeMessage) {
 
     when (message) {
       is RaceUpdate -> onRaceUpdate(message.race)
@@ -61,7 +66,7 @@ class RaceConnection(
     }
   }
 
-  fun closeWebsocket() = websocket.disconnect()
+  override fun closeWebsocket() = websocket.disconnect()
 
   private fun onRaceUpdate(race: RacetimeRace) {
 
@@ -74,6 +79,8 @@ class RaceConnection(
   }
 
   private fun onChatMessage(chatMessage: ChatMessage) {
+
+    logger.debug("${chatMessage.user?.name}: ${chatMessage.messagePlain}")
 
     if (chatMessage.isBot || chatMessage.isSystem == true) {
       return
@@ -88,6 +95,13 @@ class RaceConnection(
           actions = raceModeActions,
       )
       return
+    }
+
+    if (chatMessage.messagePlain == "!anti") {
+      AntiBingoRaceConnection(
+          raceEndpoint, connector, RaceStatusHolder(), dispatcher, disconnect, racetimeHttpClient
+      )
+      closeWebsocket()
     }
 
     // Dispatch as Lily command
