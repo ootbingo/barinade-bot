@@ -8,7 +8,11 @@ internal class InfoModuleTest : ModuleTest() {
 
   private val module = InfoModule()
 
-  override val commands = mapOf("golds" to module::golds, "silvers" to module::silvers)
+  override val commands = mapOf(
+      "golds" to module::golds,
+      "silvers" to module::silvers,
+      "stalfos" to module::stalfos,
+  )
 
   //<editor-fold desc="!golds">
 
@@ -42,15 +46,32 @@ internal class InfoModuleTest : ModuleTest() {
 
   //</editor-fold>
 
+  //<editor-fold desc="!stalfos">
+
+  @Test
+  internal fun stalfosMultilineOnDiscord() {
+    whenDiscordMessageIsSent("", "!stalfos")
+    thenAnswerIsPreformatted()
+  }
+
+  @Test
+  internal fun stalfosSingleLineOnRacetime() {
+    whenRacetimeMessageIsSent("", "!stalfos")
+    thenAnswerIsSingleLine()
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="Then">
 
   private fun thenAnswerIsPreformatted() {
-    assertThat(answer).startsWith("```")
-    assertThat(answer).endsWith("```")
+    assertThat(answer).startsWith("## ")
+    assertThat(answer).doesNotStartWith("```")
   }
 
   private fun thenAnswerIsSingleLine() {
     assertThat(answer).doesNotStartWith("```")
+    assertThat(answer).doesNotStartWith("#")
     assertThat(answer).doesNotContain("\n")
   }
 
