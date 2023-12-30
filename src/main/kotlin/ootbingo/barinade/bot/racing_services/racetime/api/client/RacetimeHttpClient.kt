@@ -1,5 +1,7 @@
 package ootbingo.barinade.bot.racing_services.racetime.api.client
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeCategory
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
@@ -14,6 +16,8 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForEntity
 import org.springframework.web.client.getForObject
 import org.springframework.web.client.postForEntity
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
@@ -24,6 +28,7 @@ class RacetimeHttpClient(
     private val racetimeRestTemplate: RestTemplate,
     private val properties: RacetimeApiProperties,
     private val oAuthManager: OAuthManager,
+    private val racetimeJson: Json,
 ) {
 
   fun getAllRaces(): Collection<RacetimeRace> {
@@ -56,16 +61,30 @@ class RacetimeHttpClient(
         ?: throw IllegalStateException("Race $slug not found")
 
     val editedRace = race.toEditableRace().apply(edits)
+    val json = racetimeJson.encodeToString(editedRace).replace(Regex("([{}])"), "")
+    val formString = json.split(",").map { field ->
+      field.split(":").let { trim(it[0]) to trim(it[1]) }
+    }.joinToString("&") { "${it.first}=${encode(it.second)}" }
 
     racetimeRestTemplate.postForEntity<RacetimeRace>(
         "${properties.racingBaseUrl}/o/$OOT/$slug/edit",
         HttpEntity(
-            editedRace,
+            formString,
             HttpHeaders().apply {
               setBearerAuth(oAuthManager.getToken())
-              contentType = MediaType.APPLICATION_JSON
+              contentType = MediaType.APPLICATION_FORM_URLENCODED
             }
         ),
     )
+  }
+
+  private fun trim(string: String): String {
+
+    val withoutWhitespace = string.trim()
+    return withoutWhitespace.replace("\"", "")
+  }
+
+  private fun encode(string: String): String {
+    return URLEncoder.encode(string, StandardCharsets.UTF_8)
   }
 }
