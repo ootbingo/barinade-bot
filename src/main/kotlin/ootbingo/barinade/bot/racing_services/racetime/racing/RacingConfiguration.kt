@@ -17,24 +17,21 @@ class RacingConfiguration(
 ) {
 
   @Bean
-  fun raceConnectionFactory(racetimeJson: Json) = object : RaceConnectionFactory {
-    override fun openConnection(raceEndpoint: String) {
-      RaceConnection(raceEndpoint, websocketConnector(racetimeJson), RaceStatusHolder(), dispatcher) {
-        Thread.sleep(5000)
-        closeWebsocket()
-      }
+  fun raceConnectionFactory(racetimeJson: Json) = RaceConnectionFactory {
+    RaceConnection(it, websocketConnector(racetimeJson), RaceStatusHolder(), dispatcher) {
+      Thread.sleep(5000)
+      closeWebsocket()
     }
   }
 
-  private fun websocketConnector(json: Json) = object : WebsocketConnector {
-    override fun connect(url: String, delegate: RaceConnection): RaceWebsocketHandler =
-        RaceWebsocketHandler(delegate, json) {
-          StandardWebSocketClient()
-              .execute(
-                  it,
-                  WebSocketHttpHeaders().also { h -> h.add("Authorization", "Bearer ${oauthManager.getToken()}") },
-                  URI.create(url),
-              )
-        }
+  private fun websocketConnector(json: Json) = WebsocketConnector { url, delegate ->
+    RaceWebsocketHandler(delegate, json) {
+      StandardWebSocketClient()
+          .execute(
+              it,
+              WebSocketHttpHeaders().also { h -> h.add("Authorization", "Bearer ${oauthManager.getToken()}") },
+              URI.create(url),
+          )
+    }
   }
 }
