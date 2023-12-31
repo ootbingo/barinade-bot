@@ -22,7 +22,7 @@ internal class RaceWebsocketHandlerTest {
 
   private val raceConnectionMock = mock<RaceConnection>()
   private val sessionMock = mock<WebSocketSession>()
-  private val json = RacetimeHttpClientConfiguration().racetimeJson()
+  private val json = RacetimeHttpClientConfiguration(mock()).racetimeJson()
 
   private var handshakeCounter = 0
 

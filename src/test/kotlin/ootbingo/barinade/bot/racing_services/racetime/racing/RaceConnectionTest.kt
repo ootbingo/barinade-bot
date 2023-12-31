@@ -29,7 +29,9 @@ internal class RaceConnectionTest {
 
   init {
     whenever(connectorMock.connect(any(), any())).thenReturn(websocketMock)
-    connection = RaceConnection("", connectorMock, statusHolder, thenDispatcher) { disconnectCommandSent = true }
+    connection = RaceConnection("", connectorMock, statusHolder, thenDispatcher, mock()) {
+      disconnectCommandSent = true
+    }
   }
 
   @Test
@@ -37,7 +39,7 @@ internal class RaceConnectionTest {
 
     val url = UUID.randomUUID().toString()
 
-    val connection = RaceConnection(url, connectorMock, RaceStatusHolder(), thenDispatcher) { }
+    val connection = RaceConnection(url, connectorMock, RaceStatusHolder(), thenDispatcher, mock()) { }
 
     verify(connectorMock).connect(url, connection)
   }

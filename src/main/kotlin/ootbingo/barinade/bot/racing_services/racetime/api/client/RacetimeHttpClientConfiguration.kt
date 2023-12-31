@@ -3,7 +3,9 @@ package ootbingo.barinade.bot.racing_services.racetime.api.client
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
+import ootbingo.barinade.bot.misc.SnakeCaseStrategy
 import ootbingo.barinade.bot.misc.VersionProperties
+import ootbingo.barinade.bot.misc.WriteOnlyUrlEncodedHttpMessageConverter
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,7 +23,11 @@ class RacetimeHttpClientConfiguration(private val versionProperties: VersionProp
           HttpHeaders.USER_AGENT,
           "BingoBot/${versionProperties.version} (${versionProperties.build})"
       )
-      .messageConverters(KotlinSerializationJsonHttpMessageConverter(racetimeJson()), StringHttpMessageConverter())
+      .messageConverters(
+          KotlinSerializationJsonHttpMessageConverter(racetimeJson()),
+          StringHttpMessageConverter(),
+          WriteOnlyUrlEncodedHttpMessageConverter(SnakeCaseStrategy),
+      )
       .build()
 
   @Bean

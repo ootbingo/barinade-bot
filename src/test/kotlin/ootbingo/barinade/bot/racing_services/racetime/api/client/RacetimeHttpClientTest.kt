@@ -4,6 +4,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.mock
 import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
@@ -18,9 +19,9 @@ internal class RacetimeHttpClientTest {
   private val racingBaseUrl = "http://example.de"
 
   private val properties: RacetimeApiProperties = RacetimeApiProperties(dataBaseUrl, racingBaseUrl)
-  private val restTemplate = RacetimeHttpClientConfiguration().racetimeRestTemplate()
+  private val restTemplate = RacetimeHttpClientConfiguration(mock()).racetimeRestTemplate()
   private val server: MockRestServiceServer = MockRestServiceServer.createServer(restTemplate)
-  private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties)
+  private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties, mock())
 
   @Test
   internal fun findsAllRacesOfGame() {
