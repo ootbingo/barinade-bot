@@ -1,4 +1,4 @@
-package ootbingo.barinade.bot.misc
+package ootbingo.barinade.bot.misc.http_converters.urlencoded
 
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
@@ -7,6 +7,9 @@ import org.springframework.http.converter.HttpMessageConverter
 import java.lang.reflect.Method
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.typeOf
 
 class WriteOnlyUrlEncodedHttpMessageConverter(
     private val namingStrategy: UrlEncodedNamingStrategy = CamelCaseStrategy,
@@ -15,8 +18,7 @@ class WriteOnlyUrlEncodedHttpMessageConverter(
   override fun canRead(clazz: Class<*>, mediaType: MediaType?) = false
 
   override fun canWrite(clazz: Class<*>, mediaType: MediaType?): Boolean =
-      if (MediaType.APPLICATION_FORM_URLENCODED != mediaType) false
-      else canWriteClass(clazz)
+      MediaType.APPLICATION_FORM_URLENCODED == mediaType && canWriteClass(clazz)
 
   override fun getSupportedMediaTypes(): MutableList<MediaType> = mutableListOf(MediaType.APPLICATION_FORM_URLENCODED)
 
@@ -34,9 +36,9 @@ class WriteOnlyUrlEncodedHttpMessageConverter(
 
   private fun canWriteClass(clazz: Class<*>): Boolean {
     return allGetters(clazz)
+        .mapNotNull { it.returnType.kotlin.starProjectedType }
         .takeIf { it.isNotEmpty() }
-        ?.map { it.returnType }
-        ?.none { it.declaredClasses.contains(Iterable::class.java) }
+        ?.none { it.isSubtypeOf(typeOf<Iterable<*>>()) }
         ?: false
   }
 
@@ -70,17 +72,4 @@ class WriteOnlyUrlEncodedHttpMessageConverter(
   private fun serializedName(getterName: String): String {
     return namingStrategy.serializedName(getterName.replace(Regex("^(get|is)"), ""))
   }
-}
-
-fun interface UrlEncodedNamingStrategy {
-
-  fun serializedName(raw: String): String
-}
-
-val CamelCaseStrategy = UrlEncodedNamingStrategy {
-  it.replaceFirstChar { char -> char.lowercase() }
-}
-
-val SnakeCaseStrategy = UrlEncodedNamingStrategy {
-  it.replace(Regex("(?<=.)[A-Z]"), "_$0").lowercase()
 }
