@@ -1,15 +1,28 @@
 package ootbingo.barinade.bot.racing_services.racetime.api.client
 
+import kotlinx.serialization.encodeToString
+import ootbingo.barinade.bot.misc.http_converters.urlencoded.SnakeCaseStrategy
+import ootbingo.barinade.bot.misc.http_converters.urlencoded.WriteOnlyUrlEncodedHttpMessageConverter
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
+import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.*
 import org.springframework.test.web.client.response.MockRestResponseCreators.*
+import java.io.OutputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -18,10 +31,11 @@ internal class RacetimeHttpClientTest {
   private val dataBaseUrl = "http://example.com"
   private val racingBaseUrl = "http://example.de"
 
-  private val properties: RacetimeApiProperties = RacetimeApiProperties(dataBaseUrl, racingBaseUrl)
   private val restTemplate = RacetimeHttpClientConfiguration(mock()).racetimeRestTemplate()
+  private val properties: RacetimeApiProperties = RacetimeApiProperties(dataBaseUrl, racingBaseUrl)
+  private val oAuthManagerMock: OAuthManager = mock()
   private val server: MockRestServiceServer = MockRestServiceServer.createServer(restTemplate)
-  private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties, mock())
+  private val client: RacetimeHttpClient = RacetimeHttpClient(restTemplate, properties, oAuthManagerMock)
 
   @Test
   internal fun findsAllRacesOfGame() {
@@ -147,5 +161,54 @@ internal class RacetimeHttpClientTest {
     val allRaces = client.getOpenRaces()
 
     assertThat(allRaces).hasSize(2)
+  }
+
+  @Test
+  internal fun editsRace() {
+
+    val json = RacetimeHttpClientConfiguration(mock()).racetimeJson()
+    val converter = WriteOnlyUrlEncodedHttpMessageConverter(SnakeCaseStrategy)
+
+    val (raceSlug, newInfoBot, token) = (1..3).map { UUID.randomUUID().toString() }
+
+    val race = RacetimeRace(
+        name = raceSlug,
+    )
+
+    val raceJson = json.encodeToString(race)
+
+    whenever(oAuthManagerMock.getToken()).thenReturn(token)
+
+    server
+        .expect(requestTo("$racingBaseUrl/oot/$raceSlug/data"))
+        .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
+
+    server
+        .expect(requestTo("$racingBaseUrl/o/oot/$raceSlug/edit"))
+        .andExpect(header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer $token"))
+        .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
+
+    val edit: RacetimeEditableRace.() -> Unit = {
+      infoBot = newInfoBot
+      autoStart = true
+    }
+
+    client.editRace(raceSlug, edit)
+
+    convert(converter, race.toEditableRace().apply(edit))
+  }
+
+  private fun <T : Any> convert(converter: HttpMessageConverter<T>, t: T): String {
+
+    val inputStream = PipedInputStream()
+    val outputStream = PipedOutputStream(inputStream)
+
+    converter.write(t, MediaType.APPLICATION_FORM_URLENCODED, object : HttpOutputMessage {
+      override fun getHeaders(): HttpHeaders = mock()
+      override fun getBody(): OutputStream = outputStream
+    })
+
+    return inputStream.bufferedReader().use { it.readText() }
   }
 }
