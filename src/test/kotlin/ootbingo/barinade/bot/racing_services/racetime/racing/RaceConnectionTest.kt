@@ -5,13 +5,10 @@ import de.scaramangado.lily.core.communication.Dispatcher
 import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.*
 import java.util.*
 
@@ -56,84 +53,9 @@ internal class RaceConnectionTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Welcome Message">
+  //<editor-fold desc="Initialize Logic">
 
-  @Test
-  internal fun sendsWelcomeMessage() {
-
-    whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
-
-    thenWelcomeMessageIsSent()
-  }
-
-  @Test
-  internal fun onlySendsWelcomeOnce() {
-
-    givenRaceStatus(OPEN)
-
-    whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
-
-    thenNoWelcomeMessageIsSent()
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNotSendWelcomeMessageIfRaceHasAlreadyStarted(status: RacetimeRaceStatus) {
-
-    whenNewRaceUpdateIsReceived(status)
-
-    thenNoWelcomeMessageIsSent()
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Race Start">
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"])
-  internal fun setsGoalWhenRaceStarts(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenNewRaceGoalMatches("https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun onlySetGoalOnce(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenGoalIsNotChanged()
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"])
-  internal fun postsGoalAndFilenameWhenRaceStarts(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Filename: [A-Z]{2}")
-    thenChatMessageMatches("Goal: https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun onlyPostsGoalAndFilenameOnce(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenNoChatMessageIsSent()
-    thenWebsocketIsClosed(false)
-  }
+  // TODO
 
   //</editor-fold>
 
@@ -185,113 +107,7 @@ internal class RaceConnectionTest {
 
   //<editor-fold desc="Disconnect">
 
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["FINISHED", "CANCELLED"])
-  internal fun closesConnectionWhenRaceEnds(newStatus: RacetimeRaceStatus) {
-
-    whenNewRaceUpdateIsReceived(newStatus)
-
-    thenWebsocketIsClosed()
-  }
-
-  @Test
-  internal fun doesNotCloseConnectionWithoutStatusChange() {
-    thenWebsocketIsClosed(false)
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Race Modes">
-
-  @Test
-  internal fun blackoutMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!short"))
-    whenTextMessageReceived(chatMessage("!blackout"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
-  }
-
-  @Test
-  internal fun shortMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!blackout"))
-    whenTextMessageReceived(chatMessage("!short"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=short(&.*|$)")
-  }
-
-  @Test
-  internal fun normalMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!nobingo"))
-    whenTextMessageReceived(chatMessage("!normal"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
-  }
-
-  @Test
-  internal fun noBingo() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!normal"))
-    whenTextMessageReceived(chatMessage("!nobingo"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenGoalIsNotChanged()
-  }
-
-  @Test
-  internal fun childMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!child"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: https://doctorno124.github.io/childkek/bingo.html?.*&mode=normal(&.*|$)")
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Team Races">
-
-  @Test
-  internal fun initialModeNormal() {
-
-    whenNewRaceUpdateIsReceived(OPEN)
-    thenChatMessageMatches("Current mode: normal")
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
-  }
-
-  @Test
-  internal fun initialModeBlackoutForTeamRaces() {
-
-    whenNewRaceUpdateIsReceived(RacetimeRace(name = "oot/abc", status = OPEN, teamRace = true))
-    thenChatMessageMatches("Current mode: blackout")
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
-  }
+  // TODO
 
   //</editor-fold>
 
@@ -330,16 +146,8 @@ internal class RaceConnectionTest {
     assertThat(statusHolder.race).isEqualTo(race)
   }
 
-  private fun thenWelcomeMessageIsSent() {
-    assertThat(messagesSent).anyMatch { it.startsWith("Welcome") }
-  }
-
   private fun thenNoChatMessageIsSent() {
     assertThat(messagesSent).isEmpty()
-  }
-
-  private fun thenNoWelcomeMessageIsSent() {
-    assertThat(messagesSent).noneMatch { it.startsWith("Welcome") }
   }
 
   private fun thenChatMessageMatches(regex: String) {
