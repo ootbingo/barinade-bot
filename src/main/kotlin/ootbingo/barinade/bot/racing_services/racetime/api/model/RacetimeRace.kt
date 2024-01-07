@@ -10,6 +10,7 @@ import kotlin.time.Duration.Companion.seconds
 @Serializable
 data class RacetimeRace(
     var name: String = "",
+    var slug: String = "",
     var status: RacetimeRaceStatus = RacetimeRaceStatus.OPEN,
     var goal: RacetimeRaceGoal = RacetimeRaceGoal(),
     var info: String = "",
