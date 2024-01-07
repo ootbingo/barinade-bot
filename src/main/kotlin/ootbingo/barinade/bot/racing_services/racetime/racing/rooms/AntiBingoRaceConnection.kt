@@ -28,8 +28,6 @@ class AntiBingoRaceConnection(
     }
   }
 
-  override fun closeWebsocket() = websocket.disconnect()
-
   private fun onRaceUpdate(race: RacetimeRace) {
 
     if (status.raceStatus != race.status) {

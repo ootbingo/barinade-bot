@@ -4,5 +4,4 @@ interface RaceWebsocketDelegate {
 
   val slug: String
   fun onMessage(message: RacetimeMessage)
-  fun closeWebsocket()
 }

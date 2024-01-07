@@ -211,7 +211,8 @@ class BingoRaceRoomLogicTest {
     val commandFromMessage = message.split(" ")[0]
 
     logic.commands.filterKeys { it.matches("$commandFromMessage( |$)".toRegex()) }
-        .values.firstOrNull()?.invoke(message) ?: IllegalArgumentException("Command not known")
+        .values.firstOrNull()?.invoke(ChatMessage(messagePlain = message))
+        ?: IllegalArgumentException("Command not known")
   }
 
   //</editor-fold>

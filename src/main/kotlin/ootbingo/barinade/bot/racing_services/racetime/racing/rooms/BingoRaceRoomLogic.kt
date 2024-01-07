@@ -18,11 +18,11 @@ class BingoRaceRoomLogic(
     Mode.entries.associateBy { "!" + it.name.lowercase().replace("[^a-z]".toRegex(), "") }
   }
 
-  override val commands: Map<String, (String) -> Unit> = buildMap {
+  override val commands: Map<String, (ChatMessage) -> Unit> = buildMap {
 
-    modes.keys.forEach { modeCommand -> put(modeCommand) { arg -> changeMode(arg) } }
+    modes.keys.forEach { modeCommand -> put(modeCommand) { arg -> changeMode(arg.messagePlain) } }
 
-    put("!anti") { startAntiBingo(it) }
+    put("!anti") { startAntiBingo(it.message) }
   }
 
   override fun initialize(race: RacetimeRace) {
