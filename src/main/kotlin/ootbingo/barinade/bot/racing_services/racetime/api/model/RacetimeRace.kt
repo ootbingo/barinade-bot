@@ -39,7 +39,7 @@ data class RacetimeRace(
   @Serializable
   data class RacetimeRaceGoal(
       var name: String = "",
-      var custom: Boolean = true,
+      var custom: Boolean = false,
   )
 
   @Serializable(RaceStatusSerializer::class)
