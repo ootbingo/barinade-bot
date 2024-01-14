@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.*
 import java.util.*
+import kotlin.reflect.KClass
 
 class BingoRaceRoomLogicTest {
 
@@ -90,7 +91,7 @@ class BingoRaceRoomLogicTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Race Modes">
+  //<editor-fold desc="Test: Race Modes">
 
   @Test
   internal fun blackoutMode() {
@@ -158,7 +159,7 @@ class BingoRaceRoomLogicTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Team Races">
+  //<editor-fold desc="Test: Team Races">
 
   @Test
   internal fun initialModeNormal() {
@@ -180,6 +181,32 @@ class BingoRaceRoomLogicTest {
     whenNewRaceUpdateIsReceived(IN_PROGRESS)
 
     thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: Initialize Anti-Bingo">
+
+  @ParameterizedTest
+  @EnumSource(RacetimeRace.RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"])
+  internal fun requestsLogicChangeWhenAntiBingoIsStarted(status: RacetimeRace.RacetimeRaceStatus) {
+
+    givenRaceStatus(status)
+
+    whenTextMessageReceived("!anti")
+
+    thenLogicChangeIsRequested(AntiBingoRaceRoomLogic::class)
+  }
+
+  @ParameterizedTest
+  @EnumSource(RacetimeRace.RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"], mode = EnumSource.Mode.EXCLUDE)
+  internal fun doesNotRequestsAntiBingoAfterRaceHasStarted(status: RacetimeRace.RacetimeRaceStatus) {
+
+    givenRaceStatus(status)
+
+    whenTextMessageReceived("!anti")
+
+    thenNoLogicChangeIsRequested()
   }
 
   //</editor-fold>
@@ -254,6 +281,14 @@ class BingoRaceRoomLogicTest {
     } else {
       verify(delegateMock, never()).closeConnection(any())
     }
+  }
+
+  private fun <T : RaceRoomLogic> thenLogicChangeIsRequested(expectedType: KClass<T>) {
+    verify(delegateMock).changeLogic(expectedType)
+  }
+
+  private fun thenNoLogicChangeIsRequested() {
+    verify(delegateMock, never()).changeLogic(any<KClass<RaceRoomLogic>>())
   }
 
   //</editor-fold>

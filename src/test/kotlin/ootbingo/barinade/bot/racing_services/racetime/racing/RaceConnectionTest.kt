@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.*
 import java.util.*
 import kotlin.random.Random
+import kotlin.reflect.KClass
 
 internal class RaceConnectionTest {
 
@@ -36,8 +37,10 @@ internal class RaceConnectionTest {
       disconnectedWithDelay = it
     }
 
+//    statusHolder.race = RacetimeRace(name = "oot/from-init")
+
     logicHolder.logic = mock<BingoRaceRoomLogic>()
-    whenever(raceRoomLogicFactoryMock.createLogic(BingoRaceRoomLogic::class, connection)).thenReturn(mock())
+    whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(mock<BingoRaceRoomLogic>())
   }
 
   private var disconnectedWithDelay: Boolean? = null
@@ -75,7 +78,7 @@ internal class RaceConnectionTest {
   @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"])
   internal fun initializesBingoLogicOnFirstRaceUpdate(status: RacetimeRaceStatus) {
 
-    val race = RacetimeRace(status = status)
+    val race = RacetimeRace(name = "oot/test", status = status)
 
     val logic = mock<BingoRaceRoomLogic>()
     givenLogicIsCreated(logic)
@@ -247,6 +250,46 @@ internal class RaceConnectionTest {
     thenDisconnectedFromWebsocket(withDelay)
   }
 
+  @ParameterizedTest
+  @ValueSource(classes = [BingoRaceRoomLogic::class, AntiBingoRaceRoomLogic::class])
+  internal fun <T : RaceRoomLogic> createsRaceRoomLogic(javaType: Class<T>) {
+
+    val type = javaType.kotlin
+
+    givenRace(RacetimeRace(name = "oot/test"))
+
+    whenLogicChangeIsRequested(type)
+
+    thenLogicIsCreated(type)
+  }
+
+  @Test
+  internal fun persistsNewLogic() {
+
+    val logicMock = mock<BingoRaceRoomLogic>()
+
+    givenRace(RacetimeRace(name = "oot/test"))
+    givenLogicFactoryReturnsLogic(logicMock)
+
+    whenLogicChangeIsRequested<RaceRoomLogic>()
+
+    thenLogicIs(logicMock)
+  }
+
+  @Test
+  internal fun initializesNewLogic() {
+
+    val logicMock = mock<BingoRaceRoomLogic>()
+    val race = RacetimeRace(name = "oot/test")
+
+    givenRace(race)
+    givenLogicFactoryReturnsLogic(logicMock)
+
+    whenLogicChangeIsRequested<RaceRoomLogic>()
+
+    thenLogicIsInitialized(race)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Given">
@@ -255,13 +298,20 @@ internal class RaceConnectionTest {
     whenever(raceRoomLogicFactoryMock.createLogic(logic::class, connection)).thenReturn(logic)
   }
 
+  private fun givenLogicFactoryReturnsLogic(logic: RaceRoomLogic) {
+    whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(logic)
+  }
+
+  private fun givenRace(race: RacetimeRace) {
+    statusHolder.race = race
+  }
+
   private fun givenRaceStatus(status: RacetimeRaceStatus) {
-    statusHolder.race = RacetimeRace(name = "oot/abc", status = status)
+    givenRace(RacetimeRace(name = "oot/abc", status = status))
   }
 
   private fun givenDispatcherReturnsAnswerToChatMessage(text: String) {
-    whenever(thenDispatcher.dispatch(any(), any()))
-        .thenReturn(Optional.of(Answer.ofText(text)))
+    whenever(thenDispatcher.dispatch(any(), any())).thenReturn(Optional.of(Answer.ofText(text)))
   }
 
   private fun givenLogic(logic: RaceRoomLogic) {
@@ -290,6 +340,10 @@ internal class RaceConnectionTest {
 
   private fun whenDisconnectIsRequested(withDelay: Boolean) {
     connection.closeConnection(withDelay)
+  }
+
+  private fun <T : RaceRoomLogic> whenLogicChangeIsRequested(type: KClass<T> = mock()) {
+    connection.changeLogic(type)
   }
 
   //</editor-fold>
@@ -338,8 +392,12 @@ internal class RaceConnectionTest {
   private fun Dispatcher.wasNotCalled() =
       verifyNoInteractions(this)
 
+  private fun <T : RaceRoomLogic> thenLogicIsCreated(type: KClass<T>) {
+    verify(raceRoomLogicFactoryMock).createLogic(type, connection)
+  }
+
   private inline fun <reified T : RaceRoomLogic> thenLogicIsCreated() {
-    verify(raceRoomLogicFactoryMock).createLogic(T::class, connection)
+    thenLogicIsCreated(T::class)
   }
 
   private fun thenNoLogicIsCreated() {

@@ -68,6 +68,11 @@ class BingoRaceRoomLogic(
 
   private fun startAntiBingo(ignore: String) {
 
+    if (status.raceStatus !in listOf(OPEN, INVITATIONAL)) {
+      return
+    }
+
+    delegate.changeLogic<AntiBingoRaceRoomLogic>()
   }
 
   private fun onRaceStatusChange(old: RacetimeRace.RacetimeRaceStatus?, new: RacetimeRace.RacetimeRaceStatus) {

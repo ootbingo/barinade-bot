@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.dispatch
 import org.slf4j.LoggerFactory
+import kotlin.reflect.KClass
 
 class RaceConnection(
     raceEndpoint: String,
@@ -62,8 +63,7 @@ class RaceConnection(
 
     if (old == null && new in listOf(OPEN, INVITATIONAL)) {
       logger.info("Received initial race data for ${race.name}")
-      logic = logicFactory.createLogic<BingoRaceRoomLogic>(this)
-      logic.initialize(race)
+      changeAndInitializeLogic(BingoRaceRoomLogic::class, race)
     }
   }
 
@@ -77,5 +77,15 @@ class RaceConnection(
 
   override fun closeConnection(delay: Boolean) {
     disconnect.invoke(websocket, delay)
+  }
+
+  override fun <T : RaceRoomLogic> changeLogic(type: KClass<T>) {
+    logger.info("Initializing new logic of type ${type.simpleName} for ${status.slug}")
+    changeAndInitializeLogic(type)
+  }
+
+  private fun <T : RaceRoomLogic> changeAndInitializeLogic(type: KClass<T>, race: RacetimeRace = status.race) {
+    logic = logicFactory.createLogic(type, this)
+    logic.initialize(race)
   }
 }
