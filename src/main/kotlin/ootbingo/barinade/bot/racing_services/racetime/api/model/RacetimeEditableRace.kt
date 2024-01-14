@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 class RacetimeEditableRace(
     val goal: String?,
-//    val customGoal: String?,
     val teamRace: Boolean,
     val invitational: Boolean,
     val unlisted: Boolean,

@@ -19,7 +19,7 @@ class RacingConfiguration(
 
   @Bean
   fun raceConnectionFactory(racetimeJson: Json) = RaceConnectionFactory {
-    RaceConnection(it, websocketConnector(racetimeJson), RaceStatusHolder(), RaceRoomLogicHolder(), dispatcher, logicFactory) { withDelay ->
+    RaceConnection(it, websocketConnector(racetimeJson), RaceStatusHolder(), raceRoomLogicHolder(), dispatcher, logicFactory) { withDelay ->
       if (withDelay) {
         Thread.sleep(5000)
       }

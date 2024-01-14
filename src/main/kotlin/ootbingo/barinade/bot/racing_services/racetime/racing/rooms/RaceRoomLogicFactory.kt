@@ -1,6 +1,8 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.PreRaceStage
 import org.springframework.stereotype.Service
 import kotlin.reflect.KClass
 
@@ -12,7 +14,7 @@ class RaceRoomLogicFactory(
   fun <T : RaceRoomLogic> createLogic(type: KClass<T>, delegate: RaceRoomDelegate): T =
       when (type) {
         BingoRaceRoomLogic::class -> BingoRaceRoomLogic(RaceStatusHolder(), delegate)
-        AntiBingoRaceRoomLogic::class -> AntiBingoRaceRoomLogic(RaceStatusHolder(), racetimeHttpClient, delegate)
+        AntiBingoRaceRoomLogic::class -> AntiBingoRaceRoomLogic(RaceStatusHolder(), Holder(PreRaceStage), racetimeHttpClient, delegate)
         else -> throw NotImplementedError("Factory for ${type.simpleName} missing")
       } as T
 

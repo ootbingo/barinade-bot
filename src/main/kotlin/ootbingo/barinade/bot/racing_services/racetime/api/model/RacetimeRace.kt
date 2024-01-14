@@ -49,8 +49,7 @@ data class RacetimeRace(
   }
 
   fun toEditableRace() = RacetimeEditableRace(
-      if (!goal.custom) goal.name else null,
-//      if (goal.custom) goal.name else null,
+      if (!goal.custom) goal.name else throw UnsupportedOperationException("Editing custom races not supported"),
       teamRace,
       status == RacetimeRaceStatus.INVITATIONAL,
       unlisted,

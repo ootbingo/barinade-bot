@@ -23,10 +23,12 @@ internal class RaceConnectionTest {
 
   private val connectorMock = mock<WebsocketConnector>()
   private val statusHolder = RaceStatusHolder()
-  private val logicHolder = RaceRoomLogicHolder()
+  private val logicHolder = raceRoomLogicHolder()
   private val thenDispatcher = mock<Dispatcher>()
   private val websocketMock = mock<RaceWebsocketHandler>()
   private val raceRoomLogicFactoryMock = mock<RaceRoomLogicFactory>()
+
+  private var heldLogic by logicHolder
 
   private val connection: RaceConnection
 
@@ -37,9 +39,7 @@ internal class RaceConnectionTest {
       disconnectedWithDelay = it
     }
 
-//    statusHolder.race = RacetimeRace(name = "oot/from-init")
-
-    logicHolder.logic = mock<BingoRaceRoomLogic>()
+    heldLogic = mock<BingoRaceRoomLogic>()
     whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(mock<BingoRaceRoomLogic>())
   }
 
@@ -315,7 +315,7 @@ internal class RaceConnectionTest {
   }
 
   private fun givenLogic(logic: RaceRoomLogic) {
-    logicHolder.logic = logic
+    heldLogic = logic
   }
 
   //</editor-fold>
@@ -355,7 +355,7 @@ internal class RaceConnectionTest {
   }
 
   private fun thenRaceIsSentToLogic(expectedRace: RacetimeRace) {
-    verify(logicHolder.logic).onRaceUpdate(expectedRace)
+    verify(heldLogic).onRaceUpdate(expectedRace)
   }
 
   private fun thenSentMessageIsEqualTo(expectedMessage: String) {
@@ -405,11 +405,11 @@ internal class RaceConnectionTest {
   }
 
   private fun thenLogicIs(expectedLogic: RaceRoomLogic) {
-    assertThat(logicHolder.logic).isEqualTo(expectedLogic)
+    assertThat(heldLogic).isEqualTo(expectedLogic)
   }
 
   private fun thenLogicIsInitialized(expectedRace: RacetimeRace) {
-    verify(logicHolder.logic).initialize(expectedRace)
+    verify(heldLogic).initialize(expectedRace)
   }
 
   private fun thenDisconnectedFromWebsocket(withDelay: Boolean) {

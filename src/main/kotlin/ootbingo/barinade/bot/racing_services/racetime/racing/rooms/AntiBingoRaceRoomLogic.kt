@@ -1,16 +1,21 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoStage
 import org.slf4j.LoggerFactory
 
 class AntiBingoRaceRoomLogic(
     private val status: RaceStatusHolder,
+    stageHolder: Holder<AntiBingoStage>,
     private val racetimeHttpClient: RacetimeHttpClient,
     private val delegate: RaceRoomDelegate,
 ) : RaceRoomLogic {
 
   private val logger = LoggerFactory.getLogger(AntiBingoRaceRoomLogic::class.java)
+
+  private var stage by stageHolder
 
   override val commands: Map<String, (ChatMessage) -> Unit> = emptyMap()
 

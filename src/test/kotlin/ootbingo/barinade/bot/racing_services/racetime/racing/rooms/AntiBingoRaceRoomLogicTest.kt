@@ -1,8 +1,11 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
+import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoStage
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.PreRaceStage
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
@@ -16,10 +19,13 @@ class AntiBingoRaceRoomLogicTest {
   //<editor-fold desc="Setup">
 
   private val statusHolder = RaceStatusHolder()
+  private val stageHolder = Holder<AntiBingoStage>(PreRaceStage)
   private val racetimeHttpClientMock = mock<RacetimeHttpClient>()
   private val delegateMock = mock<RaceRoomDelegate>()
 
-  private val logic = AntiBingoRaceRoomLogic(statusHolder, racetimeHttpClientMock, delegateMock)
+  private var stage by stageHolder
+
+  private val logic = AntiBingoRaceRoomLogic(statusHolder, stageHolder, racetimeHttpClientMock, delegateMock)
 
   //</editor-fold>
 
