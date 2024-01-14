@@ -1,11 +1,10 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti
 
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.AntiBingoRaceRoomLogic
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 
 class RaceStartedStage(
-    completeStage: AntiBingoRaceRoomLogic.(AntiBingoState) -> Unit,
+    completeStage: (AntiBingoState) -> Unit,
 ) : AntiBingoStage(completeStage) {
 
   override fun initialize(initialState: AntiBingoState, race: RacetimeRace) {

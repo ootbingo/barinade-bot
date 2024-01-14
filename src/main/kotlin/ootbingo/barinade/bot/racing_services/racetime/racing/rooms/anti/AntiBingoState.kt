@@ -1,13 +1,15 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti
 
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
+
 data class AntiBingoState(
-    val entrants: List<String>,
+    val entrants: List<RacetimeUser>,
     val entrantMappings: List<EntrantMapping>,
 ) {
 
   data class EntrantMapping(
-      val entrant: String,
-      val choosesFor: String,
+      val entrant: RacetimeUser,
+      val choosesFor: RacetimeUser,
       val chosenRow: Row?,
   )
 
