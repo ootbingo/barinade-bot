@@ -68,7 +68,7 @@ class RowPickingStage(
       return
     }
 
-    if (!command.messagePlain.matches("^!pick (BLTR|TLBR|(ROW|COL)[1-5])+$".toRegex())) {
+    if (!command.messagePlain.matches("^!pick (BLTR|TLBR|(ROW|COL)[1-5])$".toRegex())) {
       return
     }
 

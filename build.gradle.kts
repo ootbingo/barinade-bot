@@ -53,7 +53,6 @@ dependencies {
   implementation(kotlin("reflect"))
 
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.4")
   implementation("org.springframework:spring-websocket")
@@ -107,7 +106,7 @@ tasks.withType<Test> {
   systemProperties(Pair("spring.profiles.active", "unittest"))
 
   jvmArgs = "-XX:+EnableDynamicAgentLoading".let {
-    @Suppress("UNNECESSARY_SAFE_CALL")
+    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS")
     jvmArgs?.plus(it) ?: mutableListOf(it)
   }
 
