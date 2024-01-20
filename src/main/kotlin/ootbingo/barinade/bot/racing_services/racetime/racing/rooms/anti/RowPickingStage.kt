@@ -43,6 +43,8 @@ class RowPickingStage(
             ))
         ))
     )
+
+    // TODO Start countdown-thread
   }
 
   override fun raceUpdate(race: RacetimeRace) {
@@ -77,5 +79,13 @@ class RowPickingStage(
     logger.info("${picker.name} picked $row for ${entrantMapping.choosesFor.name}")
 
     entrantMapping.chosenRow = row
+
+    checkForStageCompletion()
+  }
+
+  private fun checkForStageCompletion() {
+    if (state.entrantMappings.all { it.chosenRow != null }) {
+      completeStage(state)
+    }
   }
 }

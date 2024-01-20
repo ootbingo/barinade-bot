@@ -86,6 +86,8 @@ class RowPickingStageTest {
     thenState containsChosenMapping EntrantMapping(entrant1, entrant2, row)
     thenState containsChosenMapping EntrantMapping(entrant2, entrant3, null)
     thenState containsChosenMapping EntrantMapping(entrant3, entrant1, Row.TLBR)
+
+    thenStageIsCompleted(completed = false)
   }
 
   @Test
@@ -136,6 +138,30 @@ class RowPickingStageTest {
     whenMessageIsReceived("!edit COL4", null)
 
     thenState isEqualTo initialState
+  }
+
+  @Test
+  internal fun completesStageWhenLastRowIsPicked() {
+
+    val (entrant1, entrant2, entrant3) = entrants()
+
+    givenState(
+        state(
+            EntrantMapping(entrant1, entrant2, null),
+            EntrantMapping(entrant2, entrant3, Row.ROW2),
+            EntrantMapping(entrant3, entrant1, Row.TLBR),
+        )
+    )
+
+    whenMessageIsReceived("!pick COL4", entrant1)
+
+    thenStageIsCompleted(
+        state(
+            EntrantMapping(entrant1, entrant2, Row.COL4),
+            EntrantMapping(entrant2, entrant3, Row.ROW2),
+            EntrantMapping(entrant3, entrant1, Row.TLBR),
+        )
+    )
   }
 
   //</editor-fold>
@@ -219,6 +245,17 @@ class RowPickingStageTest {
 
   private infix fun AntiBingoState.isEqualTo(expectedState: AntiBingoState) {
     assertThat(this).isEqualTo(expectedState)
+  }
+
+  private fun thenStageIsCompleted(
+      expectedState: AntiBingoState = AntiBingoState(listOf(), listOf()),
+      completed: Boolean = true,
+  ) {
+    if (completed) {
+      verify(completeStageMock).invoke(expectedState)
+    } else {
+      verifyNoInteractions(completeStageMock)
+    }
   }
 
   //</editor-fold>
