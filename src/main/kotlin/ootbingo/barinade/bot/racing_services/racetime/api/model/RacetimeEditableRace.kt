@@ -21,5 +21,5 @@ class RacetimeEditableRace(
     val allowPreraceChat: Boolean,
     val allowMidraceChat: Boolean,
     val allowNonEntrantChat: Boolean,
-    val chatMessageDelay: Int,
+    var chatMessageDelay: Int,
 )

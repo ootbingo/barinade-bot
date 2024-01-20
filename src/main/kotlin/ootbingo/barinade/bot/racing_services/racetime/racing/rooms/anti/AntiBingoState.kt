@@ -10,7 +10,7 @@ data class AntiBingoState(
   data class EntrantMapping(
       val entrant: RacetimeUser,
       val choosesFor: RacetimeUser,
-      val chosenRow: Row?,
+      var chosenRow: Row?,
   )
 
   enum class Row {
@@ -18,5 +18,20 @@ data class AntiBingoState(
     ROW1, ROW2, ROW3, ROW4, ROW5,
     COL1, COL2, COL3, COL4, COL5,
     TLBR, BLTR;
+
+    companion object {
+
+      fun asStringMap(): Map<String, String> = entries.associate { it.formatted to it.toString() }
+    }
   }
 }
+
+val AntiBingoState.Row.formatted: String
+  get() = if (name.startsWith("ROW") || name.startsWith("COL")) {
+    name.replace("ROW", "Row ").replace("COL", "Col")
+  } else {
+    buildString {
+      append(name)
+      insert(2, "-")
+    }
+  }

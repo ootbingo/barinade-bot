@@ -107,9 +107,7 @@ class AntiBingoRaceRoomLogicTest {
     val edits = captor.lastValue
 
     val testRace = mock<RacetimeEditableRace>()
-
     edits.invoke(testRace)
-
     verify(testRace).autoStart = false
   }
 

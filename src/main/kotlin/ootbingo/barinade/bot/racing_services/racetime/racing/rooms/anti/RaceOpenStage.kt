@@ -13,6 +13,7 @@ class RaceOpenStage(
   }
 
   override fun raceUpdate(race: RacetimeRace) {
+    // TODO Randomize pairs and notify by DM
     if (race.entrants.size >= 2 && race.entrants.all { it.status == READY }) {
       completeStage(AntiBingoState(race.entrants.map { it.user }, emptyList()))
     }
