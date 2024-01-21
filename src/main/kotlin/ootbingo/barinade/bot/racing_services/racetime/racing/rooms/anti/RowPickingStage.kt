@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeActio
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeSurvey
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeSurveyType
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 class RowPickingStage(
     completeStage: (AntiBingoState) -> Unit,
@@ -26,9 +27,14 @@ class RowPickingStage(
 
     state = initialState
 
+    val bingoUrl = "https://ootbingo.github.io/bingo/bingo.html?version=10.4&seed=${generateSeed()}&mode=normal"
+
     editRace {
+      infoBot = "Anti-Bingo $bingoUrl"
       chatMessageDelay = 90
     }
+
+    sendMessage("Goal: $bingoUrl", null)
 
     sendMessage(
         "Chat messages (including your row pick) are delayed by 90 seconds. You have 5 minutes to pick a row. If you fail to pick a row in time, a random row will be assigned.",
@@ -82,6 +88,8 @@ class RowPickingStage(
 
     checkForStageCompletion()
   }
+
+  private fun generateSeed() = Random.nextInt(1, 1_000_000)
 
   private fun checkForStageCompletion() {
     if (state.entrantMappings.all { it.chosenRow != null }) {

@@ -56,11 +56,20 @@ class RowPickingStageTest {
   }
 
   @Test
-  internal fun sendMessageWhileInitializing() {
+  internal fun setsGoalWhileInitializing() {
 
     whenStageIsInitialized()
 
-    thenMessageMatches(".*You have 5 minutes to pick a row\\..*".toRegex())
+    thenGoalMatches("^Anti-Bingo https://ootbingo\\.github\\.io/bingo/bingo\\.html\\?version=[0-9.]+&seed=[0-9]{1,6}&mode=normal$".toRegex())
+  }
+
+  @Test
+  internal fun sendMessagesWhileInitializing() {
+
+    whenStageIsInitialized()
+
+    thenChatMessageMatches("^Goal: https://ootbingo\\.github\\.io/bingo/bingo\\.html\\?version=[0-9.]+&seed=[0-9]{1,6}&mode=normal$".toRegex())
+    thenChatMessageMatches(".*You have 5 minutes to pick a row\\..*".toRegex())
   }
 
   //</editor-fold>
@@ -179,7 +188,7 @@ class RowPickingStageTest {
         entrants = listOf(entrant1, entrant2, newUser1, newUser2).map { RacetimeEntrant(user = it) }
     ))
 
-    thenMessageMatches((".*No new entrants permitted\\.").toRegex())
+    thenChatMessageMatches((".*No new entrants permitted\\.").toRegex())
     thenUsersAreKicked(newUser1, newUser2)
   }
 
@@ -224,7 +233,18 @@ class RowPickingStageTest {
     verify(testRace).chatMessageDelay = expectedDuration.inWholeSeconds.toInt()
   }
 
-  private fun thenMessageMatches(messageRegex: Regex) {
+  private fun thenGoalMatches(expectedGoal: Regex) {
+    val captor = argumentCaptor<RacetimeEditableRace.() -> Unit>()
+    verify(editRaceMock).invoke(captor.capture())
+    val edits = captor.firstValue
+
+    val testRace = RacetimeRace().toEditableRace()
+    edits.invoke(testRace)
+    println(testRace)
+    assertThat(testRace.infoBot).matches(expectedGoal.toPattern())
+  }
+
+  private fun thenChatMessageMatches(messageRegex: Regex) {
     val captor = argumentCaptor<String>()
     verify(sendMessageMock, atLeastOnce()).invoke(captor.capture(), anyOrNull())
     assertThat(captor.allValues).anyMatch { it.matches(messageRegex) }
