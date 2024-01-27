@@ -193,6 +193,23 @@ class AntiBingoRaceRoomLogicTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Test: !pick">
+
+  @Test
+  internal fun sendsPickCommandToStage() {
+
+    val stageMock = mock<RowPickingStage>()
+    val chatMessageMock = mock<ChatMessage>()
+
+    givenStage(stageMock)
+
+    whenPickIsReceived(chatMessageMock)
+
+    thenStage(stageMock) receivesCommand chatMessageMock
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="Given">
 
   private fun givenStageIsReturnedByFactory(stage: AntiBingoStage) {
@@ -207,6 +224,10 @@ class AntiBingoRaceRoomLogicTest {
     stub.thenReturn(stage)
   }
 
+  private fun givenStage(newStage: AntiBingoStage) {
+    stage = newStage
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="When">
@@ -217,6 +238,10 @@ class AntiBingoRaceRoomLogicTest {
 
   private fun whenRaceUpdateIsReceived(race: RacetimeRace) {
     logic.onRaceUpdate(race)
+  }
+
+  private fun whenPickIsReceived(chatMessage: ChatMessage) {
+    logic.commands["!pick"]?.invoke(chatMessage)
   }
 
   private fun whenRaceOpenStageIsComplete(state: AntiBingoState) {
@@ -289,6 +314,10 @@ class AntiBingoRaceRoomLogicTest {
 
   private infix fun AntiBingoStage.isInitializedWithRace(expectedRace: RacetimeRace) {
     verify(this).initialize(any(), eq(expectedRace))
+  }
+
+  private infix fun AntiBingoStage.receivesCommand(expectedCommand: ChatMessage) {
+    verify(this).handleCommand(expectedCommand)
   }
 
   //</editor-fold>
