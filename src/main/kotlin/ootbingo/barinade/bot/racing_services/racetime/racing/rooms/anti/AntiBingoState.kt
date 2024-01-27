@@ -21,14 +21,14 @@ data class AntiBingoState(
 
     companion object {
 
-      fun asStringMap(): Map<String, String> = entries.associate { it.formatted to it.toString() }
+      fun asStringMap(): Map<String, String> = entries.associate { it.name to it.formatted }
     }
   }
 }
 
 val AntiBingoState.Row.formatted: String
   get() = if (name.startsWith("ROW") || name.startsWith("COL")) {
-    name.replace("ROW", "Row ").replace("COL", "Col")
+    name.replace("ROW", "Row ").replace("COL", "Col ")
   } else {
     buildString {
       append(name)
