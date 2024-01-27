@@ -4,6 +4,8 @@ import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoStage
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoStageFactory
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoState
 import org.slf4j.LoggerFactory
 
 class AntiBingoRaceRoomLogic(
@@ -11,13 +13,16 @@ class AntiBingoRaceRoomLogic(
     stageHolder: Holder<AntiBingoStage>,
     private val racetimeHttpClient: RacetimeHttpClient,
     private val delegate: RaceRoomDelegate,
+    private val stageFactory: AntiBingoStageFactory,
 ) : RaceRoomLogic {
 
   private val logger = LoggerFactory.getLogger(AntiBingoRaceRoomLogic::class.java)
 
   private var stage by stageHolder
 
-  override val commands: Map<String, (ChatMessage) -> Unit> = emptyMap()
+  override val commands: Map<String, (ChatMessage) -> Unit> = mapOf(
+      "!pick" to { stage.handleCommand(it) }
+  )
 
   override fun initialize(race: RacetimeRace) {
 
@@ -30,9 +35,28 @@ class AntiBingoRaceRoomLogic(
 
     delegate.sendMessage("Anti-Bingo initialized")
     status.race = race
+    stage = stageFactory.raceOpenStage { switchToRowPickingStage(it) }
+        .also { it.initialize(AntiBingoState(race.entrants.map { e -> e.user }, listOf()), race) }
   }
 
   override fun onRaceUpdate(race: RacetimeRace) {
     status.race = race
+    stage.raceUpdate(race)
+  }
+
+  private fun switchToRowPickingStage(state: AntiBingoState) {
+    stage = stageFactory.rowPickingStage(
+        { switchToRaceStartedStage(it) },
+        Holder(state),
+        { racetimeHttpClient.editRace(status.slug, it) },
+        { message, actions ->
+          delegate.sendMessage(message, actions = actions)
+        },
+        { /* TODO Implement kicking */ },
+    ).also { it.initialize(state, status.race) }
+  }
+
+  private fun switchToRaceStartedStage(state: AntiBingoState) {
+    stage = stageFactory.raceStartedStage {}.also { it.initialize(state, status.race) }
   }
 }

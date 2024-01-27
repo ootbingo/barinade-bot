@@ -3,15 +3,15 @@ package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoStage
-import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.PreRaceStage
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.*
 import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
+import org.mockito.kotlin.*
+import org.mockito.stubbing.OngoingStubbing
 import java.util.*
 
 class AntiBingoRaceRoomLogicTest {
@@ -22,10 +22,18 @@ class AntiBingoRaceRoomLogicTest {
   private val stageHolder = Holder<AntiBingoStage>(PreRaceStage)
   private val racetimeHttpClientMock = mock<RacetimeHttpClient>()
   private val delegateMock = mock<RaceRoomDelegate>()
+  private val stageFactoryMock = mock<AntiBingoStageFactory>()
 
   private var stage by stageHolder
 
-  private val logic = AntiBingoRaceRoomLogic(statusHolder, stageHolder, racetimeHttpClientMock, delegateMock)
+  private val logic = AntiBingoRaceRoomLogic(statusHolder, stageHolder, racetimeHttpClientMock, delegateMock, stageFactoryMock)
+
+  @BeforeEach
+  internal fun setup() {
+    whenever(stageFactoryMock.raceOpenStage(any())).thenReturn(mock())
+    whenever(stageFactoryMock.rowPickingStage(any(), any(), any(), any(), any())).thenReturn(mock())
+    whenever(stageFactoryMock.raceStartedStage(any())).thenReturn(mock())
+  }
 
   //</editor-fold>
 
@@ -62,6 +70,115 @@ class AntiBingoRaceRoomLogicTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Test: Stages">
+
+  //<editor-fold desc="RaceOpenStage">
+
+  @Test
+  fun raceOpenStageAfterInitializing() {
+
+    val stageMock: RaceOpenStage = mock()
+
+    givenStageIsReturnedByFactory(stageMock)
+
+    whenRaceIsInitialized()
+
+    thenStage isEqualTo stageMock
+  }
+
+  @Test
+  fun raceOpenStageIsInitialized() {
+
+    val stageMock: RaceOpenStage = mock()
+    val race = RacetimeRace(
+        entrants = (1..4).map { RacetimeEntrant(user = RacetimeUser(name = UUID.randomUUID().toString())) },
+    )
+
+    givenStageIsReturnedByFactory(stageMock)
+
+    whenRaceIsInitialized(race = race)
+
+    thenStage(stageMock) isInitializedWithState AntiBingoState(race.entrants.map { it.user }, listOf())
+    thenStage(stageMock) isInitializedWithRace race
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="RowPickingStage">
+
+  @Test
+  internal fun switchesToRowPickingStage() {
+
+    val (rowPickingStageMock, whenRaceOpenStageIsComplete) = rowPickingStageMock()
+
+    val raceMock: RacetimeRace = mock()
+    val stateMock: AntiBingoState = mock()
+
+    givenStageIsReturnedByFactory(rowPickingStageMock)
+
+    whenRaceIsInitialized()
+    whenRaceUpdateIsReceived(raceMock)
+    whenRaceOpenStageIsComplete(stateMock)
+
+    thenStage isEqualTo rowPickingStageMock
+    thenStage(rowPickingStageMock) isCreatedWithState stateMock
+    thenStage(rowPickingStageMock) isInitializedWithState stateMock
+    thenStage(rowPickingStageMock) isInitializedWithRace raceMock
+  }
+
+  @Test
+  internal fun editsRaceFromRowPickingStage() {
+
+    val slug = UUID.randomUUID().toString()
+    val race = RacetimeRace(name = "oot/$slug")
+    val editsMock: RacetimeEditableRace.() -> Unit = mock()
+    val (_, whenRaceOpenStageIsComplete) = rowPickingStageMock()
+
+    whenRaceIsInitialized(race = race)
+    whenRaceUpdateIsReceived(race)
+    whenRaceOpenStageIsComplete(mock())
+    whenRaceIsEditedFromRowPickingStage(editsMock)
+
+    thenRace(slug).isEdited(editsMock)
+  }
+
+  @Test
+  internal fun sendsMessagesFromRowPickingStage() {
+
+    val message = UUID.randomUUID().toString()
+    val actionsMock: Map<String, RacetimeActionButton> = mock()
+    val (_, whenRaceOpenStageIsComplete) = rowPickingStageMock()
+
+    whenRaceIsInitialized()
+    whenRaceOpenStageIsComplete(mock())
+    whenMessageIsSentFromRowPickingStage(message, actionsMock)
+
+    thenMessageIsSent(message, actionsMock)
+  }
+
+  //</editor-fold>
+
+  @Test
+  internal fun switchesToRaceStartedStage() {
+
+    val (raceStartedStageMock, whenRowPickingStageIsComplete) = raceStartedStageMock()
+
+    val raceMock: RacetimeRace = mock()
+    val stateMock: AntiBingoState = mock()
+
+    givenStageIsReturnedByFactory(raceStartedStageMock)
+
+    whenRaceIsInitialized()
+    whenRaceUpdateIsReceived(raceMock)
+    whenRowPickingStageIsComplete(stateMock)
+
+    thenStage isEqualTo raceStartedStageMock
+    thenStage(raceStartedStageMock) isInitializedWithState stateMock
+    thenStage(raceStartedStageMock) isInitializedWithRace raceMock
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="Test: onRaceUpdate">
 
   @Test
@@ -76,6 +193,22 @@ class AntiBingoRaceRoomLogicTest {
 
   //</editor-fold>
 
+  //<editor-fold desc="Given">
+
+  private fun givenStageIsReturnedByFactory(stage: AntiBingoStage) {
+
+    val stub: OngoingStubbing<AntiBingoStage> = when (stage) {
+      is RaceOpenStage -> whenever(stageFactoryMock.raceOpenStage(any()))
+      is RowPickingStage -> whenever(stageFactoryMock.rowPickingStage(any(), any(), any(), any(), any()))
+      is RaceStartedStage -> whenever(stageFactoryMock.raceStartedStage(any()))
+      is PreRaceStage -> throw IllegalArgumentException("PreRaceStage not supported")
+    }
+
+    stub.thenReturn(stage)
+  }
+
+  //</editor-fold>
+
   //<editor-fold desc="When">
 
   private fun whenRaceIsInitialized(race: RacetimeRace = RacetimeRace()) {
@@ -86,12 +219,36 @@ class AntiBingoRaceRoomLogicTest {
     logic.onRaceUpdate(race)
   }
 
+  private fun whenRaceOpenStageIsComplete(state: AntiBingoState) {
+    val captor = argumentCaptor<(AntiBingoState) -> Unit>()
+    verify(stageFactoryMock).raceOpenStage(captor.capture())
+    captor.firstValue.invoke(state)
+  }
+
+  private fun whenRowPickingStageIsComplete(state: AntiBingoState) {
+    val captor = argumentCaptor<(AntiBingoState) -> Unit>()
+    verify(stageFactoryMock).rowPickingStage(captor.capture(), any(), any(), any(), any())
+    captor.firstValue.invoke(state)
+  }
+
+  private fun whenRaceIsEditedFromRowPickingStage(edits: RacetimeEditableRace.() -> Unit) {
+    val captor = argumentCaptor<(RacetimeEditableRace.() -> Unit) -> Unit>()
+    verify(stageFactoryMock).rowPickingStage(any(), any(), captor.capture(), any(), any())
+    captor.firstValue.invoke(edits)
+  }
+
+  private fun whenMessageIsSentFromRowPickingStage(message: String, actions: Map<String, RacetimeActionButton>?) {
+    val captor = argumentCaptor<(String, Map<String, RacetimeActionButton>?) -> Unit>()
+    verify(stageFactoryMock).rowPickingStage(any(), any(), any(), captor.capture(), any())
+    captor.firstValue.invoke(message, actions)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Then">
 
-  private fun thenMessageIsSent(expectedMessage: String) {
-    verify(delegateMock).sendMessage(expectedMessage, false, null)
+  private fun thenMessageIsSent(expectedMessage: String, expectedActions: Map<String, RacetimeActionButton>? = null) {
+    verify(delegateMock).sendMessage(expectedMessage, false, expectedActions)
   }
 
   private fun thenRaceIsPersisted(expectedRace: RacetimeRace) {
@@ -111,12 +268,66 @@ class AntiBingoRaceRoomLogicTest {
     verify(testRace).autoStart = false
   }
 
+  private fun RaceSlug.isEdited(expectedEdits: RacetimeEditableRace.() -> Unit) {
+    verify(racetimeHttpClientMock).editRace(this.slug, expectedEdits)
+  }
+
+  private val thenStage get() = stage
+  private fun <T : AntiBingoStage> thenStage(stage: T) = stage
+
+  private infix fun <T> T.isEqualTo(other: T?) {
+    assertThat(this).isEqualTo(other)
+  }
+
+  private infix fun AntiBingoStage.isInitializedWithState(expectedState: AntiBingoState) {
+    verify(this).initialize(eq(expectedState), any())
+  }
+
+  private infix fun RowPickingStage.isCreatedWithState(expectedState: AntiBingoState) {
+    verify(stageFactoryMock).rowPickingStage(any(), eq(Holder(expectedState)), any(), any(), any())
+  }
+
+  private infix fun AntiBingoStage.isInitializedWithRace(expectedRace: RacetimeRace) {
+    verify(this).initialize(any(), eq(expectedRace))
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Helper">
 
   @JvmInline
   value class RaceSlug(val slug: String)
+
+  private fun rowPickingStageMock() = object {
+
+    private val raceOpenStageMock: RaceOpenStage = mock()
+
+    init {
+      givenStageIsReturnedByFactory(raceOpenStageMock)
+    }
+
+    operator fun component1(): RowPickingStage = mock()
+    operator fun component2(): (AntiBingoState) -> Unit = {
+      whenRaceOpenStageIsComplete(it)
+    }
+  }
+
+  private fun raceStartedStageMock() = object {
+
+    private val raceOpenStageMock: RaceOpenStage = mock()
+    private val rowPickingStageMock: RowPickingStage = mock()
+
+    init {
+      givenStageIsReturnedByFactory(raceOpenStageMock)
+      givenStageIsReturnedByFactory(rowPickingStageMock)
+    }
+
+    operator fun component1(): RaceStartedStage = mock()
+    operator fun component2(): (AntiBingoState) -> Unit = {
+      whenRaceOpenStageIsComplete(it)
+      whenRowPickingStageIsComplete(it)
+    }
+  }
 
   //</editor-fold>
 }

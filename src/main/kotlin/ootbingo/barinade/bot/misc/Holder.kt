@@ -3,7 +3,7 @@ package ootbingo.barinade.bot.misc;
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KProperty
 
-class Holder<T : Any>(private var heldObject: T) {
+data class Holder<T : Any>(private var heldObject: T) {
 
   private val logger = LoggerFactory.getLogger(Holder::class.java)
 
