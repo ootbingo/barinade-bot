@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 interface AntiBingoStageFactory {
 
-  fun raceOpenStage(completeStage: (AntiBingoState) -> Unit): RaceOpenStage
+  fun raceOpenStage(completeStage: (AntiBingoState) -> Unit, sendDm: (String, RacetimeUser) -> Unit): RaceOpenStage
 
   fun rowPickingStage(
       completeStage: (AntiBingoState) -> Unit,
@@ -26,8 +26,8 @@ class DefaultAntiBingoStageFactory(
     private val entrantPairGenerator: EntrantPairGenerator,
 ) : AntiBingoStageFactory {
 
-  override fun raceOpenStage(completeStage: (AntiBingoState) -> Unit) =
-      RaceOpenStage(entrantPairGenerator, completeStage)
+  override fun raceOpenStage(completeStage: (AntiBingoState) -> Unit, sendDm: (String, RacetimeUser) -> Unit) =
+      RaceOpenStage(entrantPairGenerator, completeStage, sendDm)
 
   override fun rowPickingStage(
       completeStage: (AntiBingoState) -> Unit,

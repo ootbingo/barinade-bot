@@ -19,7 +19,7 @@ sealed class RacetimeActionPayload {
 class SendMessage(
     val message: String,
     val pinned: Boolean = false,
-    val directedTo: String? = null,
+    val directTo: String? = null,
     val actions: Map<String, RacetimeActionButton>? = null,
     val guid: String = "${UUID.randomUUID()}",
 ) : RacetimeActionPayload() {

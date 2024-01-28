@@ -228,13 +228,13 @@ internal class RaceConnectionTest {
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  internal fun sendsDirectedToString(isDm: Boolean) {
+  internal fun sendsdirectToString(isDm: Boolean) {
 
-    val directedTo = UUID.randomUUID().toString().takeIf { isDm }
+    val directTo = UUID.randomUUID().toString().takeIf { isDm }
 
-    whenMessageIsSent(UUID.randomUUID().toString(), false, directedTo, emptyMap())
+    whenMessageIsSent(UUID.randomUUID().toString(), false, directTo, emptyMap())
 
-    thenSentMessageIsDirectedTo(directedTo)
+    thenSentMessageIsdirectTo(directTo)
   }
 
   @Test
@@ -345,8 +345,8 @@ internal class RaceConnectionTest {
     connection.setGoal(goal)
   }
 
-  private fun whenMessageIsSent(message: String, pinned: Boolean, directedTo: String?, actions: Map<String, RacetimeActionButton>?) {
-    connection.sendMessage(message, pinned, directedTo, actions)
+  private fun whenMessageIsSent(message: String, pinned: Boolean, directTo: String?, actions: Map<String, RacetimeActionButton>?) {
+    connection.sendMessage(message, pinned, directTo, actions)
   }
 
   private fun whenDisconnectIsRequested(withDelay: Boolean) {
@@ -377,8 +377,8 @@ internal class RaceConnectionTest {
     verify(websocketMock).sendMessage(any(), eq(expectedPinned), anyOrNull(), anyOrNull())
   }
 
-  private fun thenSentMessageIsDirectedTo(expectedDirectedTo: String?) {
-    verify(websocketMock).sendMessage(any(), any(), eq(expectedDirectedTo), anyOrNull())
+  private fun thenSentMessageIsdirectTo(expecteddirectTo: String?) {
+    verify(websocketMock).sendMessage(any(), any(), eq(expecteddirectTo), anyOrNull())
   }
 
   private fun thenSentMessageHasActions(expectedActions: Map<String, RacetimeActionButton>) {

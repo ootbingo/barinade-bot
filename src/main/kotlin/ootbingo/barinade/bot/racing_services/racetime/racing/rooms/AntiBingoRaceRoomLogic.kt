@@ -35,8 +35,10 @@ class AntiBingoRaceRoomLogic(
 
     delegate.sendMessage("Anti-Bingo initialized")
     status.race = race
-    stage = stageFactory.raceOpenStage { switchToRowPickingStage(it) }
-        .also { it.initialize(AntiBingoState(race.entrants.map { e -> e.user }, listOf()), race) }
+    stage = stageFactory.raceOpenStage(
+        { switchToRowPickingStage(it) },
+        { message, user -> delegate.sendMessage(message, directTo = user.id) },
+    ).also { it.initialize(AntiBingoState(race.entrants.map { e -> e.user }, listOf()), race) }
   }
 
   override fun onRaceUpdate(race: RacetimeRace) {

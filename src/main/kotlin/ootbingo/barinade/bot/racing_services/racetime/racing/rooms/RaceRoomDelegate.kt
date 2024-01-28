@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 interface RaceRoomDelegate {
 
   fun setGoal(goal: String)
-  fun sendMessage(message: String, pinned: Boolean = false, directedTo: String? = null, actions: Map<String, RacetimeActionButton>? = null)
+  fun sendMessage(message: String, pinned: Boolean = false, directTo: String? = null, actions: Map<String, RacetimeActionButton>? = null)
   fun closeConnection(delay: Boolean = false)
   fun <T : RaceRoomLogic> changeLogic(type: KClass<T>)
 }

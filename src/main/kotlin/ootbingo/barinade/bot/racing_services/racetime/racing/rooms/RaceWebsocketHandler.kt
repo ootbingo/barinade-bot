@@ -28,13 +28,13 @@ class RaceWebsocketHandler(
   fun sendMessage(
       message: String,
       pinned: Boolean = false,
-      directedTo: String? = null,
+      directTo: String? = null,
       actions: Map<String, RacetimeActionButton>? = null,
   ) {
-    logger.debug("Sending chat message to $slug${directedTo?.let { " (DM to $it)" } ?: ""}")
+    logger.debug("Sending chat message to $slug${directTo?.let { " (DM to $it)" } ?: ""}")
     logger.trace("'$message'")
 
-    sendAction(SendMessage(message, pinned, directedTo, actions))
+    sendAction(SendMessage(message, pinned, directTo, actions))
   }
 
   fun setGoal(goal: String) {

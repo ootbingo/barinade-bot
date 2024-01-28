@@ -12,10 +12,10 @@ class RaceStartedStage(
   }
 
   override fun raceUpdate(race: RacetimeRace) {
-    TODO("Not yet implemented")
+    // Do nothing
   }
 
   override fun handleCommand(command: ChatMessage) {
-    TODO("Not yet implemented")
+    // Do nothing
   }
 }
