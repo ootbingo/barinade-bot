@@ -18,7 +18,11 @@ interface AntiBingoStageFactory {
       kickUser: (RacetimeUser) -> Unit,
   ): RowPickingStage
 
-  fun raceStartedStage(completeStage: (AntiBingoState) -> Unit): RaceStartedStage
+  fun raceStartedStage(
+      completeStage: (AntiBingoState) -> Unit,
+      editRace: (RacetimeEditableRace.() -> Unit) -> Unit,
+      sendMessage: (String, RacetimeUser?) -> Unit,
+  ): RaceStartedStage
 }
 
 @Service
@@ -37,6 +41,9 @@ class DefaultAntiBingoStageFactory(
       kickUser: (RacetimeUser) -> Unit,
   ) = RowPickingStage(completeStage, stateHolder, editRace, sendMessage, kickUser)
 
-  override fun raceStartedStage(completeStage: (AntiBingoState) -> Unit) =
-      RaceStartedStage(completeStage)
+  override fun raceStartedStage(
+      completeStage: (AntiBingoState) -> Unit,
+      editRace: (RacetimeEditableRace.() -> Unit) -> Unit,
+      sendMessage: (String, RacetimeUser?) -> Unit,
+  ) = RaceStartedStage(completeStage, editRace, sendMessage)
 }

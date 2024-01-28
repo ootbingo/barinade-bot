@@ -59,6 +59,10 @@ class AntiBingoRaceRoomLogic(
   }
 
   private fun switchToRaceStartedStage(state: AntiBingoState) {
-    stage = stageFactory.raceStartedStage {}.also { it.initialize(state, status.race) }
+    stage = stageFactory.raceStartedStage(
+        {},
+        { racetimeHttpClient.editRace(status.slug, it) },
+        { message, user -> delegate.sendMessage(message, directTo = user?.id) }
+    ).also { it.initialize(state, status.race) }
   }
 }

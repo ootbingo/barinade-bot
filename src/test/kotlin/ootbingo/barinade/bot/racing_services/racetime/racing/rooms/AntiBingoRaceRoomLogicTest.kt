@@ -32,7 +32,7 @@ class AntiBingoRaceRoomLogicTest {
   internal fun setup() {
     whenever(stageFactoryMock.raceOpenStage(any(), any())).thenReturn(mock())
     whenever(stageFactoryMock.rowPickingStage(any(), any(), any(), any(), any())).thenReturn(mock())
-    whenever(stageFactoryMock.raceStartedStage(any())).thenReturn(mock())
+    whenever(stageFactoryMock.raceStartedStage(any(), any(), any())).thenReturn(mock())
   }
 
   //</editor-fold>
@@ -191,6 +191,55 @@ class AntiBingoRaceRoomLogicTest {
     thenStage(raceStartedStageMock) isInitializedWithRace raceMock
   }
 
+  @Test
+  internal fun editsRaceFromRaceStartedStage() {
+
+    val slug = UUID.randomUUID().toString()
+    val race = RacetimeRace(name = "oot/$slug")
+    val editsMock: RacetimeEditableRace.() -> Unit = mock()
+    val (_, whenRowPickingStageIsComplete) = raceStartedStageMock()
+
+    whenRaceIsInitialized(race = race)
+    whenRaceUpdateIsReceived(race)
+    whenRowPickingStageIsComplete(mock())
+    whenRaceIsEditedFromRaceStartedStage(editsMock)
+
+    thenRace(slug).isEdited(editsMock)
+  }
+
+  @Test
+  internal fun sendsMessageFromRaceStartedState() {
+
+    val slug = UUID.randomUUID().toString()
+    val race = RacetimeRace(name = "oot/$slug")
+    val message = UUID.randomUUID().toString()
+    val (_, whenRowPickingStageIsComplete) = raceStartedStageMock()
+
+    whenRaceIsInitialized(race = race)
+    whenRaceUpdateIsReceived(race)
+    whenRowPickingStageIsComplete(mock())
+    whenMessageIsSentFromRaceStartedStage(message, null)
+
+    thenMessageIsSent(message)
+  }
+
+  @Test
+  internal fun sendsDmFromRaceStartedState() {
+
+    val slug = UUID.randomUUID().toString()
+    val race = RacetimeRace(name = "oot/$slug")
+    val message = UUID.randomUUID().toString()
+    val user = RacetimeUser(id = UUID.randomUUID().toString())
+    val (_, whenRowPickingStageIsComplete) = raceStartedStageMock()
+
+    whenRaceIsInitialized(race = race)
+    whenRaceUpdateIsReceived(race)
+    whenRowPickingStageIsComplete(mock())
+    whenMessageIsSentFromRaceStartedStage(message, user)
+
+    thenMessageIsSent(message, expectedDirectTo = user.id)
+  }
+
   //</editor-fold>
 
   //</editor-fold>
@@ -233,7 +282,7 @@ class AntiBingoRaceRoomLogicTest {
     val stub: OngoingStubbing<AntiBingoStage> = when (stage) {
       is RaceOpenStage -> whenever(stageFactoryMock.raceOpenStage(any(), any()))
       is RowPickingStage -> whenever(stageFactoryMock.rowPickingStage(any(), any(), any(), any(), any()))
-      is RaceStartedStage -> whenever(stageFactoryMock.raceStartedStage(any()))
+      is RaceStartedStage -> whenever(stageFactoryMock.raceStartedStage(any(), any(), any()))
       is PreRaceStage -> throw IllegalArgumentException("PreRaceStage not supported")
     }
 
@@ -288,6 +337,18 @@ class AntiBingoRaceRoomLogicTest {
     val captor = argumentCaptor<(String, Map<String, RacetimeActionButton>?) -> Unit>()
     verify(stageFactoryMock).rowPickingStage(any(), any(), any(), captor.capture(), any())
     captor.firstValue.invoke(message, actions)
+  }
+
+  private fun whenRaceIsEditedFromRaceStartedStage(edits: RacetimeEditableRace.() -> Unit) {
+    val captor = argumentCaptor<(RacetimeEditableRace.() -> Unit) -> Unit>()
+    verify(stageFactoryMock).raceStartedStage(any(), captor.capture(), any())
+    captor.firstValue.invoke(edits)
+  }
+
+  private fun whenMessageIsSentFromRaceStartedStage(message: String, user: RacetimeUser?) {
+    val captor = argumentCaptor<(String, RacetimeUser?) -> Unit>()
+    verify(stageFactoryMock).raceStartedStage(any(), any(), captor.capture())
+    captor.firstValue.invoke(message, user)
   }
 
   //</editor-fold>
