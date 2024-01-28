@@ -153,7 +153,7 @@ class AntiBingoRaceRoomLogicTest {
     whenRaceOpenStageIsComplete(mock())
     whenMessageIsSentFromRowPickingStage(message, actionsMock)
 
-    thenMessageIsSent(message, actionsMock)
+    thenMessageIsSent(message, expectedActions = actionsMock)
   }
 
   //</editor-fold>
@@ -272,8 +272,8 @@ class AntiBingoRaceRoomLogicTest {
 
   //<editor-fold desc="Then">
 
-  private fun thenMessageIsSent(expectedMessage: String, expectedActions: Map<String, RacetimeActionButton>? = null) {
-    verify(delegateMock).sendMessage(expectedMessage, false, expectedActions)
+  private fun thenMessageIsSent(expectedMessage: String, expectedDirectedTo: String? = null, expectedActions: Map<String, RacetimeActionButton>? = null) {
+    verify(delegateMock).sendMessage(expectedMessage, false, expectedDirectedTo, expectedActions)
   }
 
   private fun thenRaceIsPersisted(expectedRace: RacetimeRace) {

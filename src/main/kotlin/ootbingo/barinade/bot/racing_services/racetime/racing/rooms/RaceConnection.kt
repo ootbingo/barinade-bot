@@ -72,8 +72,8 @@ class RaceConnection(
     websocket.setGoal(goal)
   }
 
-  override fun sendMessage(message: String, pinned: Boolean, actions: Map<String, RacetimeActionButton>?) {
-    websocket.sendMessage(message, pinned, actions)
+  override fun sendMessage(message: String, pinned: Boolean, directedTo: String?, actions: Map<String, RacetimeActionButton>?) {
+    websocket.sendMessage(message, pinned, directedTo, actions)
   }
 
   override fun closeConnection(delay: Boolean) {

@@ -298,7 +298,7 @@ class BingoRaceRoomLogicTest {
   private val messagesSent: List<String>
     get() =
       argumentCaptor<String>()
-          .also { verify(delegateMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull()) }
+          .also { verify(delegateMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull(), anyOrNull()) }
           .allValues
 
   private val goal: String

@@ -212,7 +212,7 @@ internal class RaceConnectionTest {
     val message = UUID.randomUUID().toString()
     val pinned = Random.nextBoolean()
 
-    whenMessageIsSent(message, pinned, emptyMap())
+    whenMessageIsSent(message, pinned, null, emptyMap())
 
     thenSentMessageIsEqualTo(message)
   }
@@ -221,9 +221,20 @@ internal class RaceConnectionTest {
   @ValueSource(booleans = [true, false])
   internal fun sendsMessagePinFlag(pinned: Boolean) {
 
-    whenMessageIsSent(UUID.randomUUID().toString(), pinned, emptyMap())
+    whenMessageIsSent(UUID.randomUUID().toString(), pinned, null, emptyMap())
 
     thenSentMessageIsPinned(pinned)
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  internal fun sendsDirectedToString(isDm: Boolean) {
+
+    val directedTo = UUID.randomUUID().toString().takeIf { isDm }
+
+    whenMessageIsSent(UUID.randomUUID().toString(), false, directedTo, emptyMap())
+
+    thenSentMessageIsDirectedTo(directedTo)
   }
 
   @Test
@@ -236,7 +247,7 @@ internal class RaceConnectionTest {
         name2 to RacetimeActionButton(message = action2),
     )
 
-    whenMessageIsSent(UUID.randomUUID().toString(), true, actions)
+    whenMessageIsSent(UUID.randomUUID().toString(), true, null, actions)
 
     thenSentMessageHasActions(actions)
   }
@@ -334,8 +345,8 @@ internal class RaceConnectionTest {
     connection.setGoal(goal)
   }
 
-  private fun whenMessageIsSent(message: String, pinned: Boolean, actions: Map<String, RacetimeActionButton>?) {
-    connection.sendMessage(message, pinned, actions)
+  private fun whenMessageIsSent(message: String, pinned: Boolean, directedTo: String?, actions: Map<String, RacetimeActionButton>?) {
+    connection.sendMessage(message, pinned, directedTo, actions)
   }
 
   private fun whenDisconnectIsRequested(withDelay: Boolean) {
@@ -359,15 +370,19 @@ internal class RaceConnectionTest {
   }
 
   private fun thenSentMessageIsEqualTo(expectedMessage: String) {
-    verify(websocketMock).sendMessage(eq(expectedMessage), any(), anyOrNull())
+    verify(websocketMock).sendMessage(eq(expectedMessage), any(), anyOrNull(), anyOrNull())
   }
 
   private fun thenSentMessageIsPinned(expectedPinned: Boolean) {
-    verify(websocketMock).sendMessage(any(), eq(expectedPinned), anyOrNull())
+    verify(websocketMock).sendMessage(any(), eq(expectedPinned), anyOrNull(), anyOrNull())
+  }
+
+  private fun thenSentMessageIsDirectedTo(expectedDirectedTo: String?) {
+    verify(websocketMock).sendMessage(any(), any(), eq(expectedDirectedTo), anyOrNull())
   }
 
   private fun thenSentMessageHasActions(expectedActions: Map<String, RacetimeActionButton>) {
-    verify(websocketMock).sendMessage(any(), any(), eq(expectedActions))
+    verify(websocketMock).sendMessage(any(), any(), anyOrNull(), eq(expectedActions))
   }
 
   private fun thenChatMessageMatches(regex: String) {
@@ -423,7 +438,7 @@ internal class RaceConnectionTest {
   private val messagesSent: List<String>
     get() =
       argumentCaptor<String>()
-          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull()) }
+          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull(), anyOrNull()) }
           .allValues
 
   private val goal: String
