@@ -22,10 +22,12 @@ interface AntiBingoStageFactory {
 }
 
 @Service
-class DefaultAntiBingoStageFactory : AntiBingoStageFactory {
+class DefaultAntiBingoStageFactory(
+    private val entrantPairGenerator: EntrantPairGenerator,
+) : AntiBingoStageFactory {
 
   override fun raceOpenStage(completeStage: (AntiBingoState) -> Unit) =
-      RaceOpenStage(completeStage)
+      RaceOpenStage(entrantPairGenerator, completeStage)
 
   override fun rowPickingStage(
       completeStage: (AntiBingoState) -> Unit,
