@@ -37,7 +37,7 @@ class RowPickingStage(
     sendMessage("Goal: $bingoUrl", null)
 
     sendMessage(
-        "Chat messages (including your row pick) are delayed by 90 seconds.",
+        "Chat messages (including your row pick) are delayed by 90 seconds. (UNLESS you are moderator or race-monitor)",
         mapOf("Pick a Row" to RacetimeActionButton(
             message = "!pick \${row}",
             submit = "Pick",

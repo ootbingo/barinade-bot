@@ -135,7 +135,7 @@ class BingoRaceRoomLogic(
                       "blackout" to "Blackout",
                       "short" to "Short",
                       "child" to "Child only",
-                      "anti" to "Anti-Bingo (irreversible)"
+                      "anti" to "Anti-Bingo (BETA, irreversible)"
                   ),
               ),
           ),
