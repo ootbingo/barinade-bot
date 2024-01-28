@@ -5,15 +5,17 @@ import de.scaramangado.lily.core.communication.Dispatcher
 import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.*
 import java.util.*
+import kotlin.random.Random
+import kotlin.reflect.KClass
 
 internal class RaceConnectionTest {
 
@@ -21,23 +23,39 @@ internal class RaceConnectionTest {
 
   private val connectorMock = mock<WebsocketConnector>()
   private val statusHolder = RaceStatusHolder()
+  private val logicHolder = raceRoomLogicHolder()
   private val thenDispatcher = mock<Dispatcher>()
   private val websocketMock = mock<RaceWebsocketHandler>()
+  private val raceRoomLogicFactoryMock = mock<RaceRoomLogicFactory>()
+
+  private var heldLogic by logicHolder
+
   private val connection: RaceConnection
 
-  private var disconnectCommandSent = false
-
   init {
+    // Must be in init to set up connectorMock and websocketMock correctly
     whenever(connectorMock.connect(any(), any())).thenReturn(websocketMock)
-    connection = RaceConnection("", connectorMock, statusHolder, thenDispatcher) { disconnectCommandSent = true }
+    connection = RaceConnection("", connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {
+      disconnectedWithDelay = it
+    }
+
+    heldLogic = mock<BingoRaceRoomLogic>()
+    whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(mock<BingoRaceRoomLogic>())
   }
+
+  private var disconnectedWithDelay: Boolean? = null
+
+  //</editor-fold>
+
+  //<editor-fold desc="Basic functions">
 
   @Test
   internal fun opensWebsocket() {
 
     val url = UUID.randomUUID().toString()
 
-    val connection = RaceConnection(url, connectorMock, RaceStatusHolder(), thenDispatcher) { }
+    val connection =
+        RaceConnection(url, connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {}
 
     verify(connectorMock).connect(url, connection)
   }
@@ -54,83 +72,42 @@ internal class RaceConnectionTest {
 
   //</editor-fold>
 
-  //<editor-fold desc="Welcome Message">
+  //<editor-fold desc="Initialize Logic">
 
-  @Test
-  internal fun sendsWelcomeMessage() {
+  @ParameterizedTest
+  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"])
+  internal fun initializesBingoLogicOnFirstRaceUpdate(status: RacetimeRaceStatus) {
 
-    whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
+    val race = RacetimeRace(name = "oot/test", status = status)
 
-    thenWelcomeMessageIsSent()
-  }
+    val logic = mock<BingoRaceRoomLogic>()
+    givenLogicIsCreated(logic)
 
-  @Test
-  internal fun onlySendsWelcomeOnce() {
+    whenNewRaceUpdateIsReceived(race)
 
-    givenRaceStatus(OPEN)
-
-    whenNewRaceUpdateIsReceived(RacetimeRace("oot/abc"))
-
-    thenNoWelcomeMessageIsSent()
+    thenLogicIsCreated<BingoRaceRoomLogic>()
+    thenLogicIs(logic)
+    thenLogicIsInitialized(race)
   }
 
   @ParameterizedTest
   @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun doesNotSendWelcomeMessageIfRaceHasAlreadyStarted(status: RacetimeRaceStatus) {
+  internal fun doesNotInitializeIfRaceAlreadyStarted(status: RacetimeRaceStatus) {
 
-    whenNewRaceUpdateIsReceived(status)
+    whenNewRaceUpdateIsReceived(RacetimeRace(status = status))
 
-    thenNoWelcomeMessageIsSent()
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Race Start">
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"])
-  internal fun setsGoalWhenRaceStarts(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenNewRaceGoalMatches("https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
+    thenNoLogicIsCreated()
   }
 
   @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun onlySetGoalOnce(status: RacetimeRaceStatus) {
+  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL"])
+  internal fun doesNotInitializeMultipleTimes(status: RacetimeRaceStatus) {
 
     givenRaceStatus(status)
 
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+    whenNewRaceUpdateIsReceived(RacetimeRace(status = status))
 
-    thenGoalIsNotChanged()
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"])
-  internal fun postsGoalAndFilenameWhenRaceStarts(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Filename: [A-Z]{2}")
-    thenChatMessageMatches("Goal: https://ootbingo.github.io/bingo/bingo.html\\?version=.*")
-  }
-
-  @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["OPEN", "INVITATIONAL", "PENDING"], mode = EnumSource.Mode.EXCLUDE)
-  internal fun onlyPostsGoalAndFilenameOnce(status: RacetimeRaceStatus) {
-
-    givenRaceStatus(status)
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenNoChatMessageIsSent()
-    thenWebsocketIsClosed(false)
+    thenNoLogicIsCreated()
   }
 
   //</editor-fold>
@@ -179,129 +156,177 @@ internal class RaceConnectionTest {
     thenChatMessageMatches(answer)
   }
 
+  @Test
+  internal fun sendsMessageToLogicInsteadOfDispatchingIfSupported() {
+
+    lateinit var receivedCommand: String
+
+    val testCommand = UUID.randomUUID().toString()
+    val testMethod: (ChatMessage) -> Unit = { receivedCommand = it.messagePlain }
+
+    val logic = mock<BingoRaceRoomLogic> {
+      whenever(it.commands).thenReturn(mapOf(testCommand to testMethod))
+    }
+
+    givenLogic(logic)
+
+    val actualMessage = testCommand + UUID.randomUUID().toString()
+
+    whenTextMessageReceived(chatMessage(actualMessage))
+
+    thenDispatcher.wasNotCalled()
+    assertThat(receivedCommand).isEqualTo(actualMessage)
+  }
+
   //</editor-fold>
 
-  //<editor-fold desc="Disconnect">
+  //<editor-fold desc="Race Changes">
+
+  @Test
+  internal fun forwardsRaceChangesToLogic() {
+
+    val race = RacetimeRace("oot/${UUID.randomUUID()}")
+
+    whenNewRaceUpdateIsReceived(race)
+
+    thenRaceIsSentToLogic(race)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="RaceRoomDelegate">
+
+  @Test
+  internal fun setsGoal() {
+
+    val goal = UUID.randomUUID().toString()
+
+    whenRaceGoalIsSet(goal)
+
+    thenNewRaceGoalMatches(goal)
+  }
+
+  @Test
+  internal fun sendsMessageText() {
+
+    val message = UUID.randomUUID().toString()
+    val pinned = Random.nextBoolean()
+
+    whenMessageIsSent(message, pinned, null, emptyMap())
+
+    thenSentMessageIsEqualTo(message)
+  }
 
   @ParameterizedTest
-  @EnumSource(RacetimeRaceStatus::class, names = ["FINISHED", "CANCELLED"])
-  internal fun closesConnectionWhenRaceEnds(newStatus: RacetimeRaceStatus) {
+  @ValueSource(booleans = [true, false])
+  internal fun sendsMessagePinFlag(pinned: Boolean) {
 
-    whenNewRaceUpdateIsReceived(newStatus)
+    whenMessageIsSent(UUID.randomUUID().toString(), pinned, null, emptyMap())
 
-    thenWebsocketIsClosed()
+    thenSentMessageIsPinned(pinned)
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  internal fun sendsdirectToString(isDm: Boolean) {
+
+    val directTo = UUID.randomUUID().toString().takeIf { isDm }
+
+    whenMessageIsSent(UUID.randomUUID().toString(), false, directTo, emptyMap())
+
+    thenSentMessageIsdirectTo(directTo)
   }
 
   @Test
-  internal fun doesNotCloseConnectionWithoutStatusChange() {
-    thenWebsocketIsClosed(false)
+  internal fun sendsActionButtons() {
+
+    val (name1, name2, action1, action2) = (1..4).map { UUID.randomUUID().toString() }
+
+    val actions = mapOf(
+        name1 to RacetimeActionButton(message = action1),
+        name2 to RacetimeActionButton(message = action2),
+    )
+
+    whenMessageIsSent(UUID.randomUUID().toString(), true, null, actions)
+
+    thenSentMessageHasActions(actions)
   }
 
-  //</editor-fold>
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  internal fun disconnects(withDelay: Boolean) {
 
-  //<editor-fold desc="Race Modes">
+    whenDisconnectIsRequested(withDelay)
 
-  @Test
-  internal fun blackoutMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!short"))
-    whenTextMessageReceived(chatMessage("!blackout"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
+    thenDisconnectedFromWebsocket(withDelay)
   }
 
-  @Test
-  internal fun shortMode() {
+  @ParameterizedTest
+  @ValueSource(classes = [BingoRaceRoomLogic::class, AntiBingoRaceRoomLogic::class])
+  internal fun <T : RaceRoomLogic> createsRaceRoomLogic(javaType: Class<T>) {
 
-    givenRaceStatus(OPEN)
+    val type = javaType.kotlin
 
-    whenTextMessageReceived(chatMessage("!blackout"))
-    whenTextMessageReceived(chatMessage("!short"))
+    givenRace(RacetimeRace(name = "oot/test"))
 
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+    whenLogicChangeIsRequested(type)
 
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=short(&.*|$)")
-  }
-
-  @Test
-  internal fun normalMode() {
-
-    givenRaceStatus(OPEN)
-
-    whenTextMessageReceived(chatMessage("!nobingo"))
-    whenTextMessageReceived(chatMessage("!normal"))
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
+    thenLogicIsCreated(type)
   }
 
   @Test
-  internal fun noBingo() {
+  internal fun persistsNewLogic() {
 
-    givenRaceStatus(OPEN)
+    val logicMock = mock<BingoRaceRoomLogic>()
 
-    whenTextMessageReceived(chatMessage("!normal"))
-    whenTextMessageReceived(chatMessage("!nobingo"))
+    givenRace(RacetimeRace(name = "oot/test"))
+    givenLogicFactoryReturnsLogic(logicMock)
 
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+    whenLogicChangeIsRequested<RaceRoomLogic>()
 
-    thenGoalIsNotChanged()
+    thenLogicIs(logicMock)
   }
 
   @Test
-  internal fun childMode() {
+  internal fun initializesNewLogic() {
 
-    givenRaceStatus(OPEN)
+    val logicMock = mock<BingoRaceRoomLogic>()
+    val race = RacetimeRace(name = "oot/test")
 
-    whenTextMessageReceived(chatMessage("!child"))
+    givenRace(race)
+    givenLogicFactoryReturnsLogic(logicMock)
 
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
+    whenLogicChangeIsRequested<RaceRoomLogic>()
 
-    thenChatMessageMatches("Goal: https://doctorno124.github.io/childkek/bingo.html?.*&mode=normal(&.*|$)")
-  }
-
-  //</editor-fold>
-
-  //<editor-fold desc="Team Races">
-
-  @Test
-  internal fun initialModeNormal() {
-
-    whenNewRaceUpdateIsReceived(OPEN)
-    thenChatMessageMatches("Current mode: normal")
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=normal(&.*|$)")
-  }
-
-  @Test
-  internal fun initialModeBlackoutForTeamRaces() {
-
-    whenNewRaceUpdateIsReceived(RacetimeRace(name = "oot/abc", status = OPEN, teamRace = true))
-    thenChatMessageMatches("Current mode: blackout")
-
-    whenNewRaceUpdateIsReceived(IN_PROGRESS)
-
-    thenChatMessageMatches("Goal: .*bingo.html?.*&mode=blackout(&.*|$)")
+    thenLogicIsInitialized(race)
   }
 
   //</editor-fold>
 
   //<editor-fold desc="Given">
 
+  private fun givenLogicIsCreated(logic: RaceRoomLogic) {
+    whenever(raceRoomLogicFactoryMock.createLogic(logic::class, connection)).thenReturn(logic)
+  }
+
+  private fun givenLogicFactoryReturnsLogic(logic: RaceRoomLogic) {
+    whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(logic)
+  }
+
+  private fun givenRace(race: RacetimeRace) {
+    statusHolder.race = race
+  }
+
   private fun givenRaceStatus(status: RacetimeRaceStatus) {
-    statusHolder.race = RacetimeRace(name = "oot/abc", status = status)
+    givenRace(RacetimeRace(name = "oot/abc", status = status))
   }
 
   private fun givenDispatcherReturnsAnswerToChatMessage(text: String) {
-    whenever(thenDispatcher.dispatch(any(), any()))
-        .thenReturn(Optional.of(Answer.ofText(text)))
+    whenever(thenDispatcher.dispatch(any(), any())).thenReturn(Optional.of(Answer.ofText(text)))
+  }
+
+  private fun givenLogic(logic: RaceRoomLogic) {
+    heldLogic = logic
   }
 
   //</editor-fold>
@@ -312,12 +337,24 @@ internal class RaceConnectionTest {
     connection.onMessage(RaceUpdate(newRaceVersion))
   }
 
-  private fun whenNewRaceUpdateIsReceived(status: RacetimeRaceStatus) {
-    connection.onMessage(RaceUpdate(RacetimeRace(name = "oot/abc", status = status)))
-  }
-
   private fun whenTextMessageReceived(message: ChatMessage) {
     connection.onMessage(message)
+  }
+
+  private fun whenRaceGoalIsSet(goal: String) {
+    connection.setGoal(goal)
+  }
+
+  private fun whenMessageIsSent(message: String, pinned: Boolean, directTo: String?, actions: Map<String, RacetimeActionButton>?) {
+    connection.sendMessage(message, pinned, directTo, actions)
+  }
+
+  private fun whenDisconnectIsRequested(withDelay: Boolean) {
+    connection.closeConnection(withDelay)
+  }
+
+  private fun <T : RaceRoomLogic> whenLogicChangeIsRequested(type: KClass<T> = mock()) {
+    connection.changeLogic(type)
   }
 
   //</editor-fold>
@@ -328,16 +365,24 @@ internal class RaceConnectionTest {
     assertThat(statusHolder.race).isEqualTo(race)
   }
 
-  private fun thenWelcomeMessageIsSent() {
-    assertThat(messagesSent).anyMatch { it.startsWith("Welcome") }
+  private fun thenRaceIsSentToLogic(expectedRace: RacetimeRace) {
+    verify(heldLogic).onRaceUpdate(expectedRace)
   }
 
-  private fun thenNoChatMessageIsSent() {
-    assertThat(messagesSent).isEmpty()
+  private fun thenSentMessageIsEqualTo(expectedMessage: String) {
+    verify(websocketMock).sendMessage(eq(expectedMessage), any(), anyOrNull(), anyOrNull())
   }
 
-  private fun thenNoWelcomeMessageIsSent() {
-    assertThat(messagesSent).noneMatch { it.startsWith("Welcome") }
+  private fun thenSentMessageIsPinned(expectedPinned: Boolean) {
+    verify(websocketMock).sendMessage(any(), eq(expectedPinned), anyOrNull(), anyOrNull())
+  }
+
+  private fun thenSentMessageIsdirectTo(expecteddirectTo: String?) {
+    verify(websocketMock).sendMessage(any(), any(), eq(expecteddirectTo), anyOrNull())
+  }
+
+  private fun thenSentMessageHasActions(expectedActions: Map<String, RacetimeActionButton>) {
+    verify(websocketMock).sendMessage(any(), any(), anyOrNull(), eq(expectedActions))
   }
 
   private fun thenChatMessageMatches(regex: String) {
@@ -346,10 +391,6 @@ internal class RaceConnectionTest {
 
   private fun thenNewRaceGoalMatches(regex: String) {
     assertThat(goal).matches(regex)
-  }
-
-  private fun thenGoalIsNotChanged() {
-    verify(websocketMock, never()).setGoal(any())
   }
 
   private infix fun Dispatcher.wasCalledWithMessage(expectedMessage: ChatMessage) {
@@ -366,8 +407,28 @@ internal class RaceConnectionTest {
   private fun Dispatcher.wasNotCalled() =
       verifyNoInteractions(this)
 
-  private fun thenWebsocketIsClosed(expected: Boolean = true) {
-    assertThat(disconnectCommandSent).isEqualTo(expected)
+  private fun <T : RaceRoomLogic> thenLogicIsCreated(type: KClass<T>) {
+    verify(raceRoomLogicFactoryMock).createLogic(type, connection)
+  }
+
+  private inline fun <reified T : RaceRoomLogic> thenLogicIsCreated() {
+    thenLogicIsCreated(T::class)
+  }
+
+  private fun thenNoLogicIsCreated() {
+    verifyNoInteractions(raceRoomLogicFactoryMock)
+  }
+
+  private fun thenLogicIs(expectedLogic: RaceRoomLogic) {
+    assertThat(heldLogic).isEqualTo(expectedLogic)
+  }
+
+  private fun thenLogicIsInitialized(expectedRace: RacetimeRace) {
+    verify(heldLogic).initialize(expectedRace)
+  }
+
+  private fun thenDisconnectedFromWebsocket(withDelay: Boolean) {
+    assertThat(disconnectedWithDelay).isEqualTo(withDelay)
   }
 
   //</editor-fold>
@@ -377,7 +438,7 @@ internal class RaceConnectionTest {
   private val messagesSent: List<String>
     get() =
       argumentCaptor<String>()
-          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull()) }
+          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull(), anyOrNull()) }
           .allValues
 
   private val goal: String

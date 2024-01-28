@@ -30,7 +30,7 @@ class OAuthManager(
 
     val tokenResponse = racetimeRestTemplate.postForEntity(
         "${properties.racingBaseUrl}/o/token",
-        HttpEntity(request.toFormData(), HttpHeaders().apply { contentType = MediaType.APPLICATION_FORM_URLENCODED }),
+        HttpEntity(request, HttpHeaders().apply { contentType = MediaType.APPLICATION_FORM_URLENCODED }),
         TokenResponse::class.java
     )
 
@@ -46,11 +46,7 @@ class OAuthManager(
       val clientId: String,
       val clientSecret: String,
       val grantType: String = "client_credentials",
-  ) {
-
-    fun toFormData() =
-        "client_id=$clientId&client_secret=$clientSecret&grant_type=$grantType"
-  }
+  )
 
   @Serializable
   internal data class TokenResponse(

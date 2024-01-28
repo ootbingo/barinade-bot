@@ -105,6 +105,11 @@ tasks.withType<Test> {
 
   systemProperties(Pair("spring.profiles.active", "unittest"))
 
+  jvmArgs = "-XX:+EnableDynamicAgentLoading".let {
+    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS")
+    jvmArgs?.plus(it) ?: mutableListOf(it)
+  }
+
   testLogging {
     events("passed", "skipped", "failed")
   }
