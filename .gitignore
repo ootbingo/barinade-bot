@@ -54,3 +54,4 @@ gradle.properties
 bot.log
 /db-volume/
 /db-volume-backup/
+/scripts/

@@ -8,7 +8,7 @@ plugins {
   val kotlinVersion = "1.9.22"
 
   java
-  id("org.springframework.boot") version "3.2.1"
+  id("org.springframework.boot") version "3.2.2"
   id("io.spring.dependency-management") version "1.1.4"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.2.6"
+version = "3.3.0-Beta1"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
@@ -54,7 +54,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.4")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.5")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -72,7 +72,7 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.24.2")
+  testImplementation("org.assertj:assertj-core:3.25.3")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
@@ -104,6 +104,11 @@ tasks.withType<Test> {
   useJUnitPlatform()
 
   systemProperties(Pair("spring.profiles.active", "unittest"))
+
+  jvmArgs = "-XX:+EnableDynamicAgentLoading".let {
+    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS")
+    jvmArgs?.plus(it) ?: mutableListOf(it)
+  }
 
   testLogging {
     events("passed", "skipped", "failed")

@@ -1,6 +1,6 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
-interface RaceConnectionFactory {
+fun interface RaceConnectionFactory {
 
   fun openConnection(raceEndpoint: String)
 }

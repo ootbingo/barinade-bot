@@ -1,67 +1,37 @@
 package ootbingo.barinade.bot.racing_services.racetime.racing.rooms
 
 import de.scaramangado.lily.core.communication.Dispatcher
-import ootbingo.barinade.bot.misc.generateFilename
+import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
-import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RaceConnection.Mode.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.dispatch
 import org.slf4j.LoggerFactory
-import kotlin.random.Random
+import kotlin.reflect.KClass
 
 class RaceConnection(
-    raceEndpoint: String, connector: WebsocketConnector, private val status: RaceStatusHolder,
-    private val dispatcher: Dispatcher, private val disconnect: RaceConnection.() -> Unit,
-) {
+    raceEndpoint: String,
+    connector: WebsocketConnector,
+    private val status: RaceStatusHolder,
+    logicHolder: Holder<RaceRoomLogic>,
+    private val dispatcher: Dispatcher,
+    private val logicFactory: RaceRoomLogicFactory,
+    private val disconnect: RaceWebsocketHandler.(Boolean) -> Unit,
+) : RaceWebsocketDelegate, RaceRoomDelegate {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
   private val logger = LoggerFactory.getLogger(RaceConnection::class.java)
+  private var logic by logicHolder
 
-  private val raceModeActions = mapOf(
-      "Change Mode" to RacetimeActionButton(
-          message = "!\${mode}",
-          submit = "Send",
-          survey = listOf(
-              RacetimeSurvey(
-                  name = "mode",
-                  label = "New Mode: ",
-                  type = RacetimeSurveyType.SELECT,
-                  default = "normal",
-                  options = mapOf(
-                      "normal" to "Normal",
-                      "blackout" to "Blackout",
-                      "short" to "Short",
-                      "child" to "Child only",
-                  ),
-              ),
-          ),
-      ),
-      "Don't Generate" to RacetimeActionButton(
-          message = "!nobingo",
-      ),
-  )
+  override val slug: String = raceEndpoint.split("/").last()
 
-  private var mode: Mode = NORMAL
-  private val modes = mapOf(
-      "!normal" to NORMAL,
-      "!blackout" to BLACKOUT,
-      "!short" to SHORT,
-      "!child" to CHILD,
-      "!nobingo" to NO_BINGO
-  )
-
-  val slug: String = raceEndpoint.split("/").last()
-
-  fun onMessage(message: RacetimeMessage) {
+  override fun onMessage(message: RacetimeMessage) {
 
     when (message) {
       is RaceUpdate -> onRaceUpdate(message.race)
       is ChatMessage -> onChatMessage(message)
     }
   }
-
-  fun closeWebsocket() = websocket.disconnect()
 
   private fun onRaceUpdate(race: RacetimeRace) {
 
@@ -70,28 +40,22 @@ class RaceConnection(
     }
 
     status.race = race
+    logic.onRaceUpdate(race)
     logger.debug("Update race status for $slug")
   }
 
   private fun onChatMessage(chatMessage: ChatMessage) {
 
+    logger.debug("${chatMessage.user?.name}: ${chatMessage.messagePlain}")
+
     if (chatMessage.isBot || chatMessage.isSystem == true) {
       return
     }
 
-    // Handle bingo mode change
-    modes[chatMessage.messagePlain]?.run {
-      mode = this
-      logger.info("New mode for $slug: $mode")
-      websocket.sendMessage(
-          "Current mode: ${mode.name.lowercase()}",
-          actions = raceModeActions,
-      )
-      return
-    }
-
-    // Dispatch as Lily command
-    dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
+    logic.commands.keys.find { chatMessage.messagePlain.startsWith(it) }
+        ?.let { logic.commands[it] }
+        ?.invoke(chatMessage)
+        ?: dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
   }
 
   private fun onRaceStatusChange(old: RacetimeRaceStatus?, new: RacetimeRaceStatus, race: RacetimeRace) {
@@ -100,47 +64,29 @@ class RaceConnection(
 
     if (old == null && new in listOf(OPEN, INVITATIONAL)) {
       logger.info("Received initial race data for ${race.name}")
-
-      if (race.teamRace) {
-        mode = BLACKOUT
-      }
-
-      websocket.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
-      websocket.sendMessage(
-          "Current mode: ${mode.name.lowercase()}",
-          actions = raceModeActions,
-      )
-    }
-
-    if (new == IN_PROGRESS && old != null && old !in listOf(FINISHED, CANCELLED)) {
-      logger.debug("Race ${race.name} starting...")
-
-      if (mode == NO_BINGO) {
-        return
-      }
-
-      val goal = if (mode != CHILD) {
-        "https://ootbingo.github.io/bingo/bingo.html?version=10.4&seed=${generateSeed()}&mode=${mode.name.lowercase()}"
-      } else {
-        "https://doctorno124.github.io/childkek/bingo.html?seed=${generateSeed()}&mode=normal"
-      }
-
-      websocket.setGoal(goal)
-      websocket.sendMessage("Filename: ${generateFilename()}")
-      websocket.sendMessage("Goal: $goal", pinned = false)
-      websocket.sendMessage("Goal: $goal", pinned = true)
-    }
-
-    if (new in listOf(FINISHED, CANCELLED)) {
-      websocket.sendMessage("The race has concluded. Good bye.")
-      logger.info("Closing websocket...")
-      disconnect()
+      changeAndInitializeLogic(BingoRaceRoomLogic::class, race)
     }
   }
 
-  private fun generateSeed() = Random.nextInt(1, 1_000_000)
+  override fun setGoal(goal: String) {
+    websocket.setGoal(goal)
+  }
 
-  private enum class Mode {
-    NORMAL, BLACKOUT, SHORT, CHILD, NO_BINGO
+  override fun sendMessage(message: String, pinned: Boolean, directTo: String?, actions: Map<String, RacetimeActionButton>?) {
+    websocket.sendMessage(message, pinned, directTo, actions)
+  }
+
+  override fun closeConnection(delay: Boolean) {
+    disconnect.invoke(websocket, delay)
+  }
+
+  override fun <T : RaceRoomLogic> changeLogic(type: KClass<T>) {
+    logger.info("Initializing new logic of type ${type.simpleName} for ${status.slug}")
+    changeAndInitializeLogic(type)
+  }
+
+  private fun <T : RaceRoomLogic> changeAndInitializeLogic(type: KClass<T>, race: RacetimeRace = status.race) {
+    logic = logicFactory.createLogic(type, this)
+    logic.initialize(race)
   }
 }

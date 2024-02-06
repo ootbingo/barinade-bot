@@ -107,7 +107,7 @@ internal class OAuthManagerTest {
             .takeIf { it.size == 1 }
             ?.last()?.second ?: fail("Form Parameter '$parameterName' missing")
 
-    val formDataCaptor = argumentCaptor<HttpEntity<String>>()
+    val requestCaptor = argumentCaptor<HttpEntity<OAuthManager.TokenRequest>>()
 
     whenever(
         restTemplateMock.postForEntity(any<String>(),
@@ -118,18 +118,18 @@ internal class OAuthManagerTest {
     testInvocation()
 
     verify(restTemplateMock).postForEntity(eq("${properties.racingBaseUrl}/o/token"),
-        formDataCaptor.capture(),
+        requestCaptor.capture(),
         eq(OAuthManager.TokenResponse::class.java))
     verifyNoMoreInteractions(restTemplateMock)
 
-    val formDataEntity = formDataCaptor.lastValue
-    val formString = formDataEntity.body!!
+    val requestEntity = requestCaptor.lastValue
+    val request = requestEntity.body!!
 
-    assertThat(formDataEntity.headers[HttpHeaders.CONTENT_TYPE])
+    assertThat(requestEntity.headers[HttpHeaders.CONTENT_TYPE])
         .containsExactly(MediaType.APPLICATION_FORM_URLENCODED.toString())
-    assertThat(formString.getFormParameter("client_id")).isEqualTo(properties.oauth.clientId)
-    assertThat(formString.getFormParameter("client_secret")).isEqualTo(properties.oauth.clientSecret)
-    assertThat(formString.getFormParameter("grant_type")).isEqualTo("client_credentials")
+    assertThat(request.clientId).isEqualTo(properties.oauth.clientId)
+    assertThat(request.clientSecret).isEqualTo(properties.oauth.clientSecret)
+    assertThat(request.grantType).isEqualTo("client_credentials")
   }
 
   //</editor-fold>

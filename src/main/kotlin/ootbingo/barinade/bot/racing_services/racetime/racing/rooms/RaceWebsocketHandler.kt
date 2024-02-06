@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
 class RaceWebsocketHandler(
-    private val delegate: RaceConnection,
+    private val delegate: RaceWebsocketDelegate,
     private val racetimeJson: Json,
     private val handshake: (WebSocketHandler) -> Unit,
 ) : WebSocketHandler {
@@ -25,11 +25,16 @@ class RaceWebsocketHandler(
     handshake(this)
   }
 
-  fun sendMessage(message: String, pinned: Boolean = false, actions: Map<String, RacetimeActionButton>? = null) {
-    logger.debug("Sending chat message to $slug")
+  fun sendMessage(
+      message: String,
+      pinned: Boolean = false,
+      directTo: String? = null,
+      actions: Map<String, RacetimeActionButton>? = null,
+  ) {
+    logger.debug("Sending chat message to $slug${directTo?.let { " (DM to $it)" } ?: ""}")
     logger.trace("'$message'")
 
-    sendAction(SendMessage(message, pinned, actions))
+    sendAction(SendMessage(message, pinned, directTo, actions))
   }
 
   fun setGoal(goal: String) {

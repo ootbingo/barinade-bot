@@ -104,7 +104,7 @@ internal class RaceMonitorTest {
       slug: String, status: RacetimeRace.RacetimeRaceStatus,
       goal: RacetimeRace.RacetimeRaceGoal,
   ) {
-    openRaces.add(RacetimeRace("oot/$slug", status, goal))
+    openRaces.add(RacetimeRace(name = "oot/$slug", status = status, goal = goal))
   }
 
   private fun whenScanningForRaces() {
