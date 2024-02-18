@@ -53,6 +53,8 @@ dependencies {
   implementation(kotlin("reflect"))
 
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.5")
   implementation("org.springframework:spring-websocket")
@@ -124,11 +126,11 @@ tasks.withType<JacocoReport> {
 }
 
 fun executeCommand(command: String): String =
-    try {
-      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
-    } catch (e: Exception) {
-      ""
-    }
+  try {
+    Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
+  } catch (e: Exception) {
+    ""
+  }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
