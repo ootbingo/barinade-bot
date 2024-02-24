@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.time.ticker
 
+import org.junit.jupiter.api.fail
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -20,5 +21,5 @@ class TickerMock : Ticker {
   }
 
   override val elapsedTime: Duration
-    get() = elapsedNanos.nanoseconds
+    get() = if (started) elapsedNanos.nanoseconds else fail("Ticker must be started before querying time")
 }

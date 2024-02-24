@@ -76,6 +76,7 @@ dependencies {
 
   testImplementation("org.assertj:assertj-core:3.25.3")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+  testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
 }
@@ -126,11 +127,11 @@ tasks.withType<JacocoReport> {
 }
 
 fun executeCommand(command: String): String =
-  try {
-    Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
-  } catch (e: Exception) {
-    ""
-  }
+    try {
+      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
+    } catch (e: Exception) {
+      ""
+    }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
