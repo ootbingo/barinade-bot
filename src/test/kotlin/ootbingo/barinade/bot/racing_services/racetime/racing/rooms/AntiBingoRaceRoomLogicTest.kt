@@ -26,7 +26,8 @@ class AntiBingoRaceRoomLogicTest {
 
   private var stage by stageHolder
 
-  private val logic = AntiBingoRaceRoomLogic(statusHolder, stageHolder, racetimeHttpClientMock, delegateMock, stageFactoryMock)
+  private val logic =
+    AntiBingoRaceRoomLogic(statusHolder, stageHolder, racetimeHttpClientMock, delegateMock, stageFactoryMock)
 
   @BeforeEach
   internal fun setup() {
@@ -89,16 +90,18 @@ class AntiBingoRaceRoomLogicTest {
   @Test
   fun raceOpenStageIsInitialized() {
 
+    val slug = UUID.randomUUID().toString()
     val stageMock: RaceOpenStage = mock()
     val race = RacetimeRace(
-        entrants = (1..4).map { RacetimeEntrant(user = RacetimeUser(name = UUID.randomUUID().toString())) },
+      slug = slug,
+      entrants = (1..4).map { RacetimeEntrant(user = RacetimeUser(name = UUID.randomUUID().toString())) },
     )
 
     givenStageIsReturnedByFactory(stageMock)
 
     whenRaceIsInitialized(race = race)
 
-    thenStage(stageMock) isInitializedWithState AntiBingoState(race.entrants.map { it.user }, listOf())
+    thenStage(stageMock) isInitializedWithState AntiBingoState(slug, race.entrants.map { it.user }, listOf())
     thenStage(stageMock) isInitializedWithRace race
   }
 
@@ -355,7 +358,11 @@ class AntiBingoRaceRoomLogicTest {
 
   //<editor-fold desc="Then">
 
-  private fun thenMessageIsSent(expectedMessage: String, expectedDirectTo: String? = null, expectedActions: Map<String, RacetimeActionButton>? = null) {
+  private fun thenMessageIsSent(
+    expectedMessage: String,
+    expectedDirectTo: String? = null,
+    expectedActions: Map<String, RacetimeActionButton>? = null,
+  ) {
     verify(delegateMock).sendMessage(expectedMessage, false, expectedDirectTo, expectedActions)
   }
 

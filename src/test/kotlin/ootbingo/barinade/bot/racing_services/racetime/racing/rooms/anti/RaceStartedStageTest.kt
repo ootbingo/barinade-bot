@@ -20,7 +20,7 @@ class RaceStartedStageTest {
 
   private val sentMessages = mutableListOf<Pair<String, RacetimeUser?>>()
 
-  private val stage = RaceStartedStage(mock(), editRaceMock) { message, user ->
+  private val stage = RaceStartedStage(mock(), editRaceMock, mock()) { message, user ->
     sentMessages.addLast(message to user)
   }
 
@@ -46,20 +46,24 @@ class RaceStartedStageTest {
 
     val (id1, id2, id3) = (1..3).map { UUID.randomUUID().toString() }
 
-    whenStageIsInitialized(AntiBingoState(emptyList(), listOf(
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id3), AntiBingoState.Row.ROW2),
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.TLBR),
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id3), AntiBingoState.Row.COL1),
-    )))
+    whenStageIsInitialized(
+      antiBingoState(
+        entrantMappings = listOf(
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id3), AntiBingoState.Row.ROW2),
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.TLBR),
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id3), AntiBingoState.Row.COL1),
+        )
+      )
+    )
 
     whenRaceIsStarted()
 
     thenRowDmsAreSent(
-        AntiBingoState.Row.COL4 to id1,
-        AntiBingoState.Row.ROW2 to id3,
-        AntiBingoState.Row.TLBR to id2,
-        AntiBingoState.Row.COL1 to id3,
+      AntiBingoState.Row.COL4 to id1,
+      AntiBingoState.Row.ROW2 to id3,
+      AntiBingoState.Row.TLBR to id2,
+      AntiBingoState.Row.COL1 to id3,
     )
   }
 
@@ -68,10 +72,14 @@ class RaceStartedStageTest {
 
     val (id1, id2) = (1..2).map { UUID.randomUUID().toString() }
 
-    whenStageIsInitialized(AntiBingoState(emptyList(), listOf(
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.ROW2),
-    )))
+    whenStageIsInitialized(
+      antiBingoState(
+        entrantMappings = listOf(
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.ROW2),
+        )
+      )
+    )
 
     whenRaceIsUpdated(RacetimeRace.RacetimeRaceStatus.PENDING)
 
@@ -83,10 +91,14 @@ class RaceStartedStageTest {
 
     val (id1, id2) = (1..2).map { UUID.randomUUID().toString() }
 
-    whenStageIsInitialized(AntiBingoState(emptyList(), listOf(
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
-        AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.ROW2),
-    )))
+    whenStageIsInitialized(
+      antiBingoState(
+        entrantMappings = listOf(
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id1), AntiBingoState.Row.COL4),
+          AntiBingoState.EntrantMapping(RacetimeUser(), RacetimeUser(id = id2), AntiBingoState.Row.ROW2),
+        )
+      )
+    )
 
     whenRaceIsStarted()
     whenRaceIsUpdated(RacetimeRace.RacetimeRaceStatus.IN_PROGRESS)
@@ -130,7 +142,7 @@ class RaceStartedStageTest {
 
   //<editor-fold desc="When">
 
-  private fun whenStageIsInitialized(state: AntiBingoState = AntiBingoState(emptyList(), emptyList())) {
+  private fun whenStageIsInitialized(state: AntiBingoState = antiBingoState()) {
     stage.initialize(state, RacetimeRace())
   }
 
@@ -169,9 +181,9 @@ class RaceStartedStageTest {
 
   private fun thenRowDmsAreSent(vararg expectedDms: Pair<AntiBingoState.Row, String>) {
     assertThat(
-        sentMessages.filter { it.second != null }.map { it.first to it.second?.id }
+      sentMessages.filter { it.second != null }.map { it.first to it.second?.id }
     ).containsExactlyInAnyOrderElementsOf(
-        expectedDms.map { it.first.let { row -> "Your row is ${row.formatted}" } to it.second }
+      expectedDms.map { it.first.let { row -> "Your row is ${row.formatted}" } to it.second }
     )
   }
 
@@ -181,10 +193,10 @@ class RaceStartedStageTest {
 
   private fun thenNumberOfMessageMatches(expectedNumberOfMatches: Int, pattern: Regex) {
     assertThat(
-        sentMessages
-            .filter { it.second == null }
-            .map { it.first }
-            .filter { it.matches(pattern) }
+      sentMessages
+        .filter { it.second == null }
+        .map { it.first }
+        .filter { it.matches(pattern) }
     ).hasSize(expectedNumberOfMatches)
   }
 
