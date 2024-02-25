@@ -16,6 +16,8 @@ class WorkerThread(
   private val logger = LoggerFactory.getLogger(WorkerThread::class.java)
   private val worker = workerFactory.createWorker(tasks)
 
+  private var cancelled = false
+
   override fun run() {
 
     currentThread().name = threadName
@@ -25,6 +27,12 @@ class WorkerThread(
     ticker.start()
 
     while (worker.hasMoreTasks()) {
+
+      if (cancelled) {
+        logger.info("Worker cancelled")
+        return
+      }
+
       try {
         runSingleTick()
       } catch (e: Exception) {
@@ -34,6 +42,10 @@ class WorkerThread(
     }
 
     logger.info("Worker finished")
+  }
+
+  fun cancel() {
+    cancelled = true
   }
 
   internal fun runSingleTick() {

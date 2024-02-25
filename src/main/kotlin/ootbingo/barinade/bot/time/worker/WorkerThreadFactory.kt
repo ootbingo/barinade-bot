@@ -12,7 +12,7 @@ class WorkerThreadFactory(
   private val sleepFunction: SleepFunction,
 ) {
 
-  fun runWorkerThread(threadName: String, tasks: List<WorkerTask>) {
+  fun runWorkerThread(threadName: String, tasks: List<WorkerTask>): WorkerThread {
 
     val thread = WorkerThread(threadName, tickerFactory.createTicker(), tasks, workerFactory, sleepFunction)
 
@@ -20,5 +20,7 @@ class WorkerThreadFactory(
       execute(thread)
       shutdown()
     }
+
+    return thread
   }
 }

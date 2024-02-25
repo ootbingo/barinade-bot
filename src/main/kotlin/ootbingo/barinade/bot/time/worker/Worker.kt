@@ -1,5 +1,6 @@
 package ootbingo.barinade.bot.time.worker
 
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -7,6 +8,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class Worker(
   tasks: List<WorkerTask>,
 ) {
+
+  private val logger = LoggerFactory.getLogger(Worker::class.java)
 
   private val taskQueue = LinkedList(tasks)
   private var nextTask: WorkerTask?
@@ -22,6 +25,8 @@ class Worker(
     }
 
     nextTask = taskQueue.poll()
+
+    logger.info("Worker initialized")
   }
 
   @Suppress("NOTHING_TO_INLINE") // needed for mocking
@@ -35,8 +40,11 @@ class Worker(
     val task = nextTask ?: return
 
     if (elapsedTime >= task.startAfter) {
+      logger.info("Running task${task.name?.let { " $it" } ?: ""}")
       task.task.invoke()
       nextTask = taskQueue.poll()
+    } else {
+      logger.debug("Nothing to do at $elapsedMillis ms")
     }
   }
 

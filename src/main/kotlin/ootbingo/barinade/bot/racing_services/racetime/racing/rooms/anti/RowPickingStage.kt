@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeActio
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeSurvey
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeSurveyType
 import ootbingo.barinade.bot.time.worker.WorkerTask
+import ootbingo.barinade.bot.time.worker.WorkerThread
 import ootbingo.barinade.bot.time.worker.WorkerThreadFactory
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
@@ -30,6 +31,7 @@ class RowPickingStage(
 
   private var state by stateHolder
   private var stageCompleted = false
+  private var countdownThread: WorkerThread? = null
 
   override fun initialize(initialState: AntiBingoState, race: RacetimeRace) {
 
@@ -117,6 +119,7 @@ class RowPickingStage(
 
     if (state.entrantMappings.all { it.chosenRow != null }) {
       stageCompleted = true
+      countdownThread?.cancel()
       completeStage(state)
     }
   }
@@ -133,7 +136,7 @@ class RowPickingStage(
       WorkerTask(rowPickingTimeLimit) { forceStart() },
     )
 
-    workerThreadFactory.runWorkerThread("RPS/${shorten(state.slug)}", tasks)
+    countdownThread = workerThreadFactory.runWorkerThread("RPS/${shorten(state.slug)}", tasks)
   }
 
   private fun forceStart() {

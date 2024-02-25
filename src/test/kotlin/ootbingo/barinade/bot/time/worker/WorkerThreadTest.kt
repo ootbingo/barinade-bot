@@ -1,6 +1,8 @@
 package ootbingo.barinade.bot.time.worker
 
+import kotlinx.datetime.Clock
 import ootbingo.barinade.bot.time.SleepFunction
+import ootbingo.barinade.bot.time.ticker.TickerFactory
 import ootbingo.barinade.bot.time.ticker.TickerMock
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -27,9 +29,7 @@ class WorkerThreadTest {
   private val tickerMock = TickerMock()
   private val tasks = listOf(42, 1701).map { WorkerTask(it.seconds) {} }
   private val workerFactoryMock = mock<WorkerFactory> { whenever(it.createWorker(any())).thenReturn(workerMock) }
-  private val sleepFunctionMock: SleepFunction = mock(name = "Henk") //{
-//    doAnswer { i -> println("Mock sleep ${i.arguments[0]} ms") }.whenever(it).sleep(any())
-//  }
+  private val sleepFunctionMock: SleepFunction = mock(name = "Henk")
 
   private val thread = WorkerThread(
     "UnitTest",
@@ -59,6 +59,39 @@ class WorkerThreadTest {
 
     thenSleepIsCalledTimes(numberOfTasks)
     thenWorkerIsCalledWithTicks(List(numberOfTasks) { _ -> duration })
+  }
+
+  @Test
+  internal fun cancelsThread() {
+
+    var (task1Finished, task2Finished, task3Finished) = (1..3).map { false }
+
+    val thread = WorkerThread(
+      "UnitTest",
+      TickerFactory(Clock.System).createTicker(),
+      listOf(
+        WorkerTask(100.milliseconds, "Task 1") { task1Finished = true },
+        WorkerTask(300.milliseconds, "Task 2") { task2Finished = true },
+        WorkerTask(600.milliseconds, "Task 3") { task3Finished = true },
+      ),
+      WorkerFactory(),
+      SleepFunction(),
+    )
+
+    whenFullThreadIsRun(thread)
+    Executors.newSingleThreadExecutor().apply {
+      execute {
+        Thread.sleep(500)
+        thread.cancel()
+      }
+      shutdown()
+    }
+
+    Thread.sleep(800)
+
+    assertThat(task1Finished).isTrue()
+    assertThat(task2Finished).isTrue()
+    assertThat(task3Finished).isFalse()
   }
 
   @Test
@@ -102,9 +135,9 @@ class WorkerThreadTest {
       .thenReturn(true, *List(numberOfTasks - 1) { true }.toTypedArray(), false)
   }
 
-  private fun whenFullThreadIsRun() {
+  private fun whenFullThreadIsRun(threadToRun: WorkerThread = thread) {
     Executors.newSingleThreadExecutor().run {
-      execute(thread)
+      execute(threadToRun)
       shutdown()
     }
   }

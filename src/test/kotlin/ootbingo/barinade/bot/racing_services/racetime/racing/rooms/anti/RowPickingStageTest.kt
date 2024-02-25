@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeActionButton
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoState.*
 import ootbingo.barinade.bot.time.worker.WorkerTask
+import ootbingo.barinade.bot.time.worker.WorkerThread
 import ootbingo.barinade.bot.time.worker.WorkerThreadFactory
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -165,6 +166,10 @@ class RowPickingStageTest {
   internal fun completesStageWhenLastRowIsPicked() {
 
     val (entrant1, entrant2, entrant3) = entrants()
+    val threadMock = mock<WorkerThread>()
+
+    givenFactoryReturnsWorkerThread(threadMock)
+    whenStageIsInitialized()
 
     givenState(
       state(
@@ -183,6 +188,7 @@ class RowPickingStageTest {
         EntrantMapping(entrant3, entrant1, Row.TLBR),
       )
     )
+    then(threadMock).isCancelled()
   }
 
   //</editor-fold>
@@ -277,6 +283,10 @@ class RowPickingStageTest {
     this.state = state
   }
 
+  private fun givenFactoryReturnsWorkerThread(thread: WorkerThread) {
+    whenever(workerThreadFactoryMock.runWorkerThread(any(), any())).thenReturn(thread)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="When">
@@ -363,6 +373,12 @@ class RowPickingStageTest {
     } else {
       verifyNoInteractions(completeStageMock)
     }
+  }
+
+  private fun then(thread: WorkerThread) = thread
+
+  private fun WorkerThread.isCancelled() {
+    verify(this).cancel()
   }
 
   //</editor-fold>
