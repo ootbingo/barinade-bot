@@ -20,7 +20,7 @@ class RaceStartedStageTest {
 
   private val sentMessages = mutableListOf<Pair<String, RacetimeUser?>>()
 
-  private val stage = RaceStartedStage(mock(), editRaceMock) { message, user ->
+  private val stage = RaceStartedStage(mock(), editRaceMock, mock()) { message, user ->
     sentMessages.addLast(message to user)
   }
 

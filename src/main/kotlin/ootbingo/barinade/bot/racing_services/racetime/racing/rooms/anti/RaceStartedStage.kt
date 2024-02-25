@@ -6,11 +6,16 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
+import ootbingo.barinade.bot.time.worker.WorkerTask
+import ootbingo.barinade.bot.time.worker.WorkerThreadFactory
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class RaceStartedStage(
-    completeStage: (AntiBingoState) -> Unit,
-    private val editRace: (RacetimeEditableRace.() -> Unit) -> Unit,
-    private val sendMessage: (String, RacetimeUser?) -> Unit,
+  completeStage: (AntiBingoState) -> Unit,
+  private val editRace: (RacetimeEditableRace.() -> Unit) -> Unit,
+  private val workerThreadFactory: WorkerThreadFactory,
+  private val sendMessage: (String, RacetimeUser?) -> Unit,
 ) : AntiBingoStage(completeStage) {
 
   private lateinit var state: AntiBingoState
@@ -26,6 +31,8 @@ class RaceStartedStage(
     }
 
     sendMessage("Chat message delay disabled", null)
+
+    startRowPickingInfoWorker()
   }
 
   override fun raceUpdate(race: RacetimeRace) {
@@ -45,5 +52,16 @@ class RaceStartedStage(
 
   override fun handleCommand(command: ChatMessage) {
     // Do nothing
+  }
+
+  private fun startRowPickingInfoWorker() {
+
+    val task = WorkerTask(1.minutes + 10.seconds, "Inform about row picks") {
+      state.entrantMappings.forEach {
+        sendMessage("${it.entrant.name} chose ${it.chosenRow?.formatted} for ${it.choosesFor.name}", null)
+      }
+    }
+
+    workerThreadFactory.runWorkerThread("RSS/${shorten(state.slug)}", listOf(task))
   }
 }
