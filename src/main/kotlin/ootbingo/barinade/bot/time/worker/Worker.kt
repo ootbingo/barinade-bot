@@ -40,7 +40,7 @@ class Worker(
     val task = nextTask ?: return
 
     if (elapsedTime >= task.startAfter) {
-      logger.info("Running task${task.name?.let { " $it" } ?: ""}")
+      logger.info("Running task${task.name?.let { " '$it'" } ?: ""}")
       task.task.invoke()
       nextTask = taskQueue.poll()
     } else {

@@ -47,5 +47,5 @@ class DefaultAntiBingoStageFactory(
     completeStage: (AntiBingoState) -> Unit,
     editRace: (RacetimeEditableRace.() -> Unit) -> Unit,
     sendMessage: (String, RacetimeUser?) -> Unit,
-  ) = RaceStartedStage(completeStage, editRace, sendMessage)
+  ) = RaceStartedStage(completeStage, editRace, workerThreadFactory, sendMessage)
 }

@@ -129,11 +129,13 @@ class RowPickingStage(
     infix fun Duration.before(limit: Duration) = limit - this
 
     val tasks = listOf(
-      WorkerTask(90.seconds before rowPickingTimeLimit) { sendMessage("90 seconds left.", null) },
-      WorkerTask(1.minutes before rowPickingTimeLimit) { sendMessage("One minute left.", null) },
-      WorkerTask(30.seconds before rowPickingTimeLimit) { sendMessage("30 seconds left.", null) },
-      WorkerTask(10.seconds before rowPickingTimeLimit) { sendMessage("10 seconds left. Pick now!", null) },
-      WorkerTask(rowPickingTimeLimit) { forceStart() },
+      WorkerTask(90.seconds before rowPickingTimeLimit, "WARN 90 seconds") { sendMessage("90 seconds left.", null) },
+      WorkerTask(60.seconds before rowPickingTimeLimit, "WARN 60 seconds") { sendMessage("One minute left.", null) },
+      WorkerTask(30.seconds before rowPickingTimeLimit, "WARN 30 seconds") { sendMessage("30 seconds left.", null) },
+      WorkerTask(10.seconds before rowPickingTimeLimit, "WARN 10 seconds") {
+        sendMessage("10 seconds left. Pick now!", null)
+      },
+      WorkerTask(rowPickingTimeLimit, "Force Start") { forceStart() },
     )
 
     countdownThread = workerThreadFactory.runWorkerThread("RPS/${shorten(state.slug)}", tasks)
@@ -151,6 +153,4 @@ class RowPickingStage(
 
     checkForStageCompletion()
   }
-
-  private fun shorten(slug: String) = slug.split("-").joinToString("-") { it.take(4) }
 }
