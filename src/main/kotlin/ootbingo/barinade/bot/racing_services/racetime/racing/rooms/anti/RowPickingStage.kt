@@ -98,6 +98,10 @@ class RowPickingStage(
 
     logger.info("${picker.name} picked $row for ${entrantMapping.choosesFor.name}")
 
+    if (entrantMapping.chosenRow == null) {
+      sendMessage("${picker.name} picked", null)
+    }
+
     entrantMapping.chosenRow = row
 
     checkForStageCompletion()
@@ -136,10 +140,11 @@ class RowPickingStage(
 
     state.entrantMappings
       .filter { it.chosenRow == null }
-      .forEach {
+      .onEach {
         logger.info("Random pick for ${it.choosesFor.name}")
         it.chosenRow = AntiBingoState.Row.entries.random()
-      }
+      }.takeIf { it.isNotEmpty() }
+      ?.also { sendMessage("Failed to pick: ${it.joinToString(", ") { m -> m.entrant.name }}", null) }
 
     checkForStageCompletion()
   }
