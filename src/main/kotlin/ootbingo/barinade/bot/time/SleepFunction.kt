@@ -12,7 +12,6 @@ class SleepFunction {
   }
 
   fun sleep(millis: Long) {
-    println("sleeping for $millis ms")
     Thread.sleep(millis)
   }
 }

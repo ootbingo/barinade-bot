@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
 class BingoRaceRoomLogic(
-    private val status: RaceStatusHolder,
-    private val delegate: RaceRoomDelegate,
+  private val status: RaceStatusHolder,
+  private val delegate: RaceRoomDelegate,
 ) : RaceRoomLogic {
 
   private val logger = LoggerFactory.getLogger(BingoRaceRoomLogic::class.java)
@@ -39,8 +39,8 @@ class BingoRaceRoomLogic(
 
     delegate.sendMessage("Welcome to OoT Bingo. I will generate a card and a filename at the start of the race.")
     delegate.sendMessage(
-        "Current mode: ${mode.name.lowercase()}",
-        actions = raceModeActions,
+      "Current mode: ${mode.name.lowercase()}",
+      actions = raceModeActions,
     )
   }
 
@@ -60,12 +60,13 @@ class BingoRaceRoomLogic(
       mode = this
       logger.info("New mode for ${status.slug}: $mode")
       delegate.sendMessage(
-          "Current mode: ${mode.name.lowercase()}",
-          actions = raceModeActions,
+        "Current mode: ${mode.name.lowercase()}",
+        actions = raceModeActions,
       )
     }
   }
 
+  @Suppress("UNUSED_PARAMETER")
   private fun startAntiBingo(ignore: String) {
 
     if (status.raceStatus !in listOf(OPEN, INVITATIONAL)) {
@@ -121,27 +122,27 @@ class BingoRaceRoomLogic(
   }
 
   private val raceModeActions = mapOf(
-      "Change Mode" to RacetimeActionButton(
-          message = "!\${mode}",
-          submit = "Send",
-          survey = listOf(
-              RacetimeSurvey(
-                  name = "mode",
-                  label = "New Mode: ",
-                  type = RacetimeSurveyType.SELECT,
-                  default = "normal",
-                  options = mapOf(
-                      "normal" to "Normal",
-                      "blackout" to "Blackout",
-                      "short" to "Short",
-                      "child" to "Child only",
-                      "anti" to "Anti-Bingo (BETA, irreversible)"
-                  ),
-              ),
+    "Change Mode" to RacetimeActionButton(
+      message = "!\${mode}",
+      submit = "Send",
+      survey = listOf(
+        RacetimeSurvey(
+          name = "mode",
+          label = "New Mode: ",
+          type = RacetimeSurveyType.SELECT,
+          default = "normal",
+          options = mapOf(
+            "normal" to "Normal",
+            "blackout" to "Blackout",
+            "short" to "Short",
+            "child" to "Child only",
+            "anti" to "Anti-Bingo (BETA, irreversible)"
           ),
+        ),
       ),
-      "Don't Generate" to RacetimeActionButton(
-          message = "!nobingo",
-      ),
+    ),
+    "Don't Generate" to RacetimeActionButton(
+      message = "!nobingo",
+    ),
   )
 }
