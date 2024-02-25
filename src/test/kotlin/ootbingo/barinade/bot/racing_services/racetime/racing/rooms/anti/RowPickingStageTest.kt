@@ -8,13 +8,18 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.RacetimeActionButton
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoState.*
+import ootbingo.barinade.bot.time.worker.WorkerTask
+import ootbingo.barinade.bot.time.worker.WorkerThread
+import ootbingo.barinade.bot.time.worker.WorkerThreadFactory
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.*
 import java.util.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class RowPickingStageTest {
@@ -22,14 +27,22 @@ class RowPickingStageTest {
   //<editor-fold desc="Setup">
 
   private val completeStageMock = mock<(AntiBingoState) -> Unit>()
-  private val stateHolder = Holder(AntiBingoState(emptyList(), emptyList()))
+  private val stateHolder = Holder(antiBingoState())
+  private val workerThreadFactoryMock = mock<WorkerThreadFactory>()
   private val editRaceMock = mock<(RacetimeEditableRace.() -> Unit) -> Unit>()
   private val sendMessageMock = mock<(String, Map<String, RacetimeActionButton>?) -> Unit>()
   private val kickUserMock = mock<(RacetimeUser) -> Unit>()
 
   private var state by stateHolder
 
-  private val stage = RowPickingStage(completeStageMock, stateHolder, editRaceMock, sendMessageMock, kickUserMock)
+  private val stage = RowPickingStage(
+    completeStageMock,
+    stateHolder,
+    workerThreadFactoryMock,
+    editRaceMock,
+    sendMessageMock,
+    kickUserMock,
+  )
 
   //</editor-fold>
 
@@ -40,7 +53,7 @@ class RowPickingStageTest {
 
     val initialState = defaultTwoPlayerState()
 
-    givenState(AntiBingoState(listOf(), listOf()))
+    givenState(antiBingoState())
 
     whenStageIsInitialized(initialState)
 
@@ -69,7 +82,7 @@ class RowPickingStageTest {
     whenStageIsInitialized()
 
     thenChatMessageMatches("^Goal: https://ootbingo\\.github\\.io/bingo/bingo\\.html\\?version=[0-9.]+&seed=[0-9]{1,6}&mode=normal$".toRegex())
-    // TODO thenChatMessageMatches(".*You have 5 minutes to pick a row\\..*".toRegex())
+    thenChatMessageMatches("^You have 3 minutes to pick a row\\..*".toRegex())
   }
 
   //</editor-fold>
@@ -83,11 +96,11 @@ class RowPickingStageTest {
     val (entrant1, entrant2, entrant3) = entrants()
 
     givenState(
-        state(
-            EntrantMapping(entrant1, entrant2, null),
-            EntrantMapping(entrant2, entrant3, null),
-            EntrantMapping(entrant3, entrant1, Row.TLBR),
-        )
+      state(
+        EntrantMapping(entrant1, entrant2, null),
+        EntrantMapping(entrant2, entrant3, null),
+        EntrantMapping(entrant3, entrant1, Row.TLBR),
+      )
     )
 
     whenMessageIsReceived("!pick $row", entrant1)
@@ -153,24 +166,29 @@ class RowPickingStageTest {
   internal fun completesStageWhenLastRowIsPicked() {
 
     val (entrant1, entrant2, entrant3) = entrants()
+    val threadMock = mock<WorkerThread>()
+
+    givenFactoryReturnsWorkerThread(threadMock)
+    whenStageIsInitialized()
 
     givenState(
-        state(
-            EntrantMapping(entrant1, entrant2, null),
-            EntrantMapping(entrant2, entrant3, Row.ROW2),
-            EntrantMapping(entrant3, entrant1, Row.TLBR),
-        )
+      state(
+        EntrantMapping(entrant1, entrant2, null),
+        EntrantMapping(entrant2, entrant3, Row.ROW2),
+        EntrantMapping(entrant3, entrant1, Row.TLBR),
+      )
     )
 
     whenMessageIsReceived("!pick COL4", entrant1)
 
     thenStageIsCompleted(
-        state(
-            EntrantMapping(entrant1, entrant2, Row.COL4),
-            EntrantMapping(entrant2, entrant3, Row.ROW2),
-            EntrantMapping(entrant3, entrant1, Row.TLBR),
-        )
+      state(
+        EntrantMapping(entrant1, entrant2, Row.COL4),
+        EntrantMapping(entrant2, entrant3, Row.ROW2),
+        EntrantMapping(entrant3, entrant1, Row.TLBR),
+      )
     )
+    then(threadMock).isCancelled()
   }
 
   //</editor-fold>
@@ -182,14 +200,79 @@ class RowPickingStageTest {
 
     val (entrant1, entrant2, newUser1, newUser2) = entrants()
 
-    givenState(AntiBingoState(listOf(entrant1, entrant2), emptyList()))
+    givenState(antiBingoState(entrants = listOf(entrant1, entrant2)))
 
     whenRaceUpdateIsReceived(RacetimeRace(
-        entrants = listOf(entrant1, entrant2, newUser1, newUser2).map { RacetimeEntrant(user = it) }
+      entrants = listOf(entrant1, entrant2, newUser1, newUser2).map { RacetimeEntrant(user = it) }
     ))
 
     thenChatMessageMatches((".*No new entrants permitted\\.").toRegex())
     thenUsersAreKicked(newUser1, newUser2)
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="Test: Countdown Thread">
+
+  @ParameterizedTest
+  @ValueSource(ints = [90, 60, 30, 10])
+  internal fun schedulesMessageAtXSecondsBeforeStart(secondsBeforeStart: Int) {
+
+    whenStageIsInitialized()
+
+    whenSingleWorkerTaskIsExecutedAfter(3.minutes - secondsBeforeStart.seconds)
+
+    thenChatMessageMatches(
+      if (secondsBeforeStart == 60) Regex("One minute left\\.")
+      else Regex("^$secondsBeforeStart seconds left\\..*")
+    )
+  }
+
+  @Test
+  internal fun forceStartsRaceWithRandomRowPicks() {
+
+    val (entrant1, entrant2, entrant3) = entrants()
+
+    whenStageIsInitialized()
+
+    givenState(
+      state(
+        EntrantMapping(entrant1, entrant2, null),
+        EntrantMapping(entrant2, entrant3, null),
+        EntrantMapping(entrant3, entrant1, Row.COL4),
+      )
+    )
+
+    whenSingleWorkerTaskIsExecutedAfter(3.minutes)
+
+    thenState containsChosenMapping EntrantMapping(entrant3, entrant1, Row.COL4)
+    thenState.doesNotHaveOpenPicks()
+    thenStageIsCompleted(null)
+  }
+
+  @Test
+  internal fun doesNotForceStartIfRaceStarted() {
+
+    val (entrant1, entrant2) = entrants()
+
+    whenStageIsInitialized()
+
+    givenState(
+      state(
+        EntrantMapping(entrant1, entrant2, null),
+        EntrantMapping(entrant2, entrant1, Row.COL4),
+      )
+    )
+
+    whenMessageIsReceived("!pick ROW1", entrant1)
+    whenSingleWorkerTaskIsExecutedAfter(3.minutes)
+
+    thenStageIsCompleted(
+      state(
+        EntrantMapping(entrant1, entrant2, Row.ROW1),
+        EntrantMapping(entrant2, entrant1, Row.COL4),
+      )
+    )
   }
 
   //</editor-fold>
@@ -200,13 +283,17 @@ class RowPickingStageTest {
     this.state = state
   }
 
+  private fun givenFactoryReturnsWorkerThread(thread: WorkerThread) {
+    whenever(workerThreadFactoryMock.runWorkerThread(any(), any())).thenReturn(thread)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="When">
 
   private fun whenStageIsInitialized(
-      initialState: AntiBingoState = AntiBingoState(emptyList(), emptyList()),
-      race: RacetimeRace = RacetimeRace(),
+    initialState: AntiBingoState = antiBingoState(),
+    race: RacetimeRace = RacetimeRace(),
   ) {
     stage.initialize(initialState, race)
   }
@@ -217,6 +304,12 @@ class RowPickingStageTest {
 
   private fun whenMessageIsReceived(command: String, user: RacetimeUser? = RacetimeUser()) {
     stage.handleCommand(ChatMessage(messagePlain = command, user = user))
+  }
+
+  private fun whenSingleWorkerTaskIsExecutedAfter(duration: Duration) {
+    val captor = argumentCaptor<List<WorkerTask>>()
+    verify(workerThreadFactoryMock).runWorkerThread(any(), captor.capture())
+    captor.firstValue.single { it.startAfter == duration }.task()
   }
 
   //</editor-fold>
@@ -267,15 +360,25 @@ class RowPickingStageTest {
     assertThat(this).isEqualTo(expectedState)
   }
 
+  private fun AntiBingoState.doesNotHaveOpenPicks() {
+    assertThat(this.entrantMappings).allMatch { it.chosenRow != null }
+  }
+
   private fun thenStageIsCompleted(
-      expectedState: AntiBingoState = AntiBingoState(listOf(), listOf()),
-      completed: Boolean = true,
+    expectedState: AntiBingoState? = antiBingoState(),
+    completed: Boolean = true,
   ) {
     if (completed) {
-      verify(completeStageMock).invoke(expectedState)
+      verify(completeStageMock).invoke(expectedState ?: anyOrNull())
     } else {
       verifyNoInteractions(completeStageMock)
     }
+  }
+
+  private fun then(thread: WorkerThread) = thread
+
+  private fun WorkerThread.isCancelled() {
+    verify(this).cancel()
   }
 
   //</editor-fold>
@@ -287,14 +390,17 @@ class RowPickingStageTest {
   private fun entrants() = (1..10).map { entrantUser() }
 
   private fun state(vararg entrantMappings: EntrantMapping) =
-      AntiBingoState(entrantMappings.flatMap { listOf(it.entrant, it.choosesFor) }, entrantMappings.asList())
+    antiBingoState(
+      entrants = entrantMappings.flatMap { listOf(it.entrant, it.choosesFor) },
+      entrantMappings = entrantMappings.asList()
+    )
 
   private fun defaultTwoPlayerState(): AntiBingoState {
     val (entrant1, entrant2) = entrants()
 
     val initialState = state(
-        EntrantMapping(entrant1, entrant2, null),
-        EntrantMapping(entrant2, entrant1, null),
+      EntrantMapping(entrant1, entrant2, null),
+      EntrantMapping(entrant2, entrant1, null),
     )
     return initialState
   }

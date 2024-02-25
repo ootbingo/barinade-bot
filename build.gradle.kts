@@ -53,6 +53,8 @@ dependencies {
   implementation(kotlin("reflect"))
 
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.5")
   implementation("org.springframework:spring-websocket")
@@ -74,6 +76,7 @@ dependencies {
 
   testImplementation("org.assertj:assertj-core:3.25.3")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+  testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
 }

@@ -6,13 +6,15 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.ChatMessage
 
 class RaceOpenStage(
-    private val entrantPairGenerator: EntrantPairGenerator,
-    completeStage: (AntiBingoState) -> Unit,
-    private val sendDm: (String, RacetimeUser) -> Unit,
+  private val entrantPairGenerator: EntrantPairGenerator,
+  completeStage: (AntiBingoState) -> Unit,
+  private val sendDm: (String, RacetimeUser) -> Unit,
 ) : AntiBingoStage(completeStage) {
 
+  private var slug: String = ""
+
   override fun initialize(initialState: AntiBingoState, race: RacetimeRace) {
-    // Do nothing
+    slug = initialState.slug
   }
 
   override fun raceUpdate(race: RacetimeRace) {
@@ -28,7 +30,7 @@ class RaceOpenStage(
       sendDm.invoke("Please choose a row for ${it.choosesFor.name}", it.entrant)
     }
 
-    completeStage(AntiBingoState(entrants, entrantMappings))
+    completeStage(AntiBingoState(slug, entrants, entrantMappings))
   }
 
   override fun handleCommand(command: ChatMessage) {
