@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.3.0-Beta1"
+version = "3.3.0-Beta2"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
@@ -127,11 +127,11 @@ tasks.withType<JacocoReport> {
 }
 
 fun executeCommand(command: String): String =
-    try {
-      Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
-    } catch (e: Exception) {
-      ""
-    }
+  try {
+    Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
+  } catch (e: Exception) {
+    ""
+  }
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
