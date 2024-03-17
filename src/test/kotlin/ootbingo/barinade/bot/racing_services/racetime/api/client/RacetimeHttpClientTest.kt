@@ -6,6 +6,7 @@ import ootbingo.barinade.bot.misc.http_converters.urlencoded.WriteOnlyUrlEncoded
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.api.model.newBingoRace
 import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
@@ -23,6 +25,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.*
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.net.URI
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -43,7 +46,7 @@ internal class RacetimeHttpClientTest {
     fun random() = UUID.randomUUID().toString()
 
     fun raceWithId(id: String) =
-        """
+      """
           {
       "name": "$id",
       "status": {
@@ -90,7 +93,7 @@ internal class RacetimeHttpClientTest {
         """.trimIndent()
 
     fun categoryRacesJson(vararg raceIds: String) =
-        """
+      """
           {
             "count": 238,
             "num_pages": 24,
@@ -101,21 +104,25 @@ internal class RacetimeHttpClientTest {
         """.trimIndent()
 
     server
-        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=1"))
-        .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
+      .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=1"))
+      .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=2"))
-        .andRespond(withSuccess(categoryRacesJson(random(), random(), random()),
-            MediaType.APPLICATION_JSON))
+      .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=2"))
+      .andRespond(
+        withSuccess(
+          categoryRacesJson(random(), random(), random()),
+          MediaType.APPLICATION_JSON
+        )
+      )
 
     server
-        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=3"))
-        .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
+      .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=3"))
+      .andRespond(withSuccess(categoryRacesJson(random(), random()), MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=4"))
-        .andRespond(withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
+      .expect(requestTo("$dataBaseUrl/oot/races/data?show_entrants=true&page=4"))
+      .andRespond(withSuccess(categoryRacesJson(), MediaType.APPLICATION_JSON))
 
     val allRaces = client.getAllRaces()
 
@@ -155,12 +162,37 @@ internal class RacetimeHttpClientTest {
     """.trimIndent()
 
     server
-        .expect(requestTo("$racingBaseUrl/oot/data"))
-        .andRespond(withSuccess(categoryJson, MediaType.APPLICATION_JSON))
+      .expect(requestTo("$racingBaseUrl/oot/data"))
+      .andRespond(withSuccess(categoryJson, MediaType.APPLICATION_JSON))
 
     val allRaces = client.getOpenRaces()
 
     assertThat(allRaces).hasSize(2)
+  }
+
+  @Test
+  internal fun createsRace() {
+
+    val converter = WriteOnlyUrlEncodedHttpMessageConverter(SnakeCaseStrategy)
+
+    val (info, token, responseUrlString) = (1..3).map { UUID.randomUUID().toString() }
+    val race = newBingoRace(false).apply { infoBot = info }
+
+    val responseUrl = URI("/$responseUrlString")
+
+    whenever(oAuthManagerMock.getToken()).thenReturn(token)
+
+    server
+      .expect(requestTo("$racingBaseUrl/o/oot/startrace"))
+      .andExpect(header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+      .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer $token"))
+      .andExpect(content().string(convert(converter, race)))
+      .andExpect(method(HttpMethod.POST))
+      .andRespond(withCreatedEntity(responseUrl))
+
+    val raceUrl = client.startRace(race)
+
+    assertThat(raceUrl).isEqualTo("$racingBaseUrl$responseUrl")
   }
 
   @Test
@@ -172,7 +204,7 @@ internal class RacetimeHttpClientTest {
     val (raceSlug, newInfoBot, token) = (1..3).map { UUID.randomUUID().toString() }
 
     val race = RacetimeRace(
-        name = raceSlug,
+      name = raceSlug,
     )
 
     val raceJson = json.encodeToString(race)
@@ -180,14 +212,14 @@ internal class RacetimeHttpClientTest {
     whenever(oAuthManagerMock.getToken()).thenReturn(token)
 
     server
-        .expect(requestTo("$racingBaseUrl/oot/$raceSlug/data"))
-        .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
+      .expect(requestTo("$racingBaseUrl/oot/$raceSlug/data"))
+      .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
 
     server
-        .expect(requestTo("$racingBaseUrl/o/oot/$raceSlug/edit"))
-        .andExpect(header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer $token"))
-        .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
+      .expect(requestTo("$racingBaseUrl/o/oot/$raceSlug/edit"))
+      .andExpect(header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+      .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer $token"))
+      .andRespond(withSuccess(raceJson, MediaType.APPLICATION_JSON))
 
     val edit: RacetimeEditableRace.() -> Unit = {
       infoBot = newInfoBot
