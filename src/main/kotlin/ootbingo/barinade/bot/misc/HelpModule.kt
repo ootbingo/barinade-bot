@@ -12,9 +12,9 @@ class HelpModule {
 
   @LilyCommand("help")
   fun help(command: Command): Answer<AnswerInfo>? =
-      conditionalAnswer(command) {
+    conditionalAnswer(command) {
 
-        discordMessage = """
+      discordMessage = """
           # BingoBot Commands
           ## Statistics
           **!average** Average time of your most recent bingos
@@ -33,11 +33,13 @@ class HelpModule {
           ## Misc
           **!shame** Express your disapproval
           ## Racing
+          **!newrace** Open a new Racetime room
+          **!newteamrace** Open a new Racetime room for a team race
           **!lockout** Open a new lockout race room (only in #lockout-racing)
         """.trimIndent()
 
-        racetimeMessage =
-            "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, " +
-                "!shame, !pick"
-      }
+      racetimeMessage =
+        "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, " +
+            "!shame, !pick"
+    }
 }

@@ -4,13 +4,14 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import ootbingo.barinade.bot.extensions.description
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.*
 
 class RaceWebsocketHandler(
-    private val delegate: RaceWebsocketDelegate,
-    private val racetimeJson: Json,
-    private val handshake: (WebSocketHandler) -> Unit,
+  private val delegate: RaceWebsocketDelegate,
+  private val racetimeJson: Json,
+  private val handshake: (WebSocketHandler) -> Unit,
 ) : WebSocketHandler {
 
   private lateinit var session: WebSocketSession
@@ -26,10 +27,10 @@ class RaceWebsocketHandler(
   }
 
   fun sendMessage(
-      message: String,
-      pinned: Boolean = false,
-      directTo: String? = null,
-      actions: Map<String, RacetimeActionButton>? = null,
+    message: String,
+    pinned: Boolean = false,
+    directTo: String? = null,
+    actions: Map<String, RacetimeActionButton>? = null,
   ) {
     logger.debug("Sending chat message to $slug${directTo?.let { " (DM to $it)" } ?: ""}")
     logger.trace("'$message'")
@@ -42,6 +43,12 @@ class RaceWebsocketHandler(
     logger.trace("'$goal'")
 
     sendAction(SetGoal(goal))
+  }
+
+  fun kickUser(user: RacetimeUser) {
+    logger.debug("Kicking ${user.name} from $slug")
+
+    sendAction(RemoveEntrant(user))
   }
 
   private fun sendAction(payload: RacetimeActionPayload) {
