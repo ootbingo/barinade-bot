@@ -54,7 +54,7 @@ class AntiBingoRaceRoomLogic(
       { message, actions ->
         delegate.sendMessage(message, actions = actions)
       },
-      { /* TODO Implement kicking */ },
+      { delegate.kickUser(it) },
     ).also { it.initialize(state, status.race) }
   }
 
