@@ -171,6 +171,18 @@ class AntiBingoRaceRoomLogicTest {
     thenMessageIsSent(message, expectedActions = actionsMock)
   }
 
+  @Test
+  internal fun kicksUserFromRowPickingStage() {
+
+    val user = RacetimeUser(id = UUID.randomUUID().toString())
+
+    whenRaceIsInitialized()
+    whenRaceOpenStageIsComplete(mock())
+    whenUserIsKickedFromRowPickingStage(user)
+
+    thenUserIsKicked(user)
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="RaceStartedStage">
@@ -348,6 +360,12 @@ class AntiBingoRaceRoomLogicTest {
     captor.firstValue.invoke(edits)
   }
 
+  private fun whenUserIsKickedFromRowPickingStage(user: RacetimeUser) {
+    val captor = argumentCaptor<(RacetimeUser) -> Unit>()
+    verify(stageFactoryMock).rowPickingStage(any(), any(), any(), any(), captor.capture())
+    captor.firstValue.invoke(user)
+  }
+
   private fun whenMessageIsSentFromRaceStartedStage(message: String, user: RacetimeUser?) {
     val captor = argumentCaptor<(String, RacetimeUser?) -> Unit>()
     verify(stageFactoryMock).raceStartedStage(any(), any(), captor.capture())
@@ -368,6 +386,10 @@ class AntiBingoRaceRoomLogicTest {
 
   private fun thenRaceIsPersisted(expectedRace: RacetimeRace) {
     assertThat(statusHolder.race).isEqualTo(expectedRace)
+  }
+
+  private fun thenUserIsKicked(expectedUser: RacetimeUser) {
+    verify(delegateMock).kickUser(expectedUser)
   }
 
   private fun thenRace(slug: String) = RaceSlug(slug)

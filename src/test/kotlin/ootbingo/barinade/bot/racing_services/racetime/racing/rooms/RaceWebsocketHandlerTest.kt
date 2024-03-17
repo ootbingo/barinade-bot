@@ -6,6 +6,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.put
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClientConfiguration
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -60,6 +61,17 @@ internal class RaceWebsocketHandlerTest {
     whenGoalIsSet(goal)
 
     thenAction isNewGoal goal
+  }
+
+  @Test
+  internal fun kicksUser() {
+
+    val userId = UUID.randomUUID().toString()
+    val user = RacetimeUser(id = userId)
+
+    whenUserIsKicked(user)
+
+    thenAction isRemoveEntrant userId
   }
 
   //</editor-fold>
@@ -136,10 +148,13 @@ internal class RaceWebsocketHandlerTest {
   //<editor-fold desc="When">
 
   private fun whenChatMessageIsSent(message: String) =
-      handler.sendMessage(message)
+    handler.sendMessage(message)
 
   private fun whenGoalIsSet(goal: String) =
-      handler.setGoal(goal)
+    handler.setGoal(goal)
+
+  private fun whenUserIsKicked(user: RacetimeUser) =
+    handler.kickUser(user)
 
   private fun whenMessageIsReceived(message: String) {
     handler.handleMessage(sessionMock, TextMessage(message))
@@ -167,6 +182,11 @@ internal class RaceWebsocketHandlerTest {
   private infix fun RacetimeAction.isNewGoal(goal: String) {
     assertThat(action).isEqualTo("setinfo")
     assertThat((data as SetGoal).info).isEqualTo(goal)
+  }
+
+  private infix fun RacetimeAction.isRemoveEntrant(expectedUserId: String) {
+    assertThat(action).isEqualTo("remove_entrant")
+    assertThat((data as RemoveEntrant).user).isEqualTo(expectedUserId)
   }
 
   private fun thenDelegateReceivesChatMessage(message: String) {
@@ -198,16 +218,16 @@ internal class RaceWebsocketHandlerTest {
   //<editor-fold desc="Helper">
 
   private fun chatMessage(message: String) =
-      buildJsonObject {
-        put("type", "chat.message")
-        put("message", json.encodeToJsonElement(ChatMessage(message = message)))
-      }.let { json.encodeToString(it) }
+    buildJsonObject {
+      put("type", "chat.message")
+      put("message", json.encodeToJsonElement(ChatMessage(message = message)))
+    }.let { json.encodeToString(it) }
 
   private fun raceUpdate(version: Int) =
-      buildJsonObject {
-        put("type", "race.data")
-        put("race", json.encodeToJsonElement(RacetimeRace(version = version)))
-      }.let { json.encodeToString(it) }
+    buildJsonObject {
+      put("type", "race.data")
+      put("race", json.encodeToJsonElement(RacetimeRace(version = version)))
+    }.let { json.encodeToString(it) }
 
   //</editor-fold>
 }

@@ -5,18 +5,19 @@ import ootbingo.barinade.bot.misc.Holder
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.RacetimeRaceStatus.*
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.dispatch
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 class RaceConnection(
-    raceEndpoint: String,
-    connector: WebsocketConnector,
-    private val status: RaceStatusHolder,
-    logicHolder: Holder<RaceRoomLogic>,
-    private val dispatcher: Dispatcher,
-    private val logicFactory: RaceRoomLogicFactory,
-    private val disconnect: RaceWebsocketHandler.(Boolean) -> Unit,
+  raceEndpoint: String,
+  connector: WebsocketConnector,
+  private val status: RaceStatusHolder,
+  logicHolder: Holder<RaceRoomLogic>,
+  private val dispatcher: Dispatcher,
+  private val logicFactory: RaceRoomLogicFactory,
+  private val disconnect: RaceWebsocketHandler.(Boolean) -> Unit,
 ) : RaceWebsocketDelegate, RaceRoomDelegate {
 
   private val websocket: RaceWebsocketHandler = connector.connect(raceEndpoint, this)
@@ -53,9 +54,9 @@ class RaceConnection(
     }
 
     logic.commands.keys.find { chatMessage.messagePlain.startsWith(it) }
-        ?.let { logic.commands[it] }
-        ?.invoke(chatMessage)
-        ?: dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
+      ?.let { logic.commands[it] }
+      ?.invoke(chatMessage)
+      ?: dispatcher.dispatch(chatMessage)?.run { websocket.sendMessage(text) }
   }
 
   private fun onRaceStatusChange(old: RacetimeRaceStatus?, new: RacetimeRaceStatus, race: RacetimeRace) {
@@ -72,8 +73,17 @@ class RaceConnection(
     websocket.setGoal(goal)
   }
 
-  override fun sendMessage(message: String, pinned: Boolean, directTo: String?, actions: Map<String, RacetimeActionButton>?) {
+  override fun sendMessage(
+    message: String,
+    pinned: Boolean,
+    directTo: String?,
+    actions: Map<String, RacetimeActionButton>?,
+  ) {
     websocket.sendMessage(message, pinned, directTo, actions)
+  }
+
+  override fun kickUser(user: RacetimeUser) {
+    websocket.kickUser(user)
   }
 
   override fun closeConnection(delay: Boolean) {

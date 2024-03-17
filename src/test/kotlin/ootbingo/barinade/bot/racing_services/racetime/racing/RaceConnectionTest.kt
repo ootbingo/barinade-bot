@@ -5,6 +5,7 @@ import de.scaramangado.lily.core.communication.Dispatcher
 import de.scaramangado.lily.core.communication.MessageInfo
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace.*
+import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.lily.RacetimeMessageInfo
 import org.assertj.core.api.Assertions.*
@@ -35,12 +36,18 @@ internal class RaceConnectionTest {
   init {
     // Must be in init to set up connectorMock and websocketMock correctly
     whenever(connectorMock.connect(any(), any())).thenReturn(websocketMock)
-    connection = RaceConnection("", connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {
-      disconnectedWithDelay = it
-    }
+    connection =
+      RaceConnection("", connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {
+        disconnectedWithDelay = it
+      }
 
     heldLogic = mock<BingoRaceRoomLogic>()
-    whenever(raceRoomLogicFactoryMock.createLogic(any<KClass<RaceRoomLogic>>(), any())).thenReturn(mock<BingoRaceRoomLogic>())
+    whenever(
+      raceRoomLogicFactoryMock.createLogic(
+        any<KClass<RaceRoomLogic>>(),
+        any()
+      )
+    ).thenReturn(mock<BingoRaceRoomLogic>())
   }
 
   private var disconnectedWithDelay: Boolean? = null
@@ -55,7 +62,7 @@ internal class RaceConnectionTest {
     val url = UUID.randomUUID().toString()
 
     val connection =
-        RaceConnection(url, connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {}
+      RaceConnection(url, connectorMock, statusHolder, logicHolder, thenDispatcher, raceRoomLogicFactoryMock) {}
 
     verify(connectorMock).connect(url, connection)
   }
@@ -243,13 +250,23 @@ internal class RaceConnectionTest {
     val (name1, name2, action1, action2) = (1..4).map { UUID.randomUUID().toString() }
 
     val actions = mapOf(
-        name1 to RacetimeActionButton(message = action1),
-        name2 to RacetimeActionButton(message = action2),
+      name1 to RacetimeActionButton(message = action1),
+      name2 to RacetimeActionButton(message = action2),
     )
 
     whenMessageIsSent(UUID.randomUUID().toString(), true, null, actions)
 
     thenSentMessageHasActions(actions)
+  }
+
+  @Test
+  internal fun kicksUser() {
+
+    val user = RacetimeUser(id = UUID.randomUUID().toString())
+
+    whenUserIsKicked(user)
+
+    thenUserKickIsForwardedToWebsocket(user)
   }
 
   @ParameterizedTest
@@ -345,8 +362,17 @@ internal class RaceConnectionTest {
     connection.setGoal(goal)
   }
 
-  private fun whenMessageIsSent(message: String, pinned: Boolean, directTo: String?, actions: Map<String, RacetimeActionButton>?) {
+  private fun whenMessageIsSent(
+    message: String,
+    pinned: Boolean,
+    directTo: String?,
+    actions: Map<String, RacetimeActionButton>?,
+  ) {
     connection.sendMessage(message, pinned, directTo, actions)
+  }
+
+  private fun whenUserIsKicked(user: RacetimeUser) {
+    connection.kickUser(user)
   }
 
   private fun whenDisconnectIsRequested(withDelay: Boolean) {
@@ -389,6 +415,10 @@ internal class RaceConnectionTest {
     assertThat(messagesSent).anyMatch { it.matches(Regex(regex)) }
   }
 
+  private fun thenUserKickIsForwardedToWebsocket(expectedUser: RacetimeUser) {
+    verify(websocketMock).kickUser(expectedUser)
+  }
+
   private fun thenNewRaceGoalMatches(regex: String) {
     assertThat(goal).matches(regex)
   }
@@ -405,7 +435,7 @@ internal class RaceConnectionTest {
   }
 
   private fun Dispatcher.wasNotCalled() =
-      verifyNoInteractions(this)
+    verifyNoInteractions(this)
 
   private fun <T : RaceRoomLogic> thenLogicIsCreated(type: KClass<T>) {
     verify(raceRoomLogicFactoryMock).createLogic(type, connection)
@@ -438,23 +468,23 @@ internal class RaceConnectionTest {
   private val messagesSent: List<String>
     get() =
       argumentCaptor<String>()
-          .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull(), anyOrNull()) }
-          .allValues
+        .also { verify(websocketMock, atLeast(0)).sendMessage(it.capture(), any(), anyOrNull(), anyOrNull()) }
+        .allValues
 
   private val goal: String
     get() =
       argumentCaptor<String>()
-          .also { verify(websocketMock).setGoal(it.capture()) }
-          .lastValue
+        .also { verify(websocketMock).setGoal(it.capture()) }
+        .lastValue
 
   private fun chatMessage(message: String) =
-      ChatMessage(message = message, messagePlain = message, bot = null, isBot = false, isSystem = false)
+    ChatMessage(message = message, messagePlain = message, bot = null, isBot = false, isSystem = false)
 
   private fun chatMessageByBot(message: String) =
-      ChatMessage(message = message, messagePlain = message, bot = "BingoBot", isBot = true, isSystem = false)
+    ChatMessage(message = message, messagePlain = message, bot = "BingoBot", isBot = true, isSystem = false)
 
   private fun chatMessageBySystem(message: String) =
-      ChatMessage(message = message, messagePlain = message, bot = null, isBot = false, isSystem = true)
+    ChatMessage(message = message, messagePlain = message, bot = null, isBot = false, isSystem = true)
 
   //</editor-fold>
 }
