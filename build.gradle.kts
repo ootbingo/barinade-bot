@@ -5,10 +5,10 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.9.22"
+  val kotlinVersion = "1.9.23"
 
   java
-  id("org.springframework.boot") version "3.2.2"
+  id("org.springframework.boot") version "3.2.4"
   id("io.spring.dependency-management") version "1.1.4"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.3.0-Beta3"
+version = "3.3.0"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
@@ -52,7 +52,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
   implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
 
