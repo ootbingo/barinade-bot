@@ -100,7 +100,7 @@ class BingoRaceRoomLogic(
     }
 
     val goal = if (mode != CHILD) {
-      "https://ootbingo.github.io/bingo/bingo.html?version=10.4&seed=${generateSeed()}&mode=${mode.name.lowercase()}"
+      "https://ootbingo.github.io/bingo/bingo.html?version=10.5&seed=${generateSeed()}&mode=${mode.name.lowercase()}"
     } else {
       "https://doctorno124.github.io/childkek/bingo.html?seed=${generateSeed()}&mode=normal"
     }
