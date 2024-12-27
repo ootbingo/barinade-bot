@@ -37,7 +37,7 @@ class RowPickingStage(
 
     state = initialState
 
-    val bingoUrl = "https://ootbingo.github.io/bingo/bingo.html?version=10.4&seed=${generateSeed()}&mode=normal"
+    val bingoUrl = "https://ootbingo.github.io/bingo/bingo.html?version=10.5&seed=${generateSeed()}&mode=normal"
 
     editRace {
       infoBot = "Anti-Bingo $bingoUrl"
