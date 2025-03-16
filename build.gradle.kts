@@ -1,15 +1,15 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets.*
 import java.util.*
 
 plugins {
 
-  val kotlinVersion = "1.9.23"
+  val kotlinVersion = "2.1.10"
 
   java
-  id("org.springframework.boot") version "3.2.4"
-  id("io.spring.dependency-management") version "1.1.4"
+  id("org.springframework.boot") version "3.4.3"
+  id("io.spring.dependency-management") version "1.1.7"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
   kotlin("plugin.serialization") version kotlinVersion
@@ -52,11 +52,11 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-  implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
 
 
-  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.5")
+  implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.2.0")
   implementation("org.springframework:spring-websocket")
   implementation("org.springframework:spring-messaging")
 
@@ -74,8 +74,8 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.25.3")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+  testImplementation("org.assertj:assertj-core:3.27.3")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
@@ -89,7 +89,7 @@ tasks.withType<Jar> {
   archiveVersion.set("")
 }
 
-val versionProperties by tasks.register("versionProperties") {
+tasks.register("versionProperties") {
 
   group = "build"
   description = "Saves version and build number in the resources folder."
@@ -129,17 +129,13 @@ tasks.withType<JacocoReport> {
 fun executeCommand(command: String): String =
   try {
     Runtime.getRuntime().exec(command.split(" ").toTypedArray()).inputStream.bufferedReader().readLine()
-  } catch (e: Exception) {
+  } catch (_: Exception) {
     ""
   }
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-  jvmTarget = "21"
-  freeCompilerArgs = listOf("-Xjvm-default=all")
-}
-
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-  jvmTarget = "21"
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_21)
+    freeCompilerArgs = listOf("-Xjvm-default=all")
+  }
 }
