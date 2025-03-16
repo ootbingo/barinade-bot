@@ -9,6 +9,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.newBingoRace
 import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
 import org.assertj.core.api.Assertions.*
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
@@ -31,8 +32,8 @@ import java.util.*
 @ExtendWith(SpringExtension::class)
 internal class RacetimeHttpClientTest {
 
-  private val dataBaseUrl = "http://example.com"
-  private val racingBaseUrl = "http://example.de"
+  private val dataBaseUrl = "https://example.com"
+  private val racingBaseUrl = "https://example.org"
 
   private val restTemplate = RacetimeHttpClientConfiguration(mock()).racetimeRestTemplate()
   private val properties: RacetimeApiProperties = RacetimeApiProperties(dataBaseUrl, racingBaseUrl)
@@ -45,6 +46,7 @@ internal class RacetimeHttpClientTest {
 
     fun random() = UUID.randomUUID().toString()
 
+    @Language("json")
     fun raceWithId(id: String) =
       """
           {
@@ -132,6 +134,7 @@ internal class RacetimeHttpClientTest {
   @Test
   internal fun findsCurrentRacesOfGame() {
 
+    @Language("json")
     val categoryJson = """
       {
         "current_races": [
@@ -229,6 +232,65 @@ internal class RacetimeHttpClientTest {
     client.editRace(raceSlug, edit)
 
     convert(converter, race.toEditableRace().apply(edit))
+  }
+
+  @Test
+  internal fun retrievesLeaderboards() {
+
+    @Language("json")
+    val leaderboardsJson = """
+      {
+        "leaderboards": [
+          {
+            "goal": "Bingo", "num_ranked": 2, "rankings": [
+              {
+                "user": {
+                  "id": "OR6ym83myb3Pd1Xr",
+                  "full_name": "Titou#0711",
+                  "name": "Titou",
+                  "discriminator": "0711"
+                },
+                "place": 1
+              },
+              {
+                "user": {
+                  "id": "ZbpNAaBvn5BJkg04",
+                  "full_name": "Exodus#5327",
+                  "name": "Exodus",
+                  "discriminator": "5327"
+                },
+                "place": 2
+              }
+            ]
+          }, {
+            "goal": "GSR", "num_ranked": 1, "rankings": [
+              {
+                "user": {
+                  "id": "g497NdWRrYWmqXen",
+                  "full_name": "CountLG#6314",
+                  "name": "CountLG",
+                  "discriminator": "6314"
+                },
+                "place": 1
+              }
+            ]
+          }
+        ]
+      }
+    """.trimIndent()
+
+    server.expect(requestTo("$dataBaseUrl/oot/leaderboards/data"))
+      .andRespond(withSuccess(leaderboardsJson, MediaType.APPLICATION_JSON))
+
+    val leaderboards = client.getLeaderboards()
+
+    assertThat(leaderboards).hasSize(2)
+    assertThat(leaderboards[0].goal).isEqualTo("Bingo")
+    assertThat(leaderboards[0].rankings).hasSize(2)
+    assertThat(leaderboards[0].rankings[1].user.name).isEqualTo("Exodus")
+    assertThat(leaderboards[1].goal).isEqualTo("GSR")
+    assertThat(leaderboards[1].rankings).hasSize(1)
+    assertThat(leaderboards[1].rankings[0].user.name).isEqualTo("CountLG")
   }
 
   private fun <T : Any> convert(converter: HttpMessageConverter<T>, t: T): String {
