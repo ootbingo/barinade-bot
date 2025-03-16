@@ -7,7 +7,7 @@ spring:
     url: jdbc:tc:postgresql:15-alpine:///barinade
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   main:
-    banner-mode: "off"
+    banner-mode: off
   jpa:
     show-sql: false
 
@@ -15,7 +15,7 @@ logging:
   file:
     name:
   level:
-    root: OFF
+    root: off
     org:
-      springframework: OFF
-    ootbingo: DEBUG
+      springframework: off
+    ootbingo: debug

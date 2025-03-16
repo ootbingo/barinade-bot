@@ -47,6 +47,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.flywaydb:flyway-core")
+  implementation("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql")
 
   implementation(kotlin("stdlib-jdk8"))
@@ -54,7 +55,6 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
   implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
-
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.2.0")
   implementation("org.springframework:spring-websocket")
