@@ -9,9 +9,10 @@ internal class InfoModuleTest : ModuleTest() {
   private val module = InfoModule()
 
   override val commands = mapOf(
-      "golds" to module::golds,
-      "silvers" to module::silvers,
-      "stalfos" to module::stalfos,
+    "golds" to module::golds,
+    "silvers" to module::silvers,
+    "stalfos" to module::stalfos,
+    "beans" to module::beanPatches,
   )
 
   //<editor-fold desc="!golds">
@@ -57,6 +58,22 @@ internal class InfoModuleTest : ModuleTest() {
   @Test
   internal fun stalfosSingleLineOnRacetime() {
     whenRacetimeMessageIsSent("", "!stalfos")
+    thenAnswerIsSingleLine()
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="!beans">
+
+  @Test
+  internal fun beanPatchesMultilineOnDiscord() {
+    whenDiscordMessageIsSent("", "!beans")
+    thenAnswerIsPreformatted()
+  }
+
+  @Test
+  internal fun beanPatchesSingleLineOnRacetime() {
+    whenRacetimeMessageIsSent("", "!beans")
     thenAnswerIsSingleLine()
   }
 

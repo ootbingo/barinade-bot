@@ -10,10 +10,10 @@ import ootbingo.barinade.bot.extensions.conditionalAnswer
 @LilyModule
 class InfoModule {
 
-  @LilyCommand("golds", "gold", "goldrupees", "goldenrupees")
+  @LilyCommand("golds", "gold", "golden", "goldrupees", "goldenrupees")
   fun golds(command: Command): Answer<AnswerInfo> =
-      conditionalAnswer(command) {
-        discordMessage = """
+    conditionalAnswer(command) {
+      discordMessage = """
           ## Golden Rupee Locations
           * Dead Hand's Room in BotW
           * Kakariko Redead Grotto
@@ -23,14 +23,14 @@ class InfoModule {
           * Fire Temple after Elevator
         """.trimIndent()
 
-        racetimeMessage =
-            "Golden rupees: BotW, Kakariko, DMT, Goron City, GTG, Fire Temple"
-      }
+      racetimeMessage =
+        "Golden rupees: BotW, Kakariko, DMT, Goron City, GTG, Fire Temple"
+    }
 
   @LilyCommand("silvers", "silver", "silverrupees")
   fun silvers(command: Command): Answer<AnswerInfo> =
-      conditionalAnswer(command) {
-        discordMessage = """
+    conditionalAnswer(command) {
+      discordMessage = """
           ## Silver Rupee Locations
           * Shadow Temple 1st Small Key Room
           * Shadow Temple before Falling Spikes
@@ -50,14 +50,14 @@ class InfoModule {
           * Light Trial
         """.trimIndent()
 
-        racetimeMessage =
-            "Silver rupees: BotW, 2 x Ice Cavern, 3 x GTG, 3 x Shadow Temple, 3 x Spirit Temple, 4 x Trials"
-      }
+      racetimeMessage =
+        "Silver rupees: BotW, 2 x Ice Cavern, 3 x GTG, 3 x Shadow Temple, 3 x Spirit Temple, 4 x Trials"
+    }
 
   @LilyCommand("stalfos")
   fun stalfos(command: Command): Answer<AnswerInfo> =
-      conditionalAnswer(command) {
-        discordMessage = """
+    conditionalAnswer(command) {
+      discordMessage = """
           ## Stalfos Locations
           * Forest Temple Stalfos Small Key Room (x2)
           * Forest Temple Bow Room (x3)
@@ -69,7 +69,28 @@ class InfoModule {
           * Ganon's Tower Collapse (x2)
         """.trimIndent()
 
-        racetimeMessage = "5 x Forest Temple, 3 x Shadow Temple, 2 x GTG, 1 x Spirit Temple, 2 x Ganon’s Tower, " +
-            "2 x Ganon’s Tower Collapse"
-      }
+      racetimeMessage = "5 x Forest Temple, 3 x Shadow Temple, 2 x GTG, 1 x Spirit Temple, 2 x Ganon’s Tower, " +
+          "2 x Ganon’s Tower Collapse"
+    }
+
+  @LilyCommand("beans", "patches", "beanpatches")
+  fun beanPatches(command: Command): Answer<AnswerInfo> =
+    conditionalAnswer(command) {
+
+      discordMessage = """
+        ## Bean Patch Locations
+        * Kokiri Forest
+        * Lost Woods (x2)
+        * Graveyard
+        * Death Mountain Trail
+        * Death Mountain Crater
+        * Lake Hylia
+        * Gerudo Valley
+        * Colossus
+        * Zora's River (no Skulltula)
+      """.trimIndent()
+
+      racetimeMessage =
+        "Kokiri Forest, Lost Woods (x2), Graveyard, Death Mountain Trail, Death Mountain Crater, Lake Hylia, Gerudo Valley, Colossus, Zora's River (no Skulltula)"
+    }
 }

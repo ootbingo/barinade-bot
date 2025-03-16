@@ -4,7 +4,6 @@ import ootbingo.barinade.bot.extensions.standardFormat
 import ootbingo.barinade.bot.racing_services.data.connection.PlayerRepository
 import ootbingo.barinade.bot.racing_services.data.model.Player
 import ootbingo.barinade.bot.racing_services.racetime.api.client.RacetimeHttpClient
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeLeaderboardEntry
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
@@ -57,7 +56,7 @@ class RacetimeUsernameUpdateJob(
 
   private fun loadLeaderboardUsers(): Map<String, String> = try {
     racetimeHttpClient.getLeaderboards()
-      .flatMap { it.rankings as Iterable<RacetimeLeaderboardEntry> }
+      .flatMap { it.rankings }
       .map { it.user }
       .distinct()
       .associate { it.id to it.name }
