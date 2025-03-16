@@ -30,6 +30,7 @@ class HelpModule {
           **!golds** List Golden Rupee Chests
           **!silvers** List Silver Rupee Rooms
           **!stalfos** List Stalfos locations
+          **!beans** List Bean Patch locations
           ## Misc
           **!shame** Express your disapproval
           ## Racing

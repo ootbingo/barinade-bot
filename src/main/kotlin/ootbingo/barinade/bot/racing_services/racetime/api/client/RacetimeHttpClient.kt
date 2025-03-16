@@ -1,10 +1,7 @@
 package ootbingo.barinade.bot.racing_services.racetime.api.client
 
 import ootbingo.barinade.bot.racing_services.racetime.api.RacetimeApiProperties
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeCategory
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEditableRace
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
-import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRacePage
+import ootbingo.barinade.bot.racing_services.racetime.api.model.*
 import ootbingo.barinade.bot.racing_services.racetime.racing.oauth.OAuthManager
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
@@ -94,4 +91,10 @@ class RacetimeHttpClient(
       ),
     )
   }
+
+  fun getLeaderboards(): List<RacetimeLeaderboard> =
+    racetimeRestTemplate.getForEntity<RacetimeLeaderboards>("${properties.dataBaseUrl}/$OOT/leaderboards/data")
+      .body
+      ?.leaderboards
+      ?: emptyList()
 }
