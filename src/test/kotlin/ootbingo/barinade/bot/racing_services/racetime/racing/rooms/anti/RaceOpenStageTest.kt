@@ -4,6 +4,7 @@ import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeEntrant.RacetimeEntrantStatus.*
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeRace
 import ootbingo.barinade.bot.racing_services.racetime.api.model.RacetimeUser
+import ootbingo.barinade.bot.racing_services.racetime.racing.rooms.anti.AntiBingoState.*
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -16,7 +17,7 @@ class RaceOpenStageTest {
   private val entrantPairGeneratorMock = mock<EntrantPairGenerator>()
   private val completeStageMock = mock<(AntiBingoState) -> Unit>()
 
-  private val sentDms = mutableListOf<Pair<String, RacetimeUser>>()
+  private val sentDms = mutableListOf<Pair<String, RacetimeUser?>>()
 
   private val stage = RaceOpenStage(entrantPairGeneratorMock, completeStageMock) { message, user ->
     sentDms.addLast(message to user)
@@ -72,7 +73,7 @@ class RaceOpenStageTest {
     val entrant2 = entrant(id2, name2)
     val entrant3 = entrant(id3, name3)
 
-    val pairs = listOf(AntiBingoState.EntrantMapping(entrant1.user, entrant3.user, null))
+    val pairs = listOf(entrantMapping(entrant1.user, entrant3.user))
 
     givenPairGeneratorReturnsPairs(pairs)
 
@@ -108,10 +109,10 @@ class RaceOpenStageTest {
     val entrant3 = entrant(id3, name3)
 
     val pairs = listOf(
-        AntiBingoState.EntrantMapping(entrant1.user, entrant3.user, null),
-        AntiBingoState.EntrantMapping(entrant1.user, entrant1.user, null),
-        AntiBingoState.EntrantMapping(entrant2.user, entrant3.user, null),
-        AntiBingoState.EntrantMapping(entrant3.user, entrant2.user, null),
+      entrantMapping(entrant1.user, entrant3.user),
+      entrantMapping(entrant1.user, entrant1.user),
+      entrantMapping(entrant2.user, entrant3.user),
+      entrantMapping(entrant3.user, entrant2.user),
     )
 
     givenPairGeneratorReturnsPairs(pairs)
@@ -119,10 +120,10 @@ class RaceOpenStageTest {
     whenRaceUpdateIsReceived(entrant1, entrant2, entrant3)
 
     thenDmsAreSent(
-        name3 to entrant1,
-        name1 to entrant1,
-        name3 to entrant2,
-        name2 to entrant3,
+      name3 to entrant1,
+      name1 to entrant1,
+      name3 to entrant2,
+      name2 to entrant3,
     )
   }
 
@@ -136,7 +137,7 @@ class RaceOpenStageTest {
 
   //<editor-fold desc="Given">
 
-  private fun givenPairGeneratorReturnsPairs(pairs: List<AntiBingoState.EntrantMapping>) {
+  private fun givenPairGeneratorReturnsPairs(pairs: List<EntrantMapping>) {
     whenever(entrantPairGeneratorMock.generatePairs(any())).thenReturn(pairs)
   }
 
@@ -156,8 +157,9 @@ class RaceOpenStageTest {
     verifyNoInteractions(completeStageMock)
   }
 
-  private fun thenStageCompletionIsCalledWithEntrants(vararg expectedEntrants: RacetimeUser) {
+  private fun thenStageCompletionIsCalledWithEntrants(vararg expectedEntrants: RacetimeUser?) {
 
+    expectedEntrants.forEach { checkNotNull(it) }
     val captor = argumentCaptor<AntiBingoState>()
     verify(completeStageMock).invoke(captor.capture())
     val state = captor.lastValue
@@ -165,7 +167,7 @@ class RaceOpenStageTest {
     assertThat(state.entrants).containsExactlyInAnyOrder(*expectedEntrants)
   }
 
-  private fun thenStageCompletionIsCalledWithPairs(expectedPairs: List<AntiBingoState.EntrantMapping>) {
+  private fun thenStageCompletionIsCalledWithPairs(expectedPairs: List<EntrantMapping>) {
 
     val captor = argumentCaptor<AntiBingoState>()
     verify(completeStageMock).invoke(captor.capture())
@@ -174,7 +176,9 @@ class RaceOpenStageTest {
     assertThat(state.entrantMappings).containsExactlyElementsOf(expectedPairs)
   }
 
-  private fun thenPairGeneratorIsCalledWithEntrants(vararg expectedEntrants: RacetimeUser) {
+  private fun thenPairGeneratorIsCalledWithEntrants(vararg expectedEntrants: RacetimeUser?) {
+
+    expectedEntrants.forEach { checkNotNull(it) }
     val captor = argumentCaptor<List<RacetimeUser>>()
     verify(entrantPairGeneratorMock).generatePairs(captor.capture())
     assertThat(captor.firstValue).containsExactlyInAnyOrder(*expectedEntrants)
@@ -182,9 +186,9 @@ class RaceOpenStageTest {
 
   private fun thenDmsAreSent(vararg expectedDms: Pair<String, RacetimeEntrant>) {
     assertThat(sentDms).containsExactlyInAnyOrderElementsOf(
-        expectedDms.map {
-          it.first.let { name -> "Please choose a row for $name" } to it.second.user
-        }
+      expectedDms.map {
+        it.first.let { name -> "Please choose a row for $name" } to it.second.user
+      }
     )
   }
 
@@ -193,7 +197,12 @@ class RaceOpenStageTest {
   //<editor-fold desc="Helper">
 
   private fun entrant(status: RacetimeEntrant.RacetimeEntrantStatus) = RacetimeEntrant(status = status)
-  private fun entrant(id: String, name: String) = RacetimeEntrant(user = RacetimeUser(id = id, name = name), status = READY)
+
+  private fun entrant(id: String, name: String) =
+    RacetimeEntrant(user = RacetimeUser(id = id, name = name), status = READY)
+
+  private fun entrantMapping(entrant: RacetimeUser?, choosesFor: RacetimeUser?) =
+    EntrantMapping(checkNotNull(entrant), checkNotNull(choosesFor), null)
 
   //</editor-fold>
 }

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.web.client.ResourceAccessException
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -30,16 +31,18 @@ import kotlin.random.Random
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 internal class SrlSyncJobTest(
-    @Autowired private val playerRepository: PlayerRepository,
-    @Autowired private val raceRepository: RaceRepository,
-    @Autowired private val raceResultRepository: RaceResultRepository,
+  @Autowired private val playerRepository: PlayerRepository,
+  @Autowired private val raceRepository: RaceRepository,
+  @Autowired private val raceResultRepository: RaceResultRepository,
 ) {
 
   private val srlHttpClientMock = mock<SrlHttpClient>()
-  private val job = SrlSyncJob(srlHttpClientMock,
-      PlayerHelper(playerRepository, UsernameMapper("")),
-      raceRepository,
-      raceResultRepository)
+  private val job = SrlSyncJob(
+    srlHttpClientMock,
+    PlayerHelper(playerRepository, UsernameMapper("")),
+    raceRepository,
+    raceResultRepository
+  )
 
   @Test
   @DirtiesContext
@@ -51,40 +54,40 @@ internal class SrlSyncJobTest(
 
     givenPlayersOnSrl("Alpha" withId 1, "Beta" withId 2, "Gamma" withId 3)
     givenRacesOnSrl(
-        pastRace {
-          id = 991
-          goal = "race1"
-          date = Instant.ofEpochSecond(10000991)
-          results {
-            result {
-              player = "Alpha"
-              time = 551
-            }
-            result {
-              player = "Gamma"
-              time = 552
-            }
+      pastRace {
+        id = 991
+        goal = "race1"
+        date = Instant.ofEpochSecond(10000991)
+        results {
+          result {
+            player = "Alpha"
+            time = 551
           }
-        },
-        pastRace {
-          id = 992
-          goal = "race2"
-          date = Instant.ofEpochSecond(10000992)
-          results {
-            result {
-              player = "Beta"
-              time = 661
-            }
-            result {
-              player = "Gamma"
-              time = 662
-            }
-            result {
-              player = "Alpha"
-              time = 663
-            }
+          result {
+            player = "Gamma"
+            time = 552
           }
         }
+      },
+      pastRace {
+        id = 992
+        goal = "race2"
+        date = Instant.ofEpochSecond(10000992)
+        results {
+          result {
+            player = "Beta"
+            time = 661
+          }
+          result {
+            player = "Gamma"
+            time = 662
+          }
+          result {
+            player = "Alpha"
+            time = 663
+          }
+        }
+      }
     )
 
     whenJobIsExecuted()
@@ -117,40 +120,40 @@ internal class SrlSyncJobTest(
 
     givenPlayersOnSrl("Alpha" withId 1, "Beta" withId 2, "Gamma" withId 3)
     givenRacesOnSrl(
-        pastRace {
-          id = 991
-          goal = "race1"
-          date = Instant.ofEpochSecond(10000991)
-          results {
-            result {
-              player = "Alpha"
-              time = 551
-            }
-            result {
-              player = "Gamma"
-              time = 552
-            }
+      pastRace {
+        id = 991
+        goal = "race1"
+        date = Instant.ofEpochSecond(10000991)
+        results {
+          result {
+            player = "Alpha"
+            time = 551
           }
-        },
-        pastRace {
-          id = 992
-          goal = "race2"
-          date = Instant.ofEpochSecond(10000992)
-          results {
-            result {
-              player = "Beta"
-              time = -1
-            }
-            result {
-              player = "Gamma"
-              time = 661
-            }
-            result {
-              player = "Alpha"
-              time = -2
-            }
+          result {
+            player = "Gamma"
+            time = 552
           }
         }
+      },
+      pastRace {
+        id = 992
+        goal = "race2"
+        date = Instant.ofEpochSecond(10000992)
+        results {
+          result {
+            player = "Beta"
+            time = -1
+          }
+          result {
+            player = "Gamma"
+            time = 661
+          }
+          result {
+            player = "Alpha"
+            time = -2
+          }
+        }
+      }
     )
 
     whenJobIsExecuted()
@@ -174,17 +177,17 @@ internal class SrlSyncJobTest(
 
     givenPlayersOnSrl(srlName withId srlId)
     givenRacesOnSrl(
-        pastRace {
-          id = 991
-          goal = "race1"
-          date = Instant.ofEpochSecond(10000991)
-          results {
-            result {
-              player = srlName
-              time = 551
-            }
+      pastRace {
+        id = 991
+        goal = "race1"
+        date = Instant.ofEpochSecond(10000991)
+        results {
+          result {
+            player = srlName
+            time = 551
           }
         }
+      }
     )
 
     whenJobIsExecuted()
@@ -194,6 +197,26 @@ internal class SrlSyncJobTest(
     assertThat(player?.racetimeName).isEqualTo(racetimeName)
     assertThat(player?.srlId).isEqualTo(srlId)
     assertThat(player?.srlName).isEqualTo(srlName)
+  }
+
+  @Test
+  internal fun doesNotThrowException() {
+
+    givenSrlRequestThrows(RuntimeException())
+
+    whenJobIsExecuted()
+
+    // no exception is thrown
+  }
+
+  @Test
+  internal fun doesNotThrowResourceAccessException() {
+
+    givenSrlRequestThrows(ResourceAccessException("abc PKIX path validation failed xyz"))
+
+    whenJobIsExecuted()
+
+    // no exception is thrown
   }
 
   //<editor-fold desc="Given">
@@ -212,15 +235,19 @@ internal class SrlSyncJobTest(
 
   private fun givenPlayersOnSrl(vararg players: Player) {
     players
-        .filterNot { it.srlName == null || it.srlId == null }
-        .forEach {
-          whenever(srlHttpClientMock.getPlayerByName(it.srlName!!))
-              .thenReturn(SrlPlayer(it.srlId!!, it.srlName!!))
-        }
+      .filterNot { it.srlName == null || it.srlId == null }
+      .forEach {
+        whenever(srlHttpClientMock.getPlayerByName(it.srlName!!))
+          .thenReturn(SrlPlayer(it.srlId!!, it.srlName!!))
+      }
   }
 
   private fun givenRacesOnSrl(vararg races: SrlPastRace) {
     whenever(srlHttpClientMock.getAllRacesOfGame(any())).thenReturn(races.toSet())
+  }
+
+  private fun givenSrlRequestThrows(exception: Exception) {
+    whenever(srlHttpClientMock.getAllRacesOfGame(any())).thenThrow(exception)
   }
 
   //</editor-fold>
@@ -234,14 +261,14 @@ internal class SrlSyncJobTest(
   //<editor-fold desc="Then">
 
   private fun thenDbPlayerWithName(username: String) =
-      playerRepository.findBySrlNameIgnoreCase(username) ?: throw NullPointerException()
+    playerRepository.findBySrlNameIgnoreCase(username) ?: throw NullPointerException()
 
   private infix fun Player.hasId(id: Long) {
     assertThat(this.srlId).isEqualTo(id)
   }
 
   private fun thenRaceWithId(id: Int) =
-      raceRepository.findByRaceId(id.toString()) ?: throw NullPointerException()
+    raceRepository.findByRaceId(id.toString()) ?: throw NullPointerException()
 
   private infix fun Race.hasGoal(goal: String) {
     assertThat(this.goal).isEqualTo(goal)
@@ -254,26 +281,26 @@ internal class SrlSyncJobTest(
   private infix fun Race.hasResults(results: Collection<Pair<String, Int>>) {
     results.forEach {
       assertThat(
-          raceResultRepository.findAll()
-              .filter { res -> res.resultId.race == this }
-              .last { res -> res.resultId.player.srlName == it.first }.time?.seconds
+        raceResultRepository.findAll()
+          .filter { res -> res.resultId.race == this }
+          .last { res -> res.resultId.player.srlName == it.first }.time?.seconds
       ).isEqualTo(it.second.toLong())
     }
 
     assertThat(raceResultRepository.findAll().count { res -> res.resultId.race == this })
-        .isEqualTo(results.size)
+      .isEqualTo(results.size)
   }
 
   private infix fun Player.hasRaceTimes(times: Collection<Long>) {
 
     assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.time?.seconds })
-        .containsExactlyInAnyOrder(*times.toTypedArray())
+      .containsExactlyInAnyOrder(*times.toTypedArray())
   }
 
   private infix fun Player.hasResultTypes(types: Collection<ResultType>) {
 
     assertThat(raceResultRepository.findAll().filter { it.resultId.player == this }.map { it.resultType })
-        .containsExactlyInAnyOrder(*types.toTypedArray())
+      .containsExactlyInAnyOrder(*types.toTypedArray())
   }
 
   private val thenPlayerCount: Int
@@ -295,19 +322,23 @@ internal class SrlSyncJobTest(
 
   private infix fun String.withId(id: Long): Player = Player(null, id, null, this)
   private fun result(playerName: String, raceId: String, time: Int) =
-      RaceResult(RaceResult.ResultId(raceRepository.findByRaceId(raceId)!!,
-          playerRepository.findBySrlNameIgnoreCase(playerName)!!),
-          time = Duration.ofSeconds(time.toLong()))
+    RaceResult(
+      RaceResult.ResultId(
+        raceRepository.findByRaceId(raceId)!!,
+        playerRepository.findBySrlNameIgnoreCase(playerName)!!
+      ),
+      time = Duration.ofSeconds(time.toLong())
+    )
 
   //<editor-fold desc="SRL Race Builder">
 
   private fun pastRace(builderParams: PastRaceBuilder.() -> Unit) =
-      PastRaceBuilder().apply(builderParams).build()
+    PastRaceBuilder().apply(builderParams).build()
 
   class PastRaceBuilder(
-      var id: Int = -1,
-      var goal: String = "",
-      var date: Instant = Instant.ofEpochSecond(0),
+    var id: Int = -1,
+    var goal: String = "",
+    var date: Instant = Instant.ofEpochSecond(0),
   ) {
 
     private lateinit var results: List<SrlResult>
@@ -317,8 +348,10 @@ internal class SrlSyncJobTest(
     }
 
     fun build(): SrlPastRace =
-        SrlPastRace(id = id.toString(), goal = goal, date = date, numentrants = results.size.toLong(),
-            results = results)
+      SrlPastRace(
+        id = id.toString(), goal = goal, date = date, numentrants = results.size.toLong(),
+        results = results
+      )
   }
 
   class ResultsBuilder {

@@ -38,7 +38,7 @@ class AntiBingoRaceRoomLogic(
     stage = stageFactory.raceOpenStage(
       { switchToRowPickingStage(it) },
       { message, user -> delegate.sendMessage(message, directTo = user.id) },
-    ).also { it.initialize(AntiBingoState(race.slug, race.entrants.map { e -> e.user }, listOf()), race) }
+    ).also { it.initialize(AntiBingoState(race.slug, race.entrants.map { e -> checkNotNull(e.user) }, listOf()), race) }
   }
 
   override fun onRaceUpdate(race: RacetimeRace) {

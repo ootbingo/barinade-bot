@@ -10,27 +10,27 @@ import org.slf4j.LoggerFactory
 import kotlin.time.toJavaDuration
 
 class RacetimeImporter(
-    private val playerHelper: PlayerHelper,
-    private val raceRepository: RaceRepository,
-    private val raceResultRepository: RaceResultRepository,
+  private val playerHelper: PlayerHelper,
+  private val raceRepository: RaceRepository,
+  private val raceResultRepository: RaceResultRepository,
 ) {
 
   private val logger = LoggerFactory.getLogger(RacetimeImporter::class.java)
 
   private val playerCache =
-      playerHelper
-          .also { logger.info("Loading Racetime players from DB...") }
-          .getAllRacetimePlayers()
-          .associateBy { it.racetimeId!! }
-          .toMutableMap()
-          .also { logger.info("{} Racetime players found.", it.size) }
+    playerHelper
+      .also { logger.info("Loading Racetime players from DB...") }
+      .getAllRacetimePlayers()
+      .associateBy { it.racetimeId!! }
+      .toMutableMap()
+      .also { logger.info("{} Racetime players found.", it.size) }
 
   private val raceIds =
-      raceRepository
-          .also { logger.info("Loading Racetime races from DB") }
-          .findAllByPlatform(Platform.RACETIME)
-          .map { it.raceId }
-          .also { logger.info("{} Racetime races found.", it.size) }
+    raceRepository
+      .also { logger.info("Loading Racetime races from DB") }
+      .findAllByPlatform(Platform.RACETIME)
+      .map { it.raceId }
+      .also { logger.info("{} Racetime races found.", it.size) }
 
   fun import(races: Collection<RacetimeRace>): Unit = races.forEach(this::import)
 
@@ -49,28 +49,35 @@ class RacetimeImporter(
   }
 
   private fun saveNewRace(race: RacetimeRace) =
-      raceRepository.save(Race(race.name, race.info, race.endedAt!!, Platform.RACETIME, mutableListOf()))
+    raceRepository.save(Race(race.name, race.info, race.endedAt!!, Platform.RACETIME, mutableListOf()))
 
-  private fun saveNewResult(entrant: RacetimeEntrant, race: Race): RaceResult {
+  private fun saveNewResult(entrant: RacetimeEntrant, race: Race) {
 
-    val player = entrantToPlayer(entrant)
+    val player = entrantToPlayer(entrant) ?: return Unit.also {
+      logger.error("Null user in race {}", race.raceId)
+    }
 
-    return raceResultRepository.save(
-        RaceResult(
-            RaceResult.ResultId(race, player),
-            entrant.place?.toLong() ?: -1,
-            entrant.finishTime?.toJavaDuration(),
-            when (entrant.status) {
-              RacetimeEntrant.RacetimeEntrantStatus.DONE -> ResultType.FINISH
-              RacetimeEntrant.RacetimeEntrantStatus.DNF -> ResultType.FORFEIT
-              else -> ResultType.DQ
-            }
-        )
+    raceResultRepository.save(
+      RaceResult(
+        RaceResult.ResultId(race, player),
+        entrant.place?.toLong() ?: -1,
+        entrant.finishTime?.toJavaDuration(),
+        when (entrant.status) {
+          RacetimeEntrant.RacetimeEntrantStatus.DONE -> ResultType.FINISH
+          RacetimeEntrant.RacetimeEntrantStatus.DNF -> ResultType.FORFEIT
+          else -> ResultType.DQ
+        }
+      )
     )
   }
 
-  private fun entrantToPlayer(entrant: RacetimeEntrant): Player =
-      playerCache[entrant.user.name]
-          ?: entrant.let { playerHelper.getPlayerFromRacetimeId(it.user.id, it.user.name) }
-              .also { playerCache[entrant.user.name] = it }
+  private fun entrantToPlayer(entrant: RacetimeEntrant): Player? {
+
+    val username = entrant.user?.name ?: return null
+
+    return playerCache[username]
+      ?: entrant.user
+        ?.let { playerHelper.getPlayerFromRacetimeId(it.id, it.name) }
+        ?.also { playerCache[username] = it }
+  }
 }

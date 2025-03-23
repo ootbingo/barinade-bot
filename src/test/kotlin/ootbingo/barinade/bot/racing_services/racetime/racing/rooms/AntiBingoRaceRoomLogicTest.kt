@@ -101,7 +101,11 @@ class AntiBingoRaceRoomLogicTest {
 
     whenRaceIsInitialized(race = race)
 
-    thenStage(stageMock) isInitializedWithState AntiBingoState(slug, race.entrants.map { it.user }, listOf())
+    thenStage(stageMock) isInitializedWithState AntiBingoState(
+      slug,
+      race.entrants.map { checkNotNull(it.user) },
+      listOf()
+    )
     thenStage(stageMock) isInitializedWithRace race
   }
 

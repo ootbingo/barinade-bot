@@ -12,8 +12,8 @@ import java.time.Instant
 @Component
 @ConditionalOnProperty(name = ["ootbingo.jobs.racetime-sync.enabled"], havingValue = "true")
 class RacetimeSyncJob(
-    private val importerSupplier: () -> RacetimeImporter,
-    private val racetimeHttpClient: RacetimeHttpClient,
+  private val importerSupplier: () -> RacetimeImporter,
+  private val racetimeHttpClient: RacetimeHttpClient,
 ) {
 
   private val logger = LoggerFactory.getLogger(RacetimeSyncJob::class.java)
@@ -24,14 +24,21 @@ class RacetimeSyncJob(
     val start = Instant.now()
     logger.info("Syncing Racetime data with DB...")
 
-    logger.info("Find all OoT races on Racetime...")
-    val allRaces = racetimeHttpClient.getAllRaces()
-    logger.info("Race data downloaded. Found {} races.", allRaces.size)
-
-    val importer = importerSupplier()
-    importer.import(allRaces)
+    sync()
 
     val end = Instant.now()
     logger.info("Racetime Sync finished. Time: ${Duration.between(start, end).standardFormat()}")
+  }
+
+  private fun sync() {
+
+    logger.info("Find all OoT races on Racetime...")
+    val allRaces = runCatching { racetimeHttpClient.getAllRaces() }
+      .onFailure { e -> logger.error("Failed to download race data.", e) }
+      .getOrNull() ?: return
+    logger.info("Race data downloaded. Found {} races.", allRaces.size)
+
+    runCatching { importerSupplier().import(allRaces) }
+      .onFailure { e -> logger.error("Failed to import race data.", e) }
   }
 }

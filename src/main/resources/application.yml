@@ -48,7 +48,7 @@ logging:
     name: bot.log
   logback:
     rollingpolicy:
-      max-history: 15
+      max-history: 30
       file-name-pattern: bot-%d{yyyy-MM-dd}.%i.log
       clean-history-on-start: true
   pattern:

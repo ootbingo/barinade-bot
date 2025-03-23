@@ -23,7 +23,7 @@ class RaceOpenStage(
       return
     }
 
-    val entrants = race.entrants.map { it.user }
+    val entrants = race.entrants.map { checkNotNull(it.user) }
     val entrantMappings = entrantPairGenerator.generatePairs(entrants)
 
     entrantMappings.forEach {
