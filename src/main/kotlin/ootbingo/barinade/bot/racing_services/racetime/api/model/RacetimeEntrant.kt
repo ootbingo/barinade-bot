@@ -6,10 +6,10 @@ import kotlin.time.Duration
 
 @Serializable
 data class RacetimeEntrant(
-    var user: RacetimeUser = RacetimeUser(),
-    var finishTime: Duration? = null,
-    var place: Int? = null,
-    var status: RacetimeEntrantStatus? = null,
+  var user: RacetimeUser? = null,
+  var finishTime: Duration? = null,
+  var place: Int? = null,
+  var status: RacetimeEntrantStatus? = null,
 ) {
 
   @Serializable(EntrantStatusSerializer::class)

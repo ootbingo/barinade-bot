@@ -26,14 +26,16 @@ import kotlin.time.Duration.Companion.hours
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 internal class RacetimeImporterIntegrationTest(
-    @Autowired private val playerRepository: PlayerRepository,
-    @Autowired private val raceRepository: RaceRepository,
-    @Autowired private val raceResultRepository: RaceResultRepository,
+  @Autowired private val playerRepository: PlayerRepository,
+  @Autowired private val raceRepository: RaceRepository,
+  @Autowired private val raceResultRepository: RaceResultRepository,
 ) {
 
-  private val importer = RacetimeImporter(PlayerHelper(playerRepository, UsernameMapper("")),
-      raceRepository,
-      raceResultRepository)
+  private val importer = RacetimeImporter(
+    PlayerHelper(playerRepository, UsernameMapper("")),
+    raceRepository,
+    raceResultRepository
+  )
 
   @Test
   internal fun importsSingleNewBingoRaceWithNewPlayers() {
@@ -52,18 +54,18 @@ internal class RacetimeImporterIntegrationTest(
       endedAt = date
       recorded = true
       entrants = listOf(
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user1.first, user1.second)
-            finishTime = 1.hours
-            place = 1
-            status = DONE
-          },
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user2.first, user2.second)
-            finishTime = null
-            place = null
-            status = DNF
-          }
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user1.first, user1.second)
+          finishTime = 1.hours
+          place = 1
+          status = DONE
+        },
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user2.first, user2.second)
+          finishTime = null
+          place = null
+          status = DNF
+        }
       )
     }
 
@@ -98,23 +100,25 @@ internal class RacetimeImporterIntegrationTest(
       endedAt = date
       recorded = true
       entrants = listOf(
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user1.first, user1.second)
-            finishTime = 1.hours
-            place = 1
-            status = DONE
-          },
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user2.first, user2.second)
-            finishTime = null
-            place = null
-            status = DNF
-          }
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user1.first, user1.second)
+          finishTime = 1.hours
+          place = 1
+          status = DONE
+        },
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user2.first, user2.second)
+          finishTime = null
+          place = null
+          status = DNF
+        }
       )
     }
 
-    givenPlayersInDb(Player(racetimeId = user1.first, racetimeName = user1.second),
-        Player(racetimeId = user2.first, racetimeName = user2.second))
+    givenPlayersInDb(
+      Player(racetimeId = user1.first, racetimeName = user1.second),
+      Player(racetimeId = user2.first, racetimeName = user2.second)
+    )
 
     whenRaceIsImported(race)
 
@@ -164,29 +168,29 @@ internal class RacetimeImporterIntegrationTest(
     val user2 = UUID.randomUUID().toString() to UUID.randomUUID().toString()
 
     val races = setOf(raceId1, raceId2)
-        .map {
-          RacetimeRace().apply {
-            name = it
-            goal = RacetimeRace.RacetimeRaceGoal("Bingo", false)
-            info = raceInfo
-            endedAt = date
-            recorded = true
-            entrants = listOf(
-                RacetimeEntrant().apply {
-                  user = RacetimeUser(user1.first, user1.second)
-                  finishTime = 1.hours
-                  place = 1
-                  status = DONE
-                },
-                RacetimeEntrant().apply {
-                  user = RacetimeUser(user2.first, user2.second)
-                  finishTime = null
-                  place = null
-                  status = DNF
-                }
-            )
-          }
+      .map {
+        RacetimeRace().apply {
+          name = it
+          goal = RacetimeRace.RacetimeRaceGoal("Bingo", false)
+          info = raceInfo
+          endedAt = date
+          recorded = true
+          entrants = listOf(
+            RacetimeEntrant().apply {
+              user = RacetimeUser(user1.first, user1.second)
+              finishTime = 1.hours
+              place = 1
+              status = DONE
+            },
+            RacetimeEntrant().apply {
+              user = RacetimeUser(user2.first, user2.second)
+              finishTime = null
+              place = null
+              status = if (it == raceId1) DNF else DQ
+            }
+          )
         }
+      }
 
     whenRacesAreImported(races)
 
@@ -205,7 +209,7 @@ internal class RacetimeImporterIntegrationTest(
     thenRace(raceId2) hasDatetime date
 
     thenRace(raceId2) hasFinishTimes listOf(null, 3600)
-    thenRace(raceId2) hasResultTypes listOf(ResultType.FORFEIT, ResultType.FINISH)
+    thenRace(raceId2) hasResultTypes listOf(ResultType.DQ, ResultType.FINISH)
 
     thenRace(raceId2) hasPlatform Platform.RACETIME
   }
@@ -221,12 +225,12 @@ internal class RacetimeImporterIntegrationTest(
       endedAt = Instant.now()
       recorded = false
       entrants = listOf(
-          RacetimeEntrant().apply {
-            user = RacetimeUser("user1.first", "user1.second")
-            finishTime = 1.hours
-            place = 1
-            status = DONE
-          }
+        RacetimeEntrant().apply {
+          user = RacetimeUser("user1.first", "user1.second")
+          finishTime = 1.hours
+          place = 1
+          status = DONE
+        }
       )
     }
 
@@ -235,10 +239,55 @@ internal class RacetimeImporterIntegrationTest(
     thenRace(raceId).doesNotExistInDb()
   }
 
+  @Test
+  internal fun ignoresNullUser() {
+
+    val raceId = UUID.randomUUID().toString()
+    val raceInfo = UUID.randomUUID().toString()
+    val date = Instant.ofEpochSecond(1234567)
+
+    val user1 = UUID.randomUUID().toString() to UUID.randomUUID().toString()
+    val user2 = UUID.randomUUID().toString() to UUID.randomUUID().toString()
+
+    val race = RacetimeRace().apply {
+      name = raceId
+      goal = RacetimeRace.RacetimeRaceGoal("Bingo", false)
+      info = raceInfo
+      endedAt = date
+      recorded = true
+      entrants = listOf(
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user1.first, user1.second)
+          finishTime = 1.hours
+          place = 1
+          status = DONE
+        },
+        RacetimeEntrant().apply {
+          user = null
+          finishTime = null
+          place = null
+          status = DNF
+        }
+      )
+    }
+
+    whenRaceIsImported(race)
+
+    thenUser(user1.first) hasRacetimeName user1.second
+
+    thenRace(raceId) hasGoal raceInfo
+    thenRace(raceId) hasDatetime date
+
+    thenRace(raceId) hasFinishTimes listOf(3600)
+    thenRace(raceId) hasResultTypes listOf(ResultType.FINISH)
+
+    thenRace(raceId) hasPlatform Platform.RACETIME
+  }
+
   //<editor-fold desc="Given">
 
   fun givenPlayersInDb(vararg players: Player) =
-      players.forEach { playerRepository.save(it) }
+    players.forEach { playerRepository.save(it) }
 
   //</editor-fold>
 
@@ -259,39 +308,41 @@ internal class RacetimeImporterIntegrationTest(
   private fun thenUser(racetimeUserId: String) = playerRepository.findByRacetimeId(racetimeUserId)
 
   private infix fun Player?.hasRacetimeName(expectedRacetimeName: String) =
-      assertThat(this?.racetimeName).isEqualTo(expectedRacetimeName)
+    assertThat(this?.racetimeName).isEqualTo(expectedRacetimeName)
 
   private fun thenRace(raceId: String) = raceRepository.findByRaceId(raceId)
 
   private infix fun Race?.hasGoal(expectedGoal: String) =
-      assertThat(this?.goal).isEqualTo(expectedGoal)
+    assertThat(this?.goal).isEqualTo(expectedGoal)
 
   private infix fun Race?.hasDatetime(expectedDatetime: Instant) =
-      assertThat(this?.datetime).isEqualTo(expectedDatetime)
+    assertThat(this?.datetime).isEqualTo(expectedDatetime)
 
   private infix fun Race?.hasFinishTimes(expectedTimes: List<Long?>) =
-      assertThat(raceResultRepository
-          .findAll()
-          .filter { it.resultId.race == this }
-          .toMutableList()
-          .also { r -> r.sortBy { it.place } }
-          .map { it.time }
-      ).containsExactlyElementsOf(expectedTimes.map { it?.let { s -> Duration.ofSeconds(s) } })
+    assertThat(
+      raceResultRepository
+        .findAll()
+        .filter { it.resultId.race == this }
+        .toMutableList()
+        .also { r -> r.sortBy { it.place } }
+        .map { it.time }
+    ).containsExactlyElementsOf(expectedTimes.map { it?.let { s -> Duration.ofSeconds(s) } })
 
   private infix fun Race?.hasResultTypes(expectedResultTypes: List<ResultType>) =
-      assertThat(raceResultRepository
-          .findAll()
-          .filter { it.resultId.race == this }
-          .toMutableList()
-          .also { r -> r.sortBy { it.place } }
-          .map { it.resultType }
-      ).containsExactlyElementsOf(expectedResultTypes)
+    assertThat(
+      raceResultRepository
+        .findAll()
+        .filter { it.resultId.race == this }
+        .toMutableList()
+        .also { r -> r.sortBy { it.place } }
+        .map { it.resultType }
+    ).containsExactlyElementsOf(expectedResultTypes)
 
   private infix fun Race?.hasPlatform(expectedPlatform: Platform) =
-      assertThat(this?.platform).isEqualTo(expectedPlatform)
+    assertThat(this?.platform).isEqualTo(expectedPlatform)
 
   private fun Race?.doesNotExistInDb() =
-      assertThat(this).isNull()
+    assertThat(this).isNull()
 
   //</editor-fold>
 
@@ -312,18 +363,18 @@ internal class RacetimeImporterIntegrationTest(
       endedAt = date
       recorded = true
       entrants = listOf(
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user1.first, user1.second)
-            finishTime = 1.hours
-            place = 1
-            status = DONE
-          },
-          RacetimeEntrant().apply {
-            user = RacetimeUser(user2.first, user2.second)
-            finishTime = null
-            place = null
-            status = DNF
-          }
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user1.first, user1.second)
+          finishTime = 1.hours
+          place = 1
+          status = DONE
+        },
+        RacetimeEntrant().apply {
+          user = RacetimeUser(user2.first, user2.second)
+          finishTime = null
+          place = null
+          status = DNF
+        }
       )
     }
   }

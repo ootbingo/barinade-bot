@@ -72,8 +72,8 @@ class RowPickingStage(
   override fun raceUpdate(race: RacetimeRace) {
     race.entrants.filter { it.user !in state.entrants }.forEach {
       sendMessage("This race is already in the picking phase. No new entrants permitted.", null)
-      logger.debug("Kicking user {}...", it.user.name)
-      kickUser(it.user)
+      logger.debug("Kicking user {}...", it.user?.name)
+      it.user?.run { kickUser(this) }
     }
   }
 
