@@ -26,6 +26,18 @@ gg:
 bingosync:
   base-url: https://bingosync.com
 
+logging:
+  file:
+    name: bot.log
+  logback:
+    rollingpolicy:
+      max-history: 30
+      file-name-pattern: bot-%d{yyyy-MM-dd}.%i.log
+      clean-history-on-start: true
+  pattern:
+    file: '%d{ISO8601} - %5p --- [%18.18t] %-40.40logger{39}:%-4.4L : %m%n'
+    console:
+
 spring:
   datasource:
     url: jdbc:postgresql://scaramangado.de:10110/BARINADE

@@ -31,7 +31,9 @@ class RacetimeHttpClient(
 
     fun getPage(page: Int) =
       "${properties.dataBaseUrl}/$OOT/races/data?show_entrants=true&page=$page"
-        .let { racetimeRestTemplate.getForObject<RacetimeRacePage>(it) }
+        .let { it to runCatching { racetimeRestTemplate.getForObject<RacetimeRacePage>(it) } }
+        .also { it.second.onFailure { e -> logger.error("Error downloading data from {}", it.first, e) } }
+        .second.getOrThrow()
 
     return IntStream.iterate(1) { it + 1 }
       .mapToObj { getPage(it) }
@@ -41,12 +43,15 @@ class RacetimeHttpClient(
       .collect(Collectors.toSet())
   }
 
-  fun getOpenRaces(): Collection<RacetimeRace> {
+  fun getOpenRaces(): Collection<RacetimeRace> = try {
     val oot = racetimeRestTemplate
       .getForEntity<RacetimeCategory>("${properties.racingBaseUrl}/$OOT/data")
       .body
 
-    return oot?.currentRaces ?: emptySet()
+    oot?.currentRaces ?: emptySet()
+  } catch (e: Exception) {
+    logger.error("Failed to find open races.", e)
+    emptySet()
   }
 
   fun startRace(data: RacetimeEditableRace): String {
