@@ -5,10 +5,10 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "2.1.10"
+  val kotlinVersion = "2.1.21"
 
   java
-  id("org.springframework.boot") version "3.4.3"
+  id("org.springframework.boot") version "3.5.0"
   id("io.spring.dependency-management") version "1.1.7"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.4.1"
+version = "3.4.2"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
@@ -53,7 +53,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
   implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.2.0")

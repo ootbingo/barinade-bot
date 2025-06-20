@@ -1,7 +1,9 @@
 name: Build Barinade Bot
 
 on:
-  - push
+  push:
+    branches: [ '*' ]
+    tags-ignore: [ '*' ]
 
 jobs:
   build:
