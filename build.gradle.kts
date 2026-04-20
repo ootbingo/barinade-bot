@@ -74,7 +74,7 @@ dependencies {
     exclude(group = "org.junit.jupiter")
   }
 
-  testImplementation("org.assertj:assertj-core:3.27.3")
+  testImplementation("org.assertj:assertj-core:3.27.7")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
