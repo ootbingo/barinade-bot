@@ -75,7 +75,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.27.3")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
