@@ -1,6 +1,5 @@
 package ootbingo.barinade.bot.time.worker
 
-import kotlinx.datetime.Clock
 import ootbingo.barinade.bot.time.SleepFunction
 import ootbingo.barinade.bot.time.ticker.TickerFactory
 import ootbingo.barinade.bot.time.ticker.TickerMock
@@ -12,6 +11,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlin.random.nextInt
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds

@@ -1,8 +1,8 @@
 package ootbingo.barinade.bot.time.ticker
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 class DefaultTicker(private val clock: Clock) : Ticker {
 

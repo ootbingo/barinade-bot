@@ -1,7 +1,7 @@
 package ootbingo.barinade.bot.time.ticker
 
-import kotlinx.datetime.Clock
 import org.springframework.stereotype.Component
+import kotlin.time.Clock
 
 @Component
 class TickerFactory(private val clock: Clock) {
