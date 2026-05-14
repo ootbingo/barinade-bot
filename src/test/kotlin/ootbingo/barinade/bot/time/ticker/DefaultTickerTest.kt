@@ -1,15 +1,15 @@
 package ootbingo.barinade.bot.time.ticker
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import kotlin.random.Random
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 class DefaultTickerTest {
 
