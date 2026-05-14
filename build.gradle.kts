@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.4.3"
+version = "3.4.4-SNAPSHOT"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_25
