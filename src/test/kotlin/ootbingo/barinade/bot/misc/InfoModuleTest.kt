@@ -13,6 +13,7 @@ internal class InfoModuleTest : ModuleTest() {
     "silvers" to module::silvers,
     "stalfos" to module::stalfos,
     "beans" to module::beanPatches,
+    "pierre" to module::pierre,
   )
 
   //<editor-fold desc="!golds">
@@ -74,6 +75,22 @@ internal class InfoModuleTest : ModuleTest() {
   @Test
   internal fun beanPatchesSingleLineOnRacetime() {
     whenRacetimeMessageIsSent("", "!beans")
+    thenAnswerIsSingleLine()
+  }
+
+  //</editor-fold>
+
+  //<editor-fold desc="!pierre">
+
+  @Test
+  internal fun pierreMultilineOnDiscord() {
+    whenDiscordMessageIsSent("", "!pierre")
+    thenAnswerIsPreformatted()
+  }
+
+  @Test
+  internal fun pierreSingleLineOnRacetime() {
+    whenRacetimeMessageIsSent("", "!pierre")
     thenAnswerIsSingleLine()
   }
 
