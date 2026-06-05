@@ -9,6 +9,9 @@ out/
 ### Java ###
 hs_err_pid*
 
+### Kotlin ###
+.kotlin/
+
 ### macOS ###
 # General
 .DS_Store

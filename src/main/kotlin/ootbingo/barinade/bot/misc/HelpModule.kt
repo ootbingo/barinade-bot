@@ -31,6 +31,7 @@ class HelpModule {
           **!silvers** List Silver Rupee Rooms
           **!stalfos** List Stalfos locations
           **!beans** List Bean Patch locations
+          **!pierre** List Pierre (Scarecrow) locations
           ## Misc
           **!shame** Express your disapproval
           ## Racing
@@ -41,6 +42,6 @@ class HelpModule {
 
       racetimeMessage =
         "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, " +
-            "!shame, !pick"
+            "!beans, !pierre, !shame, !pick"
     }
 }

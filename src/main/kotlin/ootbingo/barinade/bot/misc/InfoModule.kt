@@ -73,12 +73,12 @@ class InfoModule {
           "2 x Ganon’s Tower Collapse"
     }
 
-  @LilyCommand("beans", "patches", "beanpatches")
+  @LilyCommand("beans", "patches", "beanpatches", "soils", "softsoils")
   fun beanPatches(command: Command): Answer<AnswerInfo> =
     conditionalAnswer(command) {
 
       discordMessage = """
-        ## Bean Patch Locations
+        ## Bean Patch / Soft Soil Locations
         * Kokiri Forest
         * Lost Woods (x2)
         * Graveyard
@@ -91,6 +91,30 @@ class InfoModule {
       """.trimIndent()
 
       racetimeMessage =
-        "Kokiri Forest, Lost Woods (x2), Graveyard, Death Mountain Trail, Death Mountain Crater, Lake Hylia, Gerudo Valley, Colossus, Zora's River (no Skulltula)"
+        "Kokiri Forest, 2 x Lost Woods, Graveyard, Death Mountain Trail, Death Mountain Crater, Lake Hylia, Gerudo Valley, Colossus, Zora's River (no Skulltula)"
+    }
+
+  @LilyCommand("pierre", "scarecrow", "scarecrows")
+  fun scarecrows(command: Command): Answer<AnswerInfo> =
+    conditionalAnswer(command) {
+
+      discordMessage = """
+        ## Pierre (Scarecrow) Locations
+        * Death Mountain Crater (x2)
+        * Gerudo Fortress
+        * Lake Hylia (x3)
+        * Sacred Forest Meadow
+        * Zora's Fountain
+        * Dodongo's Cavern
+        * Forest Temple
+        * Fire Temple
+        * Water Temple
+        * Shadow Temple (x2)
+        * Spirit Temple
+        * Gerudo Training Grounds
+      """.trimIndent()
+
+      racetimeMessage =
+        "2 x DMC, Gerudo Fortress, 3 x Lake Hylia, SFM, Zora's Fountain, Dodongo's Cavern, Forest Temple, Fire Temple, Water Temple, 2 x Shadow Temple, Spirit Temple, GTG"
     }
 }
