@@ -13,7 +13,7 @@ internal class InfoModuleTest : ModuleTest() {
     "silvers" to module::silvers,
     "stalfos" to module::stalfos,
     "beans" to module::beanPatches,
-    "pierre" to module::pierre,
+    "pierre" to module::scarecrows,
   )
 
   //<editor-fold desc="!golds">

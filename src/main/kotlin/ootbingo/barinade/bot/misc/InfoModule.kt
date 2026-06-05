@@ -95,7 +95,7 @@ class InfoModule {
     }
 
   @LilyCommand("pierre", "scarecrow", "scarecrows")
-  fun beanPatches(command: Command): Answer<AnswerInfo> =
+  fun scarecrows(command: Command): Answer<AnswerInfo> =
     conditionalAnswer(command) {
 
       discordMessage = """
