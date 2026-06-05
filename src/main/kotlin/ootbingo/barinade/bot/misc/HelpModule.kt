@@ -41,7 +41,7 @@ class HelpModule {
         """.trimIndent()
 
       racetimeMessage =
-        "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, !beans, !pierre, " +
-            "!shame, !pick"
+        "Available commands: !average, !median, !forfeits, !results, !best, !racer, !golds, !silvers, !stalfos, " +
+            "!beans, !pierre, !shame, !pick"
     }
 }
