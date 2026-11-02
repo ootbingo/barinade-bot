@@ -5,10 +5,10 @@ import java.util.*
 
 plugins {
 
-  val kotlinVersion = "2.3.21"
+  val kotlinVersion = "2.4.21"
 
   java
-  id("org.springframework.boot") version "3.5.14"
+  id("org.springframework.boot") version "3.5.16"
   id("io.spring.dependency-management") version "1.1.7"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "ootbingo.barinade"
-version = "3.4.4"
+version = "3.4.5"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_25
@@ -53,7 +53,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.2.2")
   implementation("org.springframework:spring-websocket")
@@ -74,7 +74,7 @@ dependencies {
   }
 
   testImplementation("org.assertj:assertj-core:3.27.7")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
