@@ -53,7 +53,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
 
   implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.2.2")
   implementation("org.springframework:spring-websocket")
